@@ -25,6 +25,11 @@ public class A1 {
     }
 
     public void run(String[] args) {
-        System.out.println("Hello");
+        Scanner s = new Scanner();
+        s.loadFile(args[0]);
+        while (s.eof()) {
+            System.out.println(s.getToken());
+        }
+        System.out.println("Done");
     }
 }

@@ -1,1 +1,9 @@
- 
+CD22 HelloWorld
+main
+    i : bool    /-- primitive types possible
+                /-- struct type possible,
+                /-- array type NOT possible
+                /-- Can NOT be empty
+begin
+    printline "Hello World"  ;
+end CD22 HelloWorld

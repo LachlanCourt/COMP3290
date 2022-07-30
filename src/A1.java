@@ -25,11 +25,17 @@ public class A1 {
     }
 
     public void run(String[] args) {
-        Scanner s = new Scanner();
+        boolean debug = args.length > 1 && args[1].compareTo("debug") == 0 ? true : false;
+        Scanner s = new Scanner(debug);
         s.loadFile(args[0]);
-        while (s.eof()) {
-            System.out.println(s.getToken());
+        boolean end = false;
+        while (!end) {
+            Token t = s.getToken();
+            System.out.println(t);
+            end = t.isEof();
+//            s.getToken();
         }
-        System.out.println("Done");
+
+        System.out.println("Program Completed Successfully");
     }
 }

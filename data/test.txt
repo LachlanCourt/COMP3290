@@ -4,6 +4,39 @@ main
                 /-- struct type possible,
                 /-- array type NOT possible
                 /-- Can NOT be empty
+           j=133;
+           k =1;
+           l= 1 + 25;
+           m=1+2;
+           m=21.ss.33.3
+          /** Hello
+          there
+          this
+          is
+          a
+          multiline
+          &&&^(*&#$^* /-- asdf
+          comment **/&
+
+          if (ds != 3)
+            h-=s
+          elif (k == d)
+               a*=s
+          if (s < 3)
+             v/=2
+          elif ( s > 5)
+            s+=1
+          if (6<= 3)
+            k = 1
+          else
+            k >=3
+
+          f ===a
+          /-j
+          /-
+          /- s
+          s<<<3
 begin
-    printline "Hello World"  ;
+    printline "Hello World &"  ;
+    /**/
 end CD22 HelloWorld

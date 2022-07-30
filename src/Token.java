@@ -2,26 +2,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 
 enum Tokens {
-    TTEOF("TTEOF"),
-    TCD22("TCD22"),
-    TCONS("TCONS"), TTYPS("TTYPS"), TTDEF("TTDEF"), TARRS("TARRS"),
-    TMAIN("TMAIN"),
-    TBEGN("TBEGN"), TTEND("TTEND"), TARAY("TARAY"), TTTOF("TTTOF"), TFUNC("TFUNC"),
-    TVOID("TVOID"),
-    TCNST("TCNST"), TINTG("TINTG"), TFLOT("TFLOT"), TBOOL("TBOOL"), TTFOR("TTFOR"),
-    TREPT("TREPT"),
-    TUNTL("TUNTL"), TIFTH("TIFTH"), TELSE("TELSE"), TELIF("TELIF"), TINPT("TINPT"), TPRNT("TPRNT"),
-    TPRLN("TPRLN"), TRETN("TRETN"), TNOTT("TNOTT"), TTAND("TTAND"), TTTOR("TTTOR"), TTXOR("TTXOR"),
-    TTRUE("TTRUE"), TFALS("TFALS"),
-    TCOMA("TCOMA"), TLBRK("TLBRK"), TRBRK("TRBRK"), TLPAR("TLPAR"), TRPAR("TRPAR"),
-    TEQUL("TEQUL"),
-    TPLUS("TPLUS"), TMINS("TMINS"), TSTAR("TSTAR"), TDIVD("TDIVD"), TPERC("TPERC"),
-    TCART("TCART"),
-    TLESS("TLESS"), TGRTR("TGRTR"), TCOLN("TCOLN"), TSEMI("TSEMI"), TDOTT("TDOTT"),
-    TLEQL("TLEQL"),
-    TGEQL("TGEQL"), TNEQL("TNEQL"), TEQEQ("TEQEQ"), TPLEQ("TPLEQ"), TMNEQ("TMNEQ"), TSTEQ("TSTEQ"),
-    TDVEQ("TDVEQ"),
-    TIDEN("TIDEN"), TILIT("TILIT"), TFLIT("TFLIT"), TSTRG("TSTRG"), TUNDF("TUNDF");
+    TTEOF("TTEOF"), TCD22("TCD22"), TCONS("TCONS"), TTYPS("TTYPS"), TTDEF("TTDEF"), TARRS("TARRS"), TMAIN("TMAIN"), TBEGN("TBEGN"), TTEND("TTEND"), TARAY("TARAY"), TTTOF("TTTOF"), TFUNC("TFUNC"), TVOID("TVOID"), TCNST("TCNST"), TINTG("TINTG"), TFLOT("TFLOT"), TBOOL("TBOOL"), TTFOR("TTFOR"), TREPT("TREPT"), TUNTL("TUNTL"), TIFTH("TIFTH"), TELSE("TELSE"), TELIF("TELIF"), TINPT("TINPT"), TPRNT("TPRNT"), TPRLN("TPRLN"), TRETN("TRETN"), TNOTT("TNOTT"), TTAND("TTAND"), TTTOR("TTTOR"), TTXOR("TTXOR"), TTRUE("TTRUE"), TFALS("TFALS"), TCOMA("TCOMA"), TLBRK("TLBRK"), TRBRK("TRBRK"), TLPAR("TLPAR"), TRPAR("TRPAR"), TEQUL("TEQUL"), TPLUS("TPLUS"), TMINS("TMINS"), TSTAR("TSTAR"), TDIVD("TDIVD"), TPERC("TPERC"), TCART("TCART"), TLESS("TLESS"), TGRTR("TGRTR"), TCOLN("TCOLN"), TSEMI("TSEMI"), TDOTT("TDOTT"), TLEQL("TLEQL"), TGEQL("TGEQL"), TNEQL("TNEQL"), TEQEQ("TEQEQ"), TPLEQ("TPLEQ"), TMNEQ("TMNEQ"), TSTEQ("TSTEQ"), TDVEQ("TDVEQ"), TIDEN("TIDEN"), TILIT("TILIT"), TFLIT("TFLIT"), TSTRG("TSTRG"), TUNDF("TUNDF");
 
     private String value;
 
@@ -217,8 +198,10 @@ enum Tokens {
 public class Token {
 
     private static ArrayList<String> keywords = new ArrayList<String>(Arrays.asList("CD22", "constants", "types", "def", "arrays", "main", "begin", "end", "array", "of", "func", "void", "const", "int", "float", "bool", "for", "repeat", "until", "if", "else", "elif", "input", "print", "printline", "return", "not", "and", "or", "xor", "true", "false"));
+    private static ArrayList<String> validPunctuation = new ArrayList<String>(Arrays.asList(",", "[", "]", "(", ")", "=", "+", "-", "*", "/", "%", "^", "<", ">", "!", "\"", ":", ";", "."));
     private static ArrayList<String> validStandaloneOperators = new ArrayList<String>(Arrays.asList(",", "[", "]", "(", ")", "=", "+", "-", "*", "/", "%", "^", "<", ">", ":", ";", "."));
     private static ArrayList<String> validDoubleOperators = new ArrayList<String>(Arrays.asList("!=", "==", "<=", ">=", "+=", "-=", "/=", "*="));
+
     private String tokenLiteral = null;
 
     private Tokens token = Tokens.TUNDF;
@@ -266,11 +249,12 @@ public class Token {
                 // Integer literal
                 token = Tokens.TINTG;
                 return;
-
             }
 
             // Indentifier
-            token = Tokens.TIDEN;
+            if (!validPunctuation.contains(tokenLiteral)) {
+                token = Tokens.TIDEN;
+            }
         }
     }
 

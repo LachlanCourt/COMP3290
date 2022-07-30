@@ -87,21 +87,22 @@ public class Scanner {
 
             bufferCandidate += character;
 
-            if (bufferCandidate.startsWith("/--")) inSingleLineComment = true;
-            if (bufferCandidate.startsWith("/**")) inMultiLineComment = true;
+            if (bufferCandidate.contains("/--")) inSingleLineComment = true;
+            if (bufferCandidate.contains("/**")) inMultiLineComment = true;
 
-            if ((inSingleLineComment && character.compareTo("\n") == 0) || (inMultiLineComment && bufferCandidate.endsWith("**/"))) {
-                inSingleLineComment = false;
-                inMultiLineComment = false;
-                bufferCandidate = "";
-                continue;
+            if (inSingleLineComment && character.compareTo("\n") == 0) {
+                bufferCandidate = bufferCandidate.substring(0, bufferCandidate.indexOf("/--"));
+                break;
             }
-
+            if (inMultiLineComment && bufferCandidate.endsWith("**/")) {
+                bufferCandidate = bufferCandidate.substring(0, bufferCandidate.indexOf("/**"));
+                break;
+            }
             if (bufferCandidate.startsWith("\"") && bufferCandidate.endsWith("\"") && bufferCandidate.length() > 1)
                 break;
-
         }
-        if (bufferCandidate.compareTo("") == 0) {
+
+        if (!eof() && bufferCandidate.compareTo("") == 0) {
             readFileIntoBufferUntilWhitespace();
         } else {
             buffer = bufferCandidate;
@@ -162,8 +163,7 @@ public class Scanner {
                     if (validPunctuation.contains(character)) {
                         if (character.compareTo(".") == 0 && decimalState == DecimalStates.INITIAL) {
                             decimalState = DecimalStates.FOUND_DECIMAL;
-                        }
-                        else {
+                        } else {
                             tokenStringFound = true;
                         }
                     }
@@ -196,19 +196,18 @@ public class Scanner {
             i--;
         }
 
-        tokenStringCandidate = buffer.substring(0, i );
+        tokenStringCandidate = buffer.substring(0, i);
         buffer = buffer.substring(i);
         return tokenStringCandidate;
     }
 
     public Token getToken() {
-        if (eof()) {
-            return new Token(true);
-        }
         if (buffer.length() == 0) {
             readFileIntoBufferUntilWhitespace();
         }
-
+        if (buffer.length() == 0 && eof()) {
+            return new Token(true);
+        }
         return new Token(getTokenStringFromBuffer(), lineCounter, columnCounter, debug);
     }
 }

@@ -156,6 +156,10 @@ public class Token {
         return token == Tokens.TTEOF;
     }
 
+    public boolean isUndf() {
+        return token == Tokens.TUNDF;
+    }
+
     @Override
     public String toString() {
         StringBuilder out = new StringBuilder("(");
@@ -163,7 +167,7 @@ public class Token {
         out.append(lexeme + ",");
         out.append(row + ",");
         out.append(col + ")");
-        return out.toString() + (System.getenv("DEBUG").compareTo("true") == 0 ? " " + tokenLiteral : "");
+        return out.toString() + (System.getenv("DEBUG") != null && System.getenv("DEBUG").compareTo("true") == 0 ? " " + tokenLiteral : "");
     }
 
 }

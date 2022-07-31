@@ -25,7 +25,8 @@ public class A1 {
     }
 
     public void run(String[] args) {
-        Scanner s = new Scanner();
+        ErrorHandler errorHandler = new ErrorHandler();
+        Scanner s = new Scanner(errorHandler);
         s.loadFile(args[0]);
         boolean end = false;
         while (!end) {
@@ -34,6 +35,15 @@ public class A1 {
             end = t.isEof();
         }
 
-        System.out.println("Program Completed Successfully");
+        if (errorHandler.hasErrors()) {
+            System.err.println("Errors exist within the compiling process:\n");
+            for (ErrorMessage error : errorHandler.getErrors()) {
+                System.err.println(error);
+            }
+            System.exit(1);
+        }
+        else {
+            System.out.println("Program Completed Successfully");
+        }
     }
 }

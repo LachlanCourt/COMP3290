@@ -23,15 +23,17 @@ public class Scanner {
     private int currentColumn;
 
     private String buffer;
+    private ErrorHandler errorHandler;
 
     private static ArrayList<String> validPunctuation = new ArrayList<String>(Arrays.asList(",", "[", "]", "(", ")", "=", "+", "-", "*", "/", "%", "^", "<", ">", "!", "\"", ":", ";", "."));
     private static ArrayList<String> validDoubleOperators = new ArrayList<String>(Arrays.asList("!=", "==", "<=", ">=", "+=", "-=", "/=", "*="));
 
-    public Scanner() {
+    public Scanner(ErrorHandler errorHandler_) {
         listing = new ArrayList<String>();
         columnCounter = 0;
         lineCounter = 1;
         buffer = "";
+        errorHandler = errorHandler_;
     }
 
     public void loadFile(String filename) {
@@ -84,9 +86,8 @@ public class Scanner {
                 Pattern pattern = Pattern.compile("[a-z0-9\s\n]", Pattern.CASE_INSENSITIVE);
                 Matcher matcher = pattern.matcher(character);
                 boolean matchFound = matcher.find();
+                // This will eventually become an undefined token but for now just break the scanning here
                 if (!validPunctuation.contains(character) && !matchFound) {
-                    //TODO Add invalid character error
-                    System.err.println("Invalid character on line " + lineCounter + " at column " + columnCounter + ": " + character);
                     bufferCandidate += character;
                     break;
                 }
@@ -243,6 +244,10 @@ public class Scanner {
             return new Token(true);
         }
         String tokenString = getTokenStringFromBuffer();
-        return new Token(tokenString, currentRow, currentColumn);
+        Token token = new Token(tokenString, currentRow, currentColumn);
+        if (token.isUndf()) {
+            errorHandler.addError(lineCounter, columnCounter, ErrorMessage.Errors.UNDEFINED_TOKEN, tokenString);
+        }
+        return token;
     }
 }

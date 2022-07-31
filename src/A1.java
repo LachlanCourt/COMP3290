@@ -24,7 +24,8 @@ public class A1 {
 
     public void run(String[] args) {
         OutputController outputController = new OutputController();
-        Scanner s = new Scanner(outputController);
+        SymbolTable symbolTable = new SymbolTable();
+        Scanner s = new Scanner(outputController, symbolTable);
         s.loadFile(args[0]);
         boolean end = false;
         String line = "";
@@ -52,6 +53,8 @@ public class A1 {
         outputController.reportErrorsAndWarnings();
 
         System.out.println("Program Completed Successfully");
+
+        System.out.println("\nSYMBOL TABLE\n" + symbolTable);
 
     }
 }

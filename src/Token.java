@@ -92,15 +92,20 @@ public class Token {
 
     private String tokenLiteral = null;
     private OutputController outputController;
+    private SymbolTable symbolTable;
 
     private Tokens token = Tokens.TUNDF;
     private int lexeme;
     private int row;
     private int col;
+    private int symbolTableId;
 
-    public Token(OutputController outputController, String tokenLiteral_, int row_, int col_) {
+    public Token(OutputController outputController_, SymbolTable symbolTable_, String tokenLiteral_, int row_, int col_) {
         row = row_;
         col = col_;
+        outputController = outputController_;
+        symbolTable = symbolTable_;
+
         if (tokenLiteral_.compareTo("") != 0) {
             tokenLiteral = tokenLiteral_;
             for (String keyword : keywords) {
@@ -123,13 +128,15 @@ public class Token {
                     return;
                 }
             }
-            //TODO add these to symbol table
+
             if (tokenLiteral.startsWith("\"") && tokenLiteral.endsWith("\"") && tokenLiteral.length() > 1) {
                 token = Tokens.TSTRG;
+                symbolTableId = symbolTable.addSymbol(tokenLiteral, null);
                 return;
             }
 
             if (tokenLiteral.charAt(0) >= 48 && tokenLiteral.charAt(0) <= 57) {
+                symbolTableId = symbolTable.addSymbol(tokenLiteral, null);
                 // Float literal
                 if (tokenLiteral.contains(".")) {
                     token = Tokens.TFLIT;
@@ -145,6 +152,7 @@ public class Token {
             Matcher matcher = pattern.matcher(tokenLiteral);
             boolean matchFound = matcher.find();
             if (matchFound) {
+                symbolTableId = symbolTable.addSymbol(tokenLiteral, null);
                 token = Tokens.TIDEN;
             }
         }

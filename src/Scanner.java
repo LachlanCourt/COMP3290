@@ -29,16 +29,18 @@ public class Scanner {
 
     private String readerBuffer;
     private OutputController outputController;
+    private SymbolTable symbolTable;
 
     private static ArrayList<String> validPunctuation = new ArrayList<String>(Arrays.asList(",", "[", "]", "(", ")", "=", "+", "-", "*", "/", "%", "^", "<", ">", "!", "\"", ":", ";", "."));
     private static ArrayList<String> validDoubleOperators = new ArrayList<String>(Arrays.asList("!=", "==", "<=", ">=", "+=", "-=", "/=", "*="));
 
-    public Scanner(OutputController outputController_) {
+    public Scanner(OutputController outputController_, SymbolTable symbolTable_) {
         columnCounter = 0;
         lineCounter = 1;
         buffer = "";
         readerBuffer = "";
         outputController = outputController_;
+        symbolTable = symbolTable_;
     }
 
     public void loadFile(String filename) {
@@ -269,7 +271,7 @@ public class Scanner {
             return new Token(true);
         }
 
-        Token token = new Token(outputController, getTokenStringFromBuffer(), currentRow, currentColumn);
+        Token token = new Token(outputController, symbolTable, getTokenStringFromBuffer(), currentRow, currentColumn);
         if (token.isUndf())
             outputController.addError(currentRow, currentColumn, ErrorMessage.Errors.UNDEFINED_TOKEN, token.getTokenLiteral());
 

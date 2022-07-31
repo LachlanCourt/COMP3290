@@ -1,6 +1,6 @@
 CD22 HelloWorld
 main
-    i : bool    /-- primitive types possible
+    i : BOOL    /-- primitive types possible
                 /-- struct type possible,
                 /-- array type NOT possible
                 /-- Can NOT be empty

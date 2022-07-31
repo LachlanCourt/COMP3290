@@ -244,7 +244,7 @@ public class Scanner {
             return new Token(true);
         }
         String tokenString = getTokenStringFromBuffer();
-        Token token = new Token(tokenString, currentRow, currentColumn);
+        Token token = new Token(errorHandler, tokenString, currentRow, currentColumn);
         if (token.isUndf()) {
             errorHandler.addError(lineCounter, columnCounter, ErrorMessage.Errors.UNDEFINED_TOKEN, tokenString);
         }

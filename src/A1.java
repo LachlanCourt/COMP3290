@@ -1,12 +1,11 @@
 import java.io.File;
 
 public class A1 {
-    public static void main (String[] args) {
+    public static void main(String[] args) {
         A1 a = new A1();
         if (a.validateArgs(args)) {
             a.run(args);
-        }
-        else {
+        } else {
             System.err.println("Invalid Arguments. Please specify a filename to compile");
             System.exit(1);
         }
@@ -17,8 +16,7 @@ public class A1 {
             return false;
         }
         File f = new File(args[0]);
-        if (!f.exists())
-        {
+        if (!f.exists()) {
             return false;
         }
         return true;
@@ -40,10 +38,17 @@ public class A1 {
             for (ErrorMessage error : errorHandler.getErrors()) {
                 System.err.println(error);
             }
-            System.exit(1);
+
         }
-        else {
-            System.out.println("Program Completed Successfully");
+        if (errorHandler.hasWarnings()) {
+            System.err.println("\nWarnings exist within the compiling process:\n");
+            for (ErrorMessage warning : errorHandler.getWarnings()) {
+                System.err.println(warning);
+            }
         }
+        if (errorHandler.hasErrors()) System.exit(1);
+
+        System.out.println("Program Completed Successfully");
+
     }
 }

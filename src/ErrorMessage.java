@@ -19,6 +19,12 @@ public class ErrorMessage {
         data = data_;
     }
 
+    public ErrorMessage(int row_, int col_, Errors type_) {
+        row = row_;
+        col = col_;
+        type = type_;
+    }
+
     @Override
     public String toString() {
         String errorText;
@@ -31,6 +37,6 @@ public class ErrorMessage {
             }
             default -> errorText = "";
         }
-        return warning ? YELLOW + "Warning" :  RED + "Error" + " on line " + row + " at column " + col + ": " + errorText + RESET;
+        return (warning ? YELLOW + "Warning" :  RED + "Error") + " on line " + row + " at column " + col + ": " + errorText + RESET;
     }
 }

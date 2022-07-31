@@ -19,7 +19,6 @@ public class Scanner {
         CODE, IN_STRING, IN_SINGLE_LINE_COMMENT, IN_MULTI_LINE_COMMENT, IN_UNDEFINED_TOKEN,
     }
 
-    private ArrayList<String> listing;
     private java.util.Scanner fileScanner;
     private int lineCounter;
     private int currentRow;
@@ -29,18 +28,17 @@ public class Scanner {
     private String buffer;
 
     private String readerBuffer;
-    private ErrorHandler errorHandler;
+    private OutputController outputController;
 
     private static ArrayList<String> validPunctuation = new ArrayList<String>(Arrays.asList(",", "[", "]", "(", ")", "=", "+", "-", "*", "/", "%", "^", "<", ">", "!", "\"", ":", ";", "."));
     private static ArrayList<String> validDoubleOperators = new ArrayList<String>(Arrays.asList("!=", "==", "<=", ">=", "+=", "-=", "/=", "*="));
 
-    public Scanner(ErrorHandler errorHandler_) {
-        listing = new ArrayList<String>();
+    public Scanner(OutputController outputController_) {
         columnCounter = 0;
         lineCounter = 1;
         buffer = "";
         readerBuffer = "";
-        errorHandler = errorHandler_;
+        outputController = outputController_;
     }
 
     public void loadFile(String filename) {
@@ -74,6 +72,7 @@ public class Scanner {
         while (!eof() || readerBuffer.length() > 0) {
             if (readerBuffer.length() == 0) {
                 character = fileScanner.next();
+                outputController.addListingCharacter(character);
             } else {
                 character = readerBuffer;
                 // For the character to be in the reader buffer, it has already been parsed and the counter incremented
@@ -266,12 +265,13 @@ public class Scanner {
             readFileIntoBufferUntilWhitespace();
         }
         if (buffer.length() == 0 && eof()) {
+            outputController.flushListing();
             return new Token(true);
         }
 
-        Token token = new Token(errorHandler, getTokenStringFromBuffer(), currentRow, currentColumn);
+        Token token = new Token(outputController, getTokenStringFromBuffer(), currentRow, currentColumn);
         if (token.isUndf())
-            errorHandler.addError(currentRow, currentColumn, ErrorMessage.Errors.UNDEFINED_TOKEN, token.getTokenLiteral());
+            outputController.addError(currentRow, currentColumn, ErrorMessage.Errors.UNDEFINED_TOKEN, token.getTokenLiteral());
 
         return token;
     }

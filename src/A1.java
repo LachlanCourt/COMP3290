@@ -23,8 +23,8 @@ public class A1 {
     }
 
     public void run(String[] args) {
-        ErrorHandler errorHandler = new ErrorHandler();
-        Scanner s = new Scanner(errorHandler);
+        OutputController outputController = new OutputController();
+        Scanner s = new Scanner(outputController);
         s.loadFile(args[0]);
         boolean end = false;
         String line = "";
@@ -49,20 +49,7 @@ public class A1 {
             System.out.println(line);
         }
 
-        if (errorHandler.hasErrors()) {
-            System.err.println("Errors exist within the compiling process:\n");
-            for (ErrorMessage error : errorHandler.getErrors()) {
-                System.err.println(error);
-            }
-
-        }
-        if (errorHandler.hasWarnings()) {
-            System.err.println("\nWarnings exist within the compiling process:\n");
-            for (ErrorMessage warning : errorHandler.getWarnings()) {
-                System.err.println(warning);
-            }
-        }
-        if (errorHandler.hasErrors()) System.exit(1);
+        outputController.reportErrorsAndWarnings();
 
         System.out.println("Program Completed Successfully");
 

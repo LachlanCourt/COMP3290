@@ -91,14 +91,14 @@ public class Token {
     private static ArrayList<String> validDoubleOperators = new ArrayList<String>(Arrays.asList("!=", "==", "<=", ">=", "+=", "-=", "/=", "*="));
 
     private String tokenLiteral = null;
-    private ErrorHandler errorHandler;
+    private OutputController outputController;
 
     private Tokens token = Tokens.TUNDF;
     private int lexeme;
     private int row;
     private int col;
 
-    public Token(ErrorHandler errorHandler, String tokenLiteral_, int row_, int col_) {
+    public Token(OutputController outputController, String tokenLiteral_, int row_, int col_) {
         row = row_;
         col = col_;
         if (tokenLiteral_.compareTo("") != 0) {
@@ -107,7 +107,7 @@ public class Token {
                 if (keyword.toLowerCase().compareTo(tokenLiteral.toLowerCase()) == 0) {
                     token = Tokens.getToken(keyword);
                     if (keyword.compareTo("CD22") == 0 && tokenLiteral.compareTo("CD22") != 0)
-                        errorHandler.addWarning(row, col, ErrorMessage.Errors.WARNING_CD22_SEMANTIC_CASING);
+                        outputController.addWarning(row, col, ErrorMessage.Errors.WARNING_CD22_SEMANTIC_CASING);
                     return;
                 }
             }

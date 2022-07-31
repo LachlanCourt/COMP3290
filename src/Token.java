@@ -132,11 +132,11 @@ public class Token {
             if (tokenLiteral.charAt(0) >= 48 && tokenLiteral.charAt(0) <= 57) {
                 // Float literal
                 if (tokenLiteral.contains(".")) {
-                    token = Tokens.TFLOT;
+                    token = Tokens.TFLIT;
                     return;
                 }
                 // Integer literal
-                token = Tokens.TINTG;
+                token = Tokens.TILIT;
                 return;
             }
 
@@ -173,7 +173,7 @@ public class Token {
             StringBuilder out = new StringBuilder(token.getValue());
 
             switch (token) {
-                case TINTG, TFLOT, TSTRG, TIDEN -> {
+                case TILIT, TFLIT, TSTRG, TIDEN -> {
                     // As per specification, literal values should be padded as a multiple of 6 with at least one
                     // trailing space
                     int size = (tokenLiteral.length() / 6) * 6 + 6;

@@ -1,0 +1,7 @@
+CD22 ProgramName
+main
+    i : bool;
+
+begin
+
+end CD22 ProgramName

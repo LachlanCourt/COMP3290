@@ -17,8 +17,9 @@ main
           multiline
           &&&^(*&#$^* /-- asdf
           comment **/a&aaaaaa@@@@k
+          @@@
 
-          if (ds != 3)
+          if (ds != 3)!
             h-=s
           elif (k == d)
                a*=s

@@ -1,0 +1,7 @@
+CD22 ProgramWithInvalidCharacter
+main
+    i : bool;&
+
+begin
+
+end CD22 ProgramWithInvalidCharacter

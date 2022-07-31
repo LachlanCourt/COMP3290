@@ -76,6 +76,8 @@ public class Scanner {
                 character = fileScanner.next();
             } else {
                 character = readerBuffer;
+                // For the character to be in the reader buffer, it has already been parsed and the counter incremented
+                currentColumn--;
                 readerBuffer = "";
             }
 
@@ -97,11 +99,11 @@ public class Scanner {
                 Pattern pattern = Pattern.compile("[a-z0-9\s\n]", Pattern.CASE_INSENSITIVE);
                 Matcher matcher = pattern.matcher(character);
                 boolean matchFound = matcher.find();
-                // This will eventually become an undefined token but for now just break the scanning here
+
                 if (!validPunctuation.contains(character) && !matchFound) {
                     readerState = ReaderStates.IN_UNDEFINED_TOKEN;
                 } else if (readerState == ReaderStates.IN_UNDEFINED_TOKEN && (validPunctuation.contains(character) || matchFound)) {
-                    readerBuffer = character;
+                    if (character.compareTo("\n") != 0) readerBuffer = character;
                     break;
                 }
                 if (character.compareTo(" ") == 0 || character.compareTo("\n") == 0) {
@@ -111,6 +113,7 @@ public class Scanner {
 
             bufferCandidate += character;
 
+            // Check if adding that character has caused the context to change to inside a comment
             if (bufferCandidate.contains("/--") && readerState == ReaderStates.CODE)
                 readerState = ReaderStates.IN_SINGLE_LINE_COMMENT;
             if (bufferCandidate.contains("/**") && readerState == ReaderStates.CODE)
@@ -147,13 +150,19 @@ public class Scanner {
         }
     }
 
+    /**
+     * This context matcher allows us to handle cases where there is no whitespace between a sample but there is
+     * no syntactical way that it could be a single token
+     * It follows some simple rules:
+     * - Any sample that starts with a character is assumed to be an identifier all the way until a punctuation mark is reached
+     * - Any sample that begins with a number ends at the next character or punctuation mark unless it is a decimal point followed by more numbers
+     * - Any sample that begins with punctuation ends either at the next character, number, or when it no longer matches a valid operator
+     *
+     * @return A candidate token string to be passed to the Token constructor from the buffer
+     * @brief Scans the buffer and finds the next valid token string by following some basic syntactical rules
+     */
     private String getTokenStringFromBuffer() {
-        // This context matcher allows us to handle cases where there is no whitespace between a sample but there is
-        // no syntactical way that it could be a single token
-        // It follows some simple rules:
-        // Any sample that starts with a character is assumed to be an identifier all the way until a punctuation mark is reached
-        // Any sample that begins with a number ends at the next character or punctuation mark unless it is a decimal point followed by more numbers
-        // Any sample that begins with punctuation ends either at the next character, number, or when it no longer matches a valid operator
+
 
         String tokenStringCandidate = "";
         String character;
@@ -188,10 +197,6 @@ public class Scanner {
                     if (matchFound) contextState = ContextStates.NUM;
 
                     if (validPunctuation.contains(character)) contextState = ContextStates.PUNC;
-
-                    if (character.compareTo("@") == 0) {
-                        int a = 1;
-                    }
                 }
                 case CHAR -> {
                     if (validPunctuation.contains(character)) {
@@ -263,11 +268,11 @@ public class Scanner {
         if (buffer.length() == 0 && eof()) {
             return new Token(true);
         }
-        String tokenString = getTokenStringFromBuffer();
-        Token token = new Token(errorHandler, tokenString, currentRow, currentColumn);
-        if (token.isUndf()) {
-            errorHandler.addError(lineCounter, columnCounter, ErrorMessage.Errors.UNDEFINED_TOKEN, tokenString);
-        }
+
+        Token token = new Token(errorHandler, getTokenStringFromBuffer(), currentRow, currentColumn);
+        if (token.isUndf())
+            errorHandler.addError(currentRow, currentColumn, ErrorMessage.Errors.UNDEFINED_TOKEN, token.getTokenLiteral());
+
         return token;
     }
 }

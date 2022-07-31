@@ -77,7 +77,7 @@ public class Scanner {
                 columnCounter = 0;
             }
 
-            if (!inString && character.compareTo("\"") == 0) inString = true;
+            if (!inString && character.compareTo("\"") == 0 && !inSingleLineComment && !inMultiLineComment) inString = true;
 
             // Check for invalid characters and break on whitespace
             if (!inString && !inSingleLineComment && !inMultiLineComment) {
@@ -97,23 +97,28 @@ public class Scanner {
 
             bufferCandidate += character;
 
-            if (bufferCandidate.contains("/--")) inSingleLineComment = true;
-            if (bufferCandidate.contains("/**")) inMultiLineComment = true;
+            if (bufferCandidate.contains("/--") && !inString) inSingleLineComment = true;
+            if (bufferCandidate.contains("/**") && !inString) inMultiLineComment = true;
 
             // Check if a single line comment has ended at a newline
             if (inSingleLineComment && character.compareTo("\n") == 0) {
                 bufferCandidate = bufferCandidate.substring(0, bufferCandidate.indexOf("/--"));
                 break;
             }
-            // Check if a multiline comment has ended at a **/
-            if (inMultiLineComment && bufferCandidate.endsWith("**/")) {
+            // Check if a multiline comment has ended at a **/ or if the file has terminated
+            if (inMultiLineComment && (bufferCandidate.endsWith("**/") || eof())) {
                 bufferCandidate = bufferCandidate.substring(0, bufferCandidate.indexOf("/**"));
                 break;
             }
             // Check if a string has ended (must start and end with a " and be at least 2 characters long so a single "
             // does not get considered a string
-            if (bufferCandidate.startsWith("\"") && bufferCandidate.endsWith("\"") && bufferCandidate.length() > 1)
+            if (bufferCandidate.startsWith("\"") && bufferCandidate.endsWith("\"") && bufferCandidate.length() > 1) {
                 break;
+            }
+            if (inString && character.compareTo("\n") == 0) {
+                bufferCandidate = bufferCandidate.substring(0, bufferCandidate.length() -1 );
+                break;
+            }
         }
 
         // Extra check for eof to prevent infinite loops if there is whitespace at the end of the file
@@ -135,7 +140,10 @@ public class Scanner {
         String tokenStringCandidate = "";
         String character;
 
-        if (buffer.startsWith("\"") && buffer.endsWith("\"")) {
+        // This could either be a full string or just a phrase that starts with a " . In either case, return it as a
+        // token candidate as regardless of whether the string ends or not, strings cannot be multiline so if it was
+        // not terminated correctly it should become an undefined token
+        if (buffer.startsWith("\"")) {
             tokenStringCandidate = buffer;
             buffer = "";
             return tokenStringCandidate;

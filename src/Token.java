@@ -121,7 +121,7 @@ public class Token {
                 }
             }
             //TODO add these to symbol table
-            if (tokenLiteral.startsWith("\"") && tokenLiteral.endsWith("\"")) {
+            if (tokenLiteral.startsWith("\"") && tokenLiteral.endsWith("\"") && tokenLiteral.length() > 1) {
                 token = Tokens.TSTRG;
                 return;
             }
@@ -138,7 +138,7 @@ public class Token {
             }
 
             // Indentifier
-            Pattern pattern = Pattern.compile("[(a-z)+a-z0-9]", Pattern.CASE_INSENSITIVE);
+            Pattern pattern = Pattern.compile("^[(a-z)+a-z0-9]+$", Pattern.CASE_INSENSITIVE);
             Matcher matcher = pattern.matcher(tokenLiteral);
             boolean matchFound = matcher.find();
             if (matchFound) {

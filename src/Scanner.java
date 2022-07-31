@@ -87,8 +87,8 @@ public class Scanner {
                 if (!validPunctuation.contains(character) && !matchFound) {
                     //TODO Add invalid character error
                     System.err.println("Invalid character on line " + lineCounter + " at column " + columnCounter + ": " + character);
-                    bufferCandidate = "";
-                    continue;
+                    bufferCandidate += character;
+                    break;
                 }
                 if (character.compareTo(" ") == 0 || character.compareTo("\n") == 0) {
                     break;
@@ -97,8 +97,8 @@ public class Scanner {
 
             bufferCandidate += character;
 
-            if (bufferCandidate.contains("/--") && !inString) inSingleLineComment = true;
-            if (bufferCandidate.contains("/**") && !inString) inMultiLineComment = true;
+            if (bufferCandidate.contains("/--") && !inString && !inMultiLineComment) inSingleLineComment = true;
+            if (bufferCandidate.contains("/**") && !inString && !inSingleLineComment) inMultiLineComment = true;
 
             // Check if a single line comment has ended at a newline
             if (inSingleLineComment && character.compareTo("\n") == 0) {
@@ -172,7 +172,17 @@ public class Scanner {
                     if (validPunctuation.contains(character)) contextState = ContextStates.PUNC;
                 }
                 case CHAR -> {
-                    if (validPunctuation.contains(character)) tokenStringFound = true;
+                    if (validPunctuation.contains(character)) {
+                        tokenStringFound = true;
+                    }
+                    else {
+                        // Check for undefined tokens. Punctuation has already been checked so just need to match
+                        // numbers and letters
+                        Pattern pattern = Pattern.compile("[a-z0-9]", Pattern.CASE_INSENSITIVE);
+                        Matcher matcher = pattern.matcher(character);
+                        boolean matchFound = matcher.find();
+                        if (!matchFound) tokenStringFound = true;
+                    }
 
                 }
                 case PUNC -> {

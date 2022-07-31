@@ -16,7 +16,7 @@ main
           a
           multiline
           &&&^(*&#$^* /-- asdf
-          comment **/a&a
+          comment **/a&aaaaaa
 
           if (ds != 3)
             h-=s

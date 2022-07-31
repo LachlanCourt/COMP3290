@@ -4,7 +4,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 enum Tokens {
-    TTEOF("TTEOF"), TCD22("TCD22"), TCONS("TCONS"), TTYPS("TTYPS"), TTDEF("TTDEF"), TARRS("TARRS"), TMAIN("TMAIN"), TBEGN("TBEGN"), TTEND("TTEND"), TARAY("TARAY"), TTTOF("TTTOF"), TFUNC("TFUNC"), TVOID("TVOID"), TCNST("TCNST"), TINTG("TINTG"), TFLOT("TFLOT"), TBOOL("TBOOL"), TTFOR("TTFOR"), TREPT("TREPT"), TUNTL("TUNTL"), TIFTH("TIFTH"), TELSE("TELSE"), TELIF("TELIF"), TINPT("TINPT"), TPRNT("TPRNT"), TPRLN("TPRLN"), TRETN("TRETN"), TNOTT("TNOTT"), TTAND("TTAND"), TTTOR("TTTOR"), TTXOR("TTXOR"), TTRUE("TTRUE"), TFALS("TFALS"), TCOMA("TCOMA"), TLBRK("TLBRK"), TRBRK("TRBRK"), TLPAR("TLPAR"), TRPAR("TRPAR"), TEQUL("TEQUL"), TPLUS("TPLUS"), TMINS("TMINS"), TSTAR("TSTAR"), TDIVD("TDIVD"), TPERC("TPERC"), TCART("TCART"), TLESS("TLESS"), TGRTR("TGRTR"), TCOLN("TCOLN"), TSEMI("TSEMI"), TDOTT("TDOTT"), TLEQL("TLEQL"), TGEQL("TGEQL"), TNEQL("TNEQL"), TEQEQ("TEQEQ"), TPLEQ("TPLEQ"), TMNEQ("TMNEQ"), TSTEQ("TSTEQ"), TDVEQ("TDVEQ"), TIDEN("TIDEN"), TILIT("TILIT"), TFLIT("TFLIT"), TSTRG("TSTRG"), TUNDF("TUNDF");
+    TTEOF("TTEOF "), TCD22("TCD22 "), TCONS("TCONS "), TTYPS("TTYPS "), TTDEF("TTDEF "), TARRS("TARRS "), TMAIN("TMAIN "), TBEGN("TBEGN "), TTEND("TTEND "), TARAY("TARAY "), TTTOF("TTTOF "), TFUNC("TFUNC "), TVOID("TVOID "), TCNST("TCNST "), TINTG("TINTG "), TFLOT("TFLOT "), TBOOL("TBOOL "), TTFOR("TTFOR "), TREPT("TREPT "), TUNTL("TUNTL "), TIFTH("TIFTH "), TELSE("TELSE "), TELIF("TELIF "), TINPT("TINPT "), TPRNT("TPRNT "), TPRLN("TPRLN "), TRETN("TRETN "), TNOTT("TNO "), TTAND("TTAND "), TTTOR("TTTOR "), TTXOR("TTXOR "), TTRUE("TTRUE "), TFALS("TFALS "), TCOMA("TCOMA "), TLBRK("TLBRK "), TRBRK("TRBRK "), TLPAR("TLPAR "), TRPAR("TRPAR "), TEQUL("TEQUL "), TPLUS("TPLUS "), TMINS("TMINS "), TSTAR("TSTAR "), TDIVD("TDIVD "), TPERC("TPERC "), TCART("TCART "), TLESS("TLESS "), TGRTR("TGRTR "), TCOLN("TCOLN "), TSEMI("TSEMI "), TDOTT("TDOTT "), TLEQL("TLEQL "), TGEQL("TGEQL "), TNEQL("TNEQL "), TEQEQ("TEQEQ "), TPLEQ("TPLEQ "), TMNEQ("TMNEQ "), TSTEQ("TSTEQ "), TDVEQ("TDVEQ "), TIDEN("TIDEN "), TILIT("TILIT "), TFLIT("TFLIT "), TSTRG("TSTRG "), TUNDF("TUNDF ");
 
     private String value;
 
@@ -98,7 +98,7 @@ public class Token {
     private int row;
     private int col;
 
-    public Token(ErrorHandler errorHandler,  String tokenLiteral_, int row_, int col_) {
+    public Token(ErrorHandler errorHandler, String tokenLiteral_, int row_, int col_) {
         row = row_;
         col = col_;
         if (tokenLiteral_.compareTo("") != 0) {
@@ -106,7 +106,8 @@ public class Token {
             for (String keyword : keywords) {
                 if (keyword.toLowerCase().compareTo(tokenLiteral.toLowerCase()) == 0) {
                     token = Tokens.getToken(keyword);
-                    if (keyword.compareTo("CD22") == 0 && tokenLiteral.compareTo("CD22") != 0) errorHandler.addWarning(row, col, ErrorMessage.Errors.WARNING_CD22_SEMANTIC_CASING);
+                    if (keyword.compareTo("CD22") == 0 && tokenLiteral.compareTo("CD22") != 0)
+                        errorHandler.addWarning(row, col, ErrorMessage.Errors.WARNING_CD22_SEMANTIC_CASING);
                     return;
                 }
             }
@@ -162,14 +163,33 @@ public class Token {
         return token == Tokens.TUNDF;
     }
 
+    public String getTokenLiteral() {
+        return tokenLiteral;
+    }
+
     @Override
     public String toString() {
-        StringBuilder out = new StringBuilder("(");
-        out.append(token.getValue() + ",");
-        out.append(lexeme + ",");
-        out.append(row + ",");
-        out.append(col + ")");
-        return out.toString() + (System.getenv("DEBUG") != null && System.getenv("DEBUG").compareTo("true") == 0 ? " " + tokenLiteral : "");
+        if (System.getenv("DEBUG") == null || System.getenv("DEBUG").compareTo("true") != 0) {
+            StringBuilder out = new StringBuilder(token.getValue());
+
+            switch (token) {
+                case TINTG, TFLOT, TSTRG, TIDEN -> {
+                    // As per specification, literal values should be padded as a multiple of 6 with at least one
+                    // trailing space
+                    int size = (tokenLiteral.length() / 6) * 6 + 6;
+                    out.append(tokenLiteral + " ".repeat(size - tokenLiteral.length()));
+                }
+            }
+
+            return out.toString();
+        } else {
+            StringBuilder out = new StringBuilder("(");
+            out.append(token.getValue() + ",");
+            out.append(lexeme + ",");
+            out.append(row + ",");
+            out.append(col + ")");
+            return out.toString() + " " + tokenLiteral;
+        }
     }
 
 }

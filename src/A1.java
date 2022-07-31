@@ -27,10 +27,26 @@ public class A1 {
         Scanner s = new Scanner(errorHandler);
         s.loadFile(args[0]);
         boolean end = false;
+        String line = "";
         while (!end) {
             Token t = s.getToken();
-            System.out.println(t);
+
+            if (t.isUndf()) {
+                System.out.println(line);
+                line = "";
+                System.out.println(t + "\nLexical Error: " + t.getTokenLiteral());
+            } else {
+                if (line.length() > 60) {
+                    System.out.println(line);
+                    line = "";
+                }
+                line += t;
+            }
+
             end = t.isEof();
+        }
+        if (line.length() > 0) {
+            System.out.println(line);
         }
 
         if (errorHandler.hasErrors()) {

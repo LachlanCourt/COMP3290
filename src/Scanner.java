@@ -15,6 +15,10 @@ public class Scanner {
         INITIAL, FOUND_DECIMAL, FOUND_FOLLOWING_NUMBER
     }
 
+    private enum ReaderStates {
+        CODE, IN_STRING, IN_SINGLE_LINE_COMMENT, IN_MULTI_LINE_COMMENT, IN_UNDEFINED_TOKEN,
+    }
+
     private ArrayList<String> listing;
     private java.util.Scanner fileScanner;
     private int lineCounter;
@@ -23,6 +27,8 @@ public class Scanner {
     private int currentColumn;
 
     private String buffer;
+
+    private String readerBuffer;
     private ErrorHandler errorHandler;
 
     private static ArrayList<String> validPunctuation = new ArrayList<String>(Arrays.asList(",", "[", "]", "(", ")", "=", "+", "-", "*", "/", "%", "^", "<", ">", "!", "\"", ":", ";", "."));
@@ -33,6 +39,7 @@ public class Scanner {
         columnCounter = 0;
         lineCounter = 1;
         buffer = "";
+        readerBuffer = "";
         errorHandler = errorHandler_;
     }
 
@@ -55,19 +62,22 @@ public class Scanner {
         String bufferCandidate = "";
         String character;
 
-        boolean inString = false;
-        boolean inSingleLineComment = false;
-        boolean inMultiLineComment = false;
+        ReaderStates readerState = ReaderStates.CODE;
+
         // The current row and current column are the starting row and column of the buffer we are scanning. The line
         // number and column number may change if a multiline comment begins immediately after the token and no
         // whitespace, as these will be consumed and flushed before this function returns which will increment the line
         // number and column number. Because of this, the line number cannot reliably identify the line of a token
         // when read from the buffer so save it before we start scanning
         currentRow = lineCounter;
-
         currentColumn = columnCounter;
-        while (!eof()) {
-            character = fileScanner.next();
+        while (!eof() || readerBuffer.length() > 0) {
+            if (readerBuffer.length() == 0) {
+                character = fileScanner.next();
+            } else {
+                character = readerBuffer;
+                readerBuffer = "";
+            }
 
             // Ignore carriage returns
             if (character.charAt(0) == 13) continue;
@@ -79,16 +89,19 @@ public class Scanner {
                 columnCounter = 0;
             }
 
-            if (!inString && character.compareTo("\"") == 0 && !inSingleLineComment && !inMultiLineComment) inString = true;
+            if (readerState == ReaderStates.CODE && character.compareTo("\"") == 0)
+                readerState = ReaderStates.IN_STRING;
 
             // Check for invalid characters and break on whitespace
-            if (!inString && !inSingleLineComment && !inMultiLineComment) {
+            if (readerState == ReaderStates.CODE || readerState == ReaderStates.IN_UNDEFINED_TOKEN) {
                 Pattern pattern = Pattern.compile("[a-z0-9\s\n]", Pattern.CASE_INSENSITIVE);
                 Matcher matcher = pattern.matcher(character);
                 boolean matchFound = matcher.find();
                 // This will eventually become an undefined token but for now just break the scanning here
                 if (!validPunctuation.contains(character) && !matchFound) {
-                    bufferCandidate += character;
+                    readerState = ReaderStates.IN_UNDEFINED_TOKEN;
+                } else if (readerState == ReaderStates.IN_UNDEFINED_TOKEN && (validPunctuation.contains(character) || matchFound)) {
+                    readerBuffer = character;
                     break;
                 }
                 if (character.compareTo(" ") == 0 || character.compareTo("\n") == 0) {
@@ -98,16 +111,18 @@ public class Scanner {
 
             bufferCandidate += character;
 
-            if (bufferCandidate.contains("/--") && !inString && !inMultiLineComment) inSingleLineComment = true;
-            if (bufferCandidate.contains("/**") && !inString && !inSingleLineComment) inMultiLineComment = true;
+            if (bufferCandidate.contains("/--") && readerState == ReaderStates.CODE)
+                readerState = ReaderStates.IN_SINGLE_LINE_COMMENT;
+            if (bufferCandidate.contains("/**") && readerState == ReaderStates.CODE)
+                readerState = ReaderStates.IN_MULTI_LINE_COMMENT;
 
             // Check if a single line comment has ended at a newline
-            if (inSingleLineComment && character.compareTo("\n") == 0) {
+            if (readerState == ReaderStates.IN_SINGLE_LINE_COMMENT && character.compareTo("\n") == 0) {
                 bufferCandidate = bufferCandidate.substring(0, bufferCandidate.indexOf("/--"));
                 break;
             }
             // Check if a multiline comment has ended at a **/ or if the file has terminated
-            if (inMultiLineComment && (bufferCandidate.endsWith("**/") || eof())) {
+            if (readerState == ReaderStates.IN_MULTI_LINE_COMMENT && (bufferCandidate.endsWith("**/") || eof())) {
                 bufferCandidate = bufferCandidate.substring(0, bufferCandidate.indexOf("/**"));
                 break;
             }
@@ -116,14 +131,16 @@ public class Scanner {
             if (bufferCandidate.startsWith("\"") && bufferCandidate.endsWith("\"") && bufferCandidate.length() > 1) {
                 break;
             }
-            if (inString && character.compareTo("\n") == 0) {
-                bufferCandidate = bufferCandidate.substring(0, bufferCandidate.length() -1 );
+            // Check if a string has been started but a newline has been reached before the second ", in which case
+            // remove the trailing newline character
+            if (readerState == ReaderStates.IN_STRING && character.compareTo("\n") == 0) {
+                bufferCandidate = bufferCandidate.substring(0, bufferCandidate.length() - 1);
                 break;
             }
         }
 
         // Extra check for eof to prevent infinite loops if there is whitespace at the end of the file
-        if (!eof() && bufferCandidate.compareTo("") == 0) {
+        if ((!eof() || readerBuffer.length() > 0) && bufferCandidate.compareTo("") == 0) {
             readFileIntoBufferUntilWhitespace();
         } else {
             buffer = bufferCandidate;
@@ -171,12 +188,15 @@ public class Scanner {
                     if (matchFound) contextState = ContextStates.NUM;
 
                     if (validPunctuation.contains(character)) contextState = ContextStates.PUNC;
+
+                    if (character.compareTo("@") == 0) {
+                        int a = 1;
+                    }
                 }
                 case CHAR -> {
                     if (validPunctuation.contains(character)) {
                         tokenStringFound = true;
-                    }
-                    else {
+                    } else {
                         // Check for undefined tokens. Punctuation has already been checked so just need to match
                         // numbers and letters
                         Pattern pattern = Pattern.compile("[a-z0-9]", Pattern.CASE_INSENSITIVE);
@@ -224,9 +244,9 @@ public class Scanner {
         }
 
         if (decimalState == DecimalStates.FOUND_DECIMAL) {
-            // If a number was followed by a decimal but then didn't have a number after that, it should treat it instead
-            // as an integer token followed by a dot token. To achieve this, step back an extra character to leave the dot
-            // in the buffer
+            // If a number was followed by a decimal but then didn't have a number after that, it should treat it
+            // instead as an integer token followed by a dot token. To achieve this, step back an extra character to
+            // leave the dot in the buffer
             i--;
         }
 

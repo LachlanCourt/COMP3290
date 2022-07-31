@@ -1,5 +1,7 @@
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 enum Tokens {
     TTEOF("TTEOF"), TCD22("TCD22"), TCONS("TCONS"), TTYPS("TTYPS"), TTDEF("TTDEF"), TARRS("TARRS"), TMAIN("TMAIN"), TBEGN("TBEGN"), TTEND("TTEND"), TARAY("TARAY"), TTTOF("TTTOF"), TFUNC("TFUNC"), TVOID("TVOID"), TCNST("TCNST"), TINTG("TINTG"), TFLOT("TFLOT"), TBOOL("TBOOL"), TTFOR("TTFOR"), TREPT("TREPT"), TUNTL("TUNTL"), TIFTH("TIFTH"), TELSE("TELSE"), TELIF("TELIF"), TINPT("TINPT"), TPRNT("TPRNT"), TPRLN("TPRLN"), TRETN("TRETN"), TNOTT("TNOTT"), TTAND("TTAND"), TTTOR("TTTOR"), TTXOR("TTXOR"), TTRUE("TTRUE"), TFALS("TFALS"), TCOMA("TCOMA"), TLBRK("TLBRK"), TRBRK("TRBRK"), TLPAR("TLPAR"), TRPAR("TRPAR"), TEQUL("TEQUL"), TPLUS("TPLUS"), TMINS("TMINS"), TSTAR("TSTAR"), TDIVD("TDIVD"), TPERC("TPERC"), TCART("TCART"), TLESS("TLESS"), TGRTR("TGRTR"), TCOLN("TCOLN"), TSEMI("TSEMI"), TDOTT("TDOTT"), TLEQL("TLEQL"), TGEQL("TGEQL"), TNEQL("TNEQL"), TEQEQ("TEQEQ"), TPLEQ("TPLEQ"), TMNEQ("TMNEQ"), TSTEQ("TSTEQ"), TDVEQ("TDVEQ"), TIDEN("TIDEN"), TILIT("TILIT"), TFLIT("TFLIT"), TSTRG("TSTRG"), TUNDF("TUNDF");
@@ -15,182 +17,68 @@ enum Tokens {
     }
 
     public static Tokens getToken(String initialiser) {
+        Tokens t;
         switch (initialiser) {
-            case "CD22" -> {
-                return TCD22;
-            }
-            case "constants" -> {
-                return TCONS;
-            }
-            case "types" -> {
-                return TTYPS;
-            }
-            case "def" -> {
-                return TTDEF;
-            }
-            case "arrays" -> {
-                return TARRS;
-            }
-            case "main" -> {
-                return TMAIN;
-            }
-            case "begin" -> {
-                return TBEGN;
-            }
-            case "end" -> {
-                return TTEND;
-            }
-            case "array" -> {
-                return TARAY;
-            }
-            case "of" -> {
-                return TTTOF;
-            }
-            case "func" -> {
-                return TFUNC;
-            }
-            case "void" -> {
-                return TVOID;
-            }
-            case "const" -> {
-                return TCNST;
-            }
-            case "int" -> {
-                return TINTG;
-            }
-            case "float" -> {
-                return TFLOT;
-            }
-            case "bool" -> {
-                return TBOOL;
-            }
-            case "for" -> {
-                return TTFOR;
-            }
-            case "repeat" -> {
-                return TREPT;
-            }
-            case "until" -> {
-                return TUNTL;
-            }
-            case "if" -> {
-                return TIFTH;
-            }
-            case "else" -> {
-                return TELSE;
-            }
-            case "elif" -> {
-                return TELIF;
-            }
-            case "input" -> {
-                return TINPT;
-            }
-            case "print" -> {
-                return TPRNT;
-            }
-            case "printline" -> {
-                return TPRLN;
-            }
-            case "return" -> {
-                return TRETN;
-            }
-            case "not" -> {
-                return TNOTT;
-            }
-            case "and" -> {
-                return TTAND;
-            }
-            case "or" -> {
-                return TTTOR;
-            }
-            case "xor" -> {
-                return TTXOR;
-            }
-            case "true" -> {
-                return TTRUE;
-            }
-            case "false" -> {
-                return TFALS;
-            }
-            case "," -> {
-                return TCOMA;
-            }
-            case "[" -> {
-                return TLBRK;
-            }
-            case "]" -> {
-                return TRBRK;
-            }
-            case "(" -> {
-                return TLPAR;
-            }
-            case ")" -> {
-                return TRPAR;
-            }
-            case "=" -> {
-                return TEQUL;
-            }
-            case "+" -> {
-                return TPLUS;
-            }
-            case "-" -> {
-                return TMINS;
-            }
-            case "*" -> {
-                return TSTAR;
-            }
-            case "/" -> {
-                return TDIVD;
-            }
-            case "%" -> {
-                return TPERC;
-            }
-            case "^" -> {
-                return TCART;
-            }
-            case "<" -> {
-                return TLESS;
-            }
-            case ">" -> {
-                return TGRTR;
-            }
-            case ":" -> {
-                return TCOLN;
-            }
-            case ";" -> {
-                return TSEMI;
-            }
-            case "." -> {
-                return TDOTT;
-            }
-            case "!=" -> {
-                return TNEQL;
-            }
-            case "==" -> {
-                return TEQEQ;
-            }
-            case "<=" -> {
-                return TLEQL;
-            }
-            case ">=" -> {
-                return TGEQL;
-            }
-            case "+=" -> {
-                return TPLEQ;
-            }
-            case "-=" -> {
-                return TMNEQ;
-            }
-            case "/=" -> {
-                return TDVEQ;
-            }
-            case "*=" -> {
-                return TSTEQ;
-            }
-            default -> {
-                return TUNDF;
-            }
+            case "CD22" -> t = TCD22;
+            case "constants" -> t = TCONS;
+            case "types" -> t = TTYPS;
+            case "def" -> t = TTDEF;
+            case "arrays" -> t = TARRS;
+            case "main" -> t = TMAIN;
+            case "begin" -> t = TBEGN;
+            case "end" -> t = TTEND;
+            case "array" -> t = TARAY;
+            case "of" -> t = TTTOF;
+            case "func" -> t = TFUNC;
+            case "void" -> t = TVOID;
+            case "const" -> t = TCNST;
+            case "int" -> t = TINTG;
+            case "float" -> t = TFLOT;
+            case "bool" -> t = TBOOL;
+            case "for" -> t = TTFOR;
+            case "repeat" -> t = TREPT;
+            case "until" -> t = TUNTL;
+            case "if" -> t = TIFTH;
+            case "else" -> t = TELSE;
+            case "elif" -> t = TELIF;
+            case "input" -> t = TINPT;
+            case "print" -> t = TPRNT;
+            case "printline" -> t = TPRLN;
+            case "t =" -> t = TRETN;
+            case "not" -> t = TNOTT;
+            case "and" -> t = TTAND;
+            case "or" -> t = TTTOR;
+            case "xor" -> t = TTXOR;
+            case "true" -> t = TTRUE;
+            case "false" -> t = TFALS;
+            case "," -> t = TCOMA;
+            case "[" -> t = TLBRK;
+            case "]" -> t = TRBRK;
+            case "(" -> t = TLPAR;
+            case ")" -> t = TRPAR;
+            case "=" -> t = TEQUL;
+            case "+" -> t = TPLUS;
+            case "-" -> t = TMINS;
+            case "*" -> t = TSTAR;
+            case "/" -> t = TDIVD;
+            case "%" -> t = TPERC;
+            case "^" -> t = TCART;
+            case "<" -> t = TLESS;
+            case ">" -> t = TGRTR;
+            case ":" -> t = TCOLN;
+            case ";" -> t = TSEMI;
+            case "." -> t = TDOTT;
+            case "!=" -> t = TNEQL;
+            case "==" -> t = TEQEQ;
+            case "<=" -> t = TLEQL;
+            case ">=" -> t = TGEQL;
+            case "+=" -> t = TPLEQ;
+            case "-=" -> t = TMNEQ;
+            case "/=" -> t = TDVEQ;
+            case "*=" -> t = TSTEQ;
+            default -> t = TUNDF;
         }
+        return t;
     }
 };
 
@@ -208,12 +96,10 @@ public class Token {
     private int lexeme;
     private int row;
     private int col;
-    private boolean debug = false;
 
-    public Token(String tokenLiteral_, int row_, int col_, boolean debug_) {
+    public Token(String tokenLiteral_, int row_, int col_) {
         row = row_;
         col = col_;
-        debug = debug_;
         if (tokenLiteral_.compareTo("") != 0) {
             tokenLiteral = tokenLiteral_;
             for (String keyword : keywords) {
@@ -252,7 +138,10 @@ public class Token {
             }
 
             // Indentifier
-            if (!validPunctuation.contains(tokenLiteral)) {
+            Pattern pattern = Pattern.compile("[(a-z)+a-z0-9]", Pattern.CASE_INSENSITIVE);
+            Matcher matcher = pattern.matcher(tokenLiteral);
+            boolean matchFound = matcher.find();
+            if (matchFound) {
                 token = Tokens.TIDEN;
             }
         }
@@ -274,7 +163,7 @@ public class Token {
         out.append(lexeme + ",");
         out.append(row + ",");
         out.append(col + ")");
-        return out.toString() + (debug ? " " + tokenLiteral : "");
+        return out.toString() + (System.getenv("DEBUG").compareTo("true") == 0 ? " " + tokenLiteral : "");
     }
 
 }

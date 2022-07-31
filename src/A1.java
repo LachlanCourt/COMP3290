@@ -25,15 +25,13 @@ public class A1 {
     }
 
     public void run(String[] args) {
-        boolean debug = args.length > 1 && args[1].compareTo("debug") == 0 ? true : false;
-        Scanner s = new Scanner(debug);
+        Scanner s = new Scanner();
         s.loadFile(args[0]);
         boolean end = false;
         while (!end) {
             Token t = s.getToken();
             System.out.println(t);
             end = t.isEof();
-//            s.getToken();
         }
 
         System.out.println("Program Completed Successfully");

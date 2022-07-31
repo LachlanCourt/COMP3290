@@ -18,18 +18,20 @@ public class Scanner {
     private ArrayList<String> listing;
     private java.util.Scanner fileScanner;
     private int lineCounter;
+    private int currentRow;
     private int columnCounter;
+    private int currentColumn;
+
     private String buffer;
-    private boolean debug;
+
     private static ArrayList<String> validPunctuation = new ArrayList<String>(Arrays.asList(",", "[", "]", "(", ")", "=", "+", "-", "*", "/", "%", "^", "<", ">", "!", "\"", ":", ";", "."));
     private static ArrayList<String> validDoubleOperators = new ArrayList<String>(Arrays.asList("!=", "==", "<=", ">=", "+=", "-=", "/=", "*="));
 
-    public Scanner(boolean debug_) {
+    public Scanner() {
         listing = new ArrayList<String>();
         columnCounter = 0;
         lineCounter = 1;
         buffer = "";
-        debug = debug_;
     }
 
     public void loadFile(String filename) {
@@ -54,13 +56,21 @@ public class Scanner {
         boolean inString = false;
         boolean inSingleLineComment = false;
         boolean inMultiLineComment = false;
+        // The current row and current column are the starting row and column of the buffer we are scanning. The line
+        // number and column number may change if a multiline comment begins immediately after the token and no
+        // whitespace, as these will be consumed and flushed before this function returns which will increment the line
+        // number and column number. Because of this, the line number cannot reliably identify the line of a token
+        // when read from the buffer so save it before we start scanning
+        currentRow = lineCounter;
+
+        currentColumn = columnCounter;
         while (!eof()) {
             character = fileScanner.next();
 
             // Ignore carriage returns
             if (character.charAt(0) == 13) continue;
 
-            // Keep track of columns
+            // Keep track of rows and columns
             columnCounter++;
             if (character.compareTo("\n") == 0) {
                 lineCounter++;
@@ -90,18 +100,23 @@ public class Scanner {
             if (bufferCandidate.contains("/--")) inSingleLineComment = true;
             if (bufferCandidate.contains("/**")) inMultiLineComment = true;
 
+            // Check if a single line comment has ended at a newline
             if (inSingleLineComment && character.compareTo("\n") == 0) {
                 bufferCandidate = bufferCandidate.substring(0, bufferCandidate.indexOf("/--"));
                 break;
             }
+            // Check if a multiline comment has ended at a **/
             if (inMultiLineComment && bufferCandidate.endsWith("**/")) {
                 bufferCandidate = bufferCandidate.substring(0, bufferCandidate.indexOf("/**"));
                 break;
             }
+            // Check if a string has ended (must start and end with a " and be at least 2 characters long so a single "
+            // does not get considered a string
             if (bufferCandidate.startsWith("\"") && bufferCandidate.endsWith("\"") && bufferCandidate.length() > 1)
                 break;
         }
 
+        // Extra check for eof to prevent infinite loops if there is whitespace at the end of the file
         if (!eof() && bufferCandidate.compareTo("") == 0) {
             readFileIntoBufferUntilWhitespace();
         } else {
@@ -198,6 +213,7 @@ public class Scanner {
 
         tokenStringCandidate = buffer.substring(0, i);
         buffer = buffer.substring(i);
+        currentColumn += i;
         return tokenStringCandidate;
     }
 
@@ -208,6 +224,7 @@ public class Scanner {
         if (buffer.length() == 0 && eof()) {
             return new Token(true);
         }
-        return new Token(getTokenStringFromBuffer(), lineCounter, columnCounter, debug);
+        String tokenString = getTokenStringFromBuffer();
+        return new Token(tokenString, currentRow, currentColumn);
     }
 }

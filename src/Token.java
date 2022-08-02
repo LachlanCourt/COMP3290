@@ -1,8 +1,10 @@
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
+/*******************************************************************************
+ ****    COMP3290 Assignment 1
+ ****    c3308061
+ ****    Lachlan Court
+ ****    01/08/2022
+ ****    This class represents a token that has been indentified by the Scanner
+ *******************************************************************************/
 enum Tokens {
     TTEOF("TTEOF "), TCD22("TCD22 "), TCONS("TCONS "), TTYPS("TTYPS "), TTDEF("TTDEF "), TARRS("TARRS "), TMAIN("TMAIN "), TBEGN("TBEGN "), TTEND("TTEND "), TARAY("TARAY "), TTTOF("TTTOF "), TFUNC("TFUNC "), TVOID("TVOID "), TCNST("TCNST "), TINTG("TINTG "), TFLOT("TFLOT "), TBOOL("TBOOL "), TTFOR("TTFOR "), TREPT("TREPT "), TUNTL("TUNTL "), TIFTH("TIFTH "), TELSE("TELSE "), TELIF("TELIF "), TINPT("TINPT "), TPRNT("TPRNT "), TPRLN("TPRLN "), TRETN("TRETN "), TNOTT("TNO "), TTAND("TTAND "), TTTOR("TTTOR "), TTXOR("TTXOR "), TTRUE("TTRUE "), TFALS("TFALS "), TCOMA("TCOMA "), TLBRK("TLBRK "), TRBRK("TRBRK "), TLPAR("TLPAR "), TRPAR("TRPAR "), TEQUL("TEQUL "), TPLUS("TPLUS "), TMINS("TMINS "), TSTAR("TSTAR "), TDIVD("TDIVD "), TPERC("TPERC "), TCART("TCART "), TLESS("TLESS "), TGRTR("TGRTR "), TCOLN("TCOLN "), TSEMI("TSEMI "), TDOTT("TDOTT "), TLEQL("TLEQL "), TGEQL("TGEQL "), TNEQL("TNEQL "), TEQEQ("TEQEQ "), TPLEQ("TPLEQ "), TMNEQ("TMNEQ "), TSTEQ("TSTEQ "), TDVEQ("TDVEQ "), TIDEN("TIDEN "), TILIT("TILIT "), TFLIT("TFLIT "), TSTRG("TSTRG "), TUNDF("TUNDF ");
 
@@ -85,17 +87,12 @@ enum Tokens {
 
 public class Token {
 
-    private static ArrayList<String> keywords = new ArrayList<String>(Arrays.asList("CD22", "constants", "types", "def", "arrays", "main", "begin", "end", "array", "of", "func", "void", "const", "int", "float", "bool", "for", "repeat", "until", "if", "else", "elif", "input", "print", "printline", "return", "not", "and", "or", "xor", "true", "false"));
-    private static ArrayList<String> validPunctuation = new ArrayList<String>(Arrays.asList(",", "[", "]", "(", ")", "=", "+", "-", "*", "/", "%", "^", "<", ">", "!", "\"", ":", ";", "."));
-    private static ArrayList<String> validStandaloneOperators = new ArrayList<String>(Arrays.asList(",", "[", "]", "(", ")", "=", "+", "-", "*", "/", "%", "^", "<", ">", ":", ";", "."));
-    private static ArrayList<String> validDoubleOperators = new ArrayList<String>(Arrays.asList("!=", "==", "<=", ">=", "+=", "-=", "/=", "*="));
-
     private String tokenLiteral = null;
     private OutputController outputController;
     private SymbolTable symbolTable;
+    private static Utils utils;
 
     private Tokens token = Tokens.TUNDF;
-    private int lexeme;
     private int row;
     private int col;
     private int symbolTableId;
@@ -105,10 +102,11 @@ public class Token {
         col = col_;
         outputController = outputController_;
         symbolTable = symbolTable_;
+        utils = Utils.getUtils();
 
         if (tokenLiteral_.compareTo("") != 0) {
             tokenLiteral = tokenLiteral_;
-            for (String keyword : keywords) {
+            for (String keyword : utils.getKeywords()) {
                 if (keyword.toLowerCase().compareTo(tokenLiteral.toLowerCase()) == 0) {
                     token = Tokens.getToken(keyword);
                     if (keyword.compareTo("CD22") == 0 && tokenLiteral.compareTo("CD22") != 0)
@@ -116,13 +114,13 @@ public class Token {
                     return;
                 }
             }
-            for (String operator : validStandaloneOperators) {
+            for (String operator : utils.getValidStandaloneOperators()) {
                 if (operator.compareTo(tokenLiteral) == 0) {
                     token = Tokens.getToken(operator);
                     return;
                 }
             }
-            for (String operator : validDoubleOperators) {
+            for (String operator : utils.getValidDoubleOperators()) {
                 if (operator.compareTo(tokenLiteral) == 0) {
                     token = Tokens.getToken(operator);
                     return;
@@ -148,10 +146,7 @@ public class Token {
             }
 
             // Indentifier
-            Pattern pattern = Pattern.compile("^[(a-z)+a-z0-9]+$", Pattern.CASE_INSENSITIVE);
-            Matcher matcher = pattern.matcher(tokenLiteral);
-            boolean matchFound = matcher.find();
-            if (matchFound) {
+            if (utils.matchesIdentifier(tokenLiteral)) {
                 symbolTableId = symbolTable.addSymbol(tokenLiteral, null);
                 token = Tokens.TIDEN;
             }
@@ -193,7 +188,7 @@ public class Token {
         } else {
             StringBuilder out = new StringBuilder("(");
             out.append(token.getValue() + ",");
-            out.append(lexeme + ",");
+            out.append(symbolTableId + ",");
             out.append(row + ",");
             out.append(col + ")");
             return out.toString() + " " + tokenLiteral;

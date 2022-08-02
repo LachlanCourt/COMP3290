@@ -1,3 +1,12 @@
+/*******************************************************************************
+ ****    COMP3290 Assignment 1
+ ****    c3308061
+ ****    Lachlan Court
+ ****    01/08/2022
+ ****    This class handles the recording and output of error messages throughout
+ ****    the compiling process
+ *******************************************************************************/
+
 import java.util.ArrayList;
 
 public class ErrorHandler {

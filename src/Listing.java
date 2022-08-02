@@ -1,3 +1,12 @@
+/*******************************************************************************
+ ****    COMP3290 Assignment 1
+ ****    c3308061
+ ****    Lachlan Court
+ ****    01/08/2022
+ ****    This class handles the generation of the program listing during the
+ ****    compiling process
+ *******************************************************************************/
+
 import java.io.FileWriter;
 import java.io.IOException;
 
@@ -18,6 +27,9 @@ public class Listing {
         }
     }
 
+    /**
+     * Output the current line to the listing file and clear the currentLine variable
+     */
     private void outputCurrentLine() {
         try {
             FileWriter writer = new FileWriter("listing.txt", true);
@@ -31,6 +43,10 @@ public class Listing {
 
     }
 
+    /**
+     * Add a single character to the listing
+     * @param c character to be added
+     */
     public void addCharacter(String c) {
         if (c.compareTo("\n") == 0) {
             outputCurrentLine();
@@ -40,6 +56,10 @@ public class Listing {
         }
     }
 
+    /**
+     * Force output the final line of the code to the listing as there may not be a newline character at the end of
+     * the CD22 source
+     */
     public void flushListing() {
         outputCurrentLine();
     }

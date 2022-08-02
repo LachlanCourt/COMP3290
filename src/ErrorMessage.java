@@ -1,3 +1,11 @@
+/*******************************************************************************
+ ****    COMP3290 Assignment 1
+ ****    c3308061
+ ****    Lachlan Court
+ ****    01/08/2022
+ ****    This class represents a single error message stored in the error handler
+ *******************************************************************************/
+
 public class ErrorMessage {
     enum Errors {
         UNKNOWNM, UNDEFINED_TOKEN, WARNING_CD22_SEMANTIC_CASING,

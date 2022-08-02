@@ -1,3 +1,12 @@
+/*******************************************************************************
+ ****    COMP3290 Assignment 1
+ ****    c3308061
+ ****    Lachlan Court
+ ****    01/08/2022
+ ****    This class handles both the error handling and program listing of the
+ ****    compiling process
+ *******************************************************************************/
+
 import java.io.File;
 import java.io.FileNotFoundException;
 

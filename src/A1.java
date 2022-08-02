@@ -1,3 +1,11 @@
+/*******************************************************************************
+ ****    COMP3290 Assignment 1
+ ****    c3308061
+ ****    Lachlan Court
+ ****    01/08/2022
+ ****    This class is the main file for a Scanner for the CD22 programming language
+ *******************************************************************************/
+
 import java.io.File;
 
 public class A1 {
@@ -22,11 +30,7 @@ public class A1 {
         return true;
     }
 
-    public void run(String[] args) {
-        OutputController outputController = new OutputController();
-        SymbolTable symbolTable = new SymbolTable();
-        Scanner s = new Scanner(outputController, symbolTable);
-        s.loadFile(args[0]);
+    public void runInDebug(Scanner s) {
         boolean end = false;
         String line = "";
         while (!end) {
@@ -49,7 +53,15 @@ public class A1 {
         if (line.length() > 0) {
             System.out.println(line);
         }
+    }
+    public void run(String[] args) {
+        OutputController outputController = new OutputController();
+        SymbolTable symbolTable = new SymbolTable();
+        Scanner s = new Scanner(outputController, symbolTable);
+        s.loadFile(args[0]);
 
+        runInDebug(s);
+        
         outputController.reportErrorsAndWarnings();
 
         System.out.println("Program Completed Successfully");

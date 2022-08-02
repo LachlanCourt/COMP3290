@@ -1,3 +1,11 @@
+/*******************************************************************************
+ ****    COMP3290 Assignment 1
+ ****    c3308061
+ ****    Lachlan Court
+ ****    01/08/2022
+ ****    This class manages the symbol table used throughout the compiling process
+ *******************************************************************************/
+
 import java.util.HashMap;
 import java.util.Map;
 

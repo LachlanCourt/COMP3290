@@ -5,6 +5,10 @@
  ****    01/08/2022
  ****    This class represents a token that has been indentified by the Scanner
  *******************************************************************************/
+package Scanner;
+
+import Common.Utils.MatchTypes;
+import Common.ErrorMessage.Errors;
 enum Tokens {
     TTEOF("TTEOF "), TCD22("TCD22 "), TCONS("TCONS "), TTYPS("TTYPS "), TTDEF("TTDEF "), TARRS("TARRS "), TMAIN("TMAIN "), TBEGN("TBEGN "), TTEND("TTEND "), TARAY("TARAY "), TTTOF("TTTOF "), TFUNC("TFUNC "), TVOID("TVOID "), TCNST("TCNST "), TINTG("TINTG "), TFLOT("TFLOT "), TBOOL("TBOOL "), TTFOR("TTFOR "), TREPT("TREPT "), TUNTL("TUNTL "), TIFTH("TIFTH "), TELSE("TELSE "), TELIF("TELIF "), TINPT("TINPT "), TPRNT("TPRNT "), TPRLN("TPRLN "), TRETN("TRETN "), TNOTT("TNO "), TTAND("TTAND "), TTTOR("TTTOR "), TTXOR("TTXOR "), TTRUE("TTRUE "), TFALS("TFALS "), TCOMA("TCOMA "), TLBRK("TLBRK "), TRBRK("TRBRK "), TLPAR("TLPAR "), TRPAR("TRPAR "), TEQUL("TEQUL "), TPLUS("TPLUS "), TMINS("TMINS "), TSTAR("TSTAR "), TDIVD("TDIVD "), TPERC("TPERC "), TCART("TCART "), TLESS("TLESS "), TGRTR("TGRTR "), TCOLN("TCOLN "), TSEMI("TSEMI "), TDOTT("TDOTT "), TLEQL("TLEQL "), TGEQL("TGEQL "), TNEQL("TNEQL "), TEQEQ("TEQEQ "), TPLEQ("TPLEQ "), TMNEQ("TMNEQ "), TSTEQ("TSTEQ "), TDVEQ("TDVEQ "), TIDEN("TIDEN "), TILIT("TILIT "), TFLIT("TFLIT "), TSTRG("TSTRG "), TUNDF("TUNDF ");
 
@@ -46,7 +50,7 @@ enum Tokens {
             case "input" -> t = TINPT;
             case "print" -> t = TPRNT;
             case "printline" -> t = TPRLN;
-            case "t =" -> t = TRETN;
+            case "return" -> t = TRETN;
             case "not" -> t = TNOTT;
             case "and" -> t = TTAND;
             case "or" -> t = TTTOR;
@@ -88,43 +92,41 @@ enum Tokens {
 public class Token {
 
     private String tokenLiteral = null;
-    private OutputController outputController;
-    private SymbolTable symbolTable;
-    private static Utils utils;
+    private Common.OutputController outputController;
+    private Common.SymbolTable symbolTable;
+    private static Common.Utils utils;
 
     private Tokens token = Tokens.TUNDF;
     private int row;
     private int col;
     private int symbolTableId;
 
-    public Token(OutputController outputController_, SymbolTable symbolTable_, String tokenLiteral_, int row_, int col_) {
+    public Token(Common.OutputController outputController_, Common.SymbolTable symbolTable_, String tokenLiteral_, int row_, int col_) {
         row = row_;
         col = col_;
         outputController = outputController_;
         symbolTable = symbolTable_;
-        utils = Utils.getUtils();
+        utils = Common.Utils.getUtils();
 
         if (tokenLiteral_.compareTo("") != 0) {
             tokenLiteral = tokenLiteral_;
-            for (String keyword : utils.getKeywords()) {
-                if (keyword.toLowerCase().compareTo(tokenLiteral.toLowerCase()) == 0) {
-                    token = Tokens.getToken(keyword);
-                    if (keyword.compareTo("CD22") == 0 && tokenLiteral.compareTo("CD22") != 0)
-                        outputController.addWarning(row, col, ErrorMessage.Errors.WARNING_CD22_SEMANTIC_CASING);
-                    return;
-                }
+
+            if (utils.matches(tokenLiteral.toLowerCase(), MatchTypes.KEYWORD) || utils.matches(tokenLiteral.toUpperCase(), MatchTypes.KEYWORD)) {
+                token = Tokens.getToken(tokenLiteral.toLowerCase());
+                if (token == Tokens.TUNDF) token = Tokens.getToken(tokenLiteral.toUpperCase());
+                if (tokenLiteral.toLowerCase().compareTo("cd22") == 0 && tokenLiteral.compareTo("CD22") != 0)
+                    outputController.addWarning(row, col, Errors.WARNING_CD22_SEMANTIC_CASING);
+                return;
             }
-            for (String operator : utils.getValidStandaloneOperators()) {
-                if (operator.compareTo(tokenLiteral) == 0) {
-                    token = Tokens.getToken(operator);
-                    return;
-                }
+
+            if (utils.matches(tokenLiteral, MatchTypes.STANDALONE_OPERATOR)) {
+                token = Tokens.getToken(tokenLiteral);
+                return;
             }
-            for (String operator : utils.getValidDoubleOperators()) {
-                if (operator.compareTo(tokenLiteral) == 0) {
-                    token = Tokens.getToken(operator);
-                    return;
-                }
+
+            if (utils.matches(tokenLiteral, MatchTypes.DOUBLE_OPERATOR)) {
+                token = Tokens.getToken(tokenLiteral);
+                return;
             }
 
             if (tokenLiteral.startsWith("\"") && tokenLiteral.endsWith("\"") && tokenLiteral.length() > 1) {
@@ -133,7 +135,7 @@ public class Token {
                 return;
             }
 
-            if (tokenLiteral.charAt(0) >= 48 && tokenLiteral.charAt(0) <= 57) {
+            if (utils.matches(String.valueOf(tokenLiteral.charAt(0)), MatchTypes.NUMBER)) {
                 symbolTableId = symbolTable.addSymbol(tokenLiteral, null);
                 // Float literal
                 if (tokenLiteral.contains(".")) {
@@ -146,9 +148,10 @@ public class Token {
             }
 
             // Indentifier
-            if (utils.matchesIdentifier(tokenLiteral)) {
+            if (utils.matches(tokenLiteral, MatchTypes.IDENTIFIER)) {
                 symbolTableId = symbolTable.addSymbol(tokenLiteral, null);
                 token = Tokens.TIDEN;
+                return;
             }
         }
     }

@@ -6,6 +6,11 @@
  ****    This class is the main file for a Scanner for the CD22 programming language
  *******************************************************************************/
 
+import Common.OutputController;
+import Common.SymbolTable;
+import Scanner.Scanner;
+import Parser.Parser;
+
 import java.io.File;
 
 public class A1 {
@@ -30,41 +35,19 @@ public class A1 {
         return true;
     }
 
-    public void runInDebug(Scanner s) {
-        boolean end = false;
-        String line = "";
-        while (!end) {
-            Token t = s.getToken();
 
-            if (t.isUndf()) {
-                System.out.println(line);
-                line = "";
-                System.out.println(t + "\nLexical Error: " + t.getTokenLiteral());
-            } else {
-                if (line.length() > 60) {
-                    System.out.println(line);
-                    line = "";
-                }
-                line += t;
-            }
-
-            end = t.isEof();
-        }
-        if (line.length() > 0) {
-            System.out.println(line);
-        }
-    }
     public void run(String[] args) {
         OutputController outputController = new OutputController();
         SymbolTable symbolTable = new SymbolTable();
         Scanner s = new Scanner(outputController, symbolTable);
-        s.loadFile(args[0]);
+        Parser p = new Parser(s);
 
-        runInDebug(s);
+        s.init(args[0]);
+        p.init();
+
+        p.run();
         
         outputController.reportErrorsAndWarnings();
-
-        System.out.println("Program Completed Successfully");
 
         System.out.println("\nSYMBOL TABLE\n" + symbolTable);
 

@@ -5,6 +5,7 @@
  ****    01/08/2022
  ****    This class represents a symbol in the symbol table
  *******************************************************************************/
+package Common;
 
 public class Symbol {
     // The id assigned by the symbol table

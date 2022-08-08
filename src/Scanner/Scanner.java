@@ -1,18 +1,21 @@
-/*******************************************************************************
+ /*******************************************************************************
  ****    COMP3290 Assignment 1
  ****    c3308061
  ****    Lachlan Court
  ****    01/08/2022
  ****    This class is a Scanner for the CD22 programming language
  *******************************************************************************/
+ package Scanner;
 
 import java.io.File;
 import java.io.FileNotFoundException;
+import Common.Utils.MatchTypes;
+import Common.ErrorMessage.Errors;
 
 public class Scanner {
 
     private enum ContextStates {
-        UNDF, CHAR, NUM, PUNC,
+        UNDEFINED, LETTER, NUMBER, PUNCTUATION,
     }
 
     private enum DecimalStates {
@@ -24,9 +27,9 @@ public class Scanner {
     }
 
     private java.util.Scanner fileScanner;
-    private int rowCounter;
+    private int scannerRowPosition;
     private int currentRow;
-    private int columnCounter;
+    private int scannerColumnPosition;
     private int currentColumn;
 
     private String buffer;
@@ -36,23 +39,23 @@ public class Scanner {
     // valid character included. So we save it in this buffer and return the undefined token string, then next time
     // the file reader is called, clear this buffer first before reading from the file again.
     private String fileReaderUndefinedTokenBuffer;
-    private final OutputController outputController;
-    private final SymbolTable symbolTable;
-    private final Utils utils;
+    private final Common.OutputController outputController;
+    private final Common.SymbolTable symbolTable;
+    private final Common.Utils utils;
 
 
 
-    public Scanner(OutputController outputController_, SymbolTable symbolTable_) {
-        columnCounter = 0;
-        rowCounter = 1;
+    public Scanner(Common.OutputController outputController_, Common.SymbolTable symbolTable_) {
+        scannerColumnPosition = 0;
+        scannerRowPosition = 1;
         buffer = "";
         fileReaderUndefinedTokenBuffer = "";
         outputController = outputController_;
         symbolTable = symbolTable_;
-        utils = Utils.getUtils();
+        utils = Common.Utils.getUtils();
     }
 
-    public void loadFile(String filename) {
+    public void init(String filename) {
         fileScanner = null;
         try {
             fileScanner = new java.util.Scanner(new File(filename));
@@ -79,8 +82,8 @@ public class Scanner {
         // whitespace, as these will be consumed and flushed before this function returns which will increment the line
         // number and column number. Because of this, the line number cannot reliably identify the line of a token
         // when read from the buffer so save it before we start scanning
-        currentRow = rowCounter;
-        currentColumn = columnCounter;
+        currentRow = scannerRowPosition;
+        currentColumn = scannerColumnPosition;
 
         // Loop until we have reached the end of file, ensuring to check that the file reader buffer is empty
         while (!eof() || fileReaderUndefinedTokenBuffer.length() > 0) {
@@ -102,10 +105,10 @@ public class Scanner {
             // Keep track of the rows and columns from the perspective of the scanner. Note that the counters are separate
             // from the currentRow and currentColumn variables, which keep track of the location of the last token.
             // Comments can cause these values to become out of sync momentarily
-            columnCounter++;
+            scannerColumnPosition++;
             if (character.compareTo("\n") == 0) {
-                rowCounter++;
-                columnCounter = 0;
+                scannerRowPosition++;
+                scannerColumnPosition = 0;
             }
 
             // If a " symbol has been found and we are currently scanning code, we have now entered a string
@@ -115,13 +118,13 @@ public class Scanner {
             // Check for invalid characters and break on whitespace
             if (readerState == ReaderStates.CODE || readerState == ReaderStates.IN_UNDEFINED_TOKEN) {
                 // Will be true for letters, numbers, newlines, and spaces. False for everything else
-                boolean matchFound = utils.matches(character, Utils.MatchTypes.LETTER, Utils.MatchTypes.NUMBER) || character.compareTo("\n") == 0 || character.compareTo(" ") == 0;
+                boolean matchFound = utils.matches(character, MatchTypes.LETTER, MatchTypes.NUMBER) || character.compareTo("\n") == 0 || character.compareTo(" ") == 0 || character.charAt(0) == 9;
 
                 // If the character also does not match punctuation, it must be an invalid character. Enter the undefined
                 // token state, and consume until a valid character has been seen
-                if (!utils.matches(character, Utils.MatchTypes.PUNCTUATION) && !matchFound) {
+                if (!utils.matches(character, MatchTypes.PUNCTUATION) && !matchFound) {
                     readerState = ReaderStates.IN_UNDEFINED_TOKEN;
-                } else if (readerState == ReaderStates.IN_UNDEFINED_TOKEN && (utils.matches(character, Utils.MatchTypes.PUNCTUATION) || matchFound)) {
+                } else if (readerState == ReaderStates.IN_UNDEFINED_TOKEN && (utils.matches(character, MatchTypes.PUNCTUATION) || matchFound)) {
                     // By reaching this point, the entire undefined token has been read into the bufferCandidate
                     // if the character in question is anything other than a newline we should save it in the file
                     // reader buffer to interpret in the next pass as it is a valid character
@@ -131,7 +134,7 @@ public class Scanner {
                     break;
                 }
                 // If the character is a space or a newline, we have grabbed a sufficient sample for the buffer
-                if (character.compareTo(" ") == 0 || character.compareTo("\n") == 0) {
+                if (character.compareTo(" ") == 0 || character.compareTo("\n") == 0 || character.charAt(0) == 9) {
                     break;
                 }
             }
@@ -204,7 +207,7 @@ public class Scanner {
         }
 
         // Assume we are undefined, a state which will allow the context to be overwritten by any valid character
-        ContextStates contextState = ContextStates.UNDF;
+        ContextStates contextState = ContextStates.UNDEFINED;
         // Assume we have not found a token string from the buffer yet
         boolean tokenStringFound = false;
         // Used exclusively for matching floats, to keep track of whether we have seen a decimal point or not
@@ -218,44 +221,44 @@ public class Scanner {
 
             // Context switching
             switch (contextState) {
-                case UNDF -> {
+                case UNDEFINED -> {
                     // In the undefined state, any valid character will immediately switch context
-                    if (utils.matches(character, Utils.MatchTypes.LETTER)) contextState = ContextStates.CHAR;
+                    if (utils.matches(character, MatchTypes.LETTER)) contextState = ContextStates.LETTER;
 
-                    if (utils.matches(character, Utils.MatchTypes.NUMBER)) contextState = ContextStates.NUM;
+                    if (utils.matches(character, MatchTypes.NUMBER)) contextState = ContextStates.NUMBER;
 
-                    if (utils.matches(character, Utils.MatchTypes.PUNCTUATION)) contextState = ContextStates.PUNC;
+                    if (utils.matches(character, MatchTypes.PUNCTUATION)) contextState = ContextStates.PUNCTUATION;
 
                     // Anything that doesn't match one of these will remain as an undefined token until the end of the
                     // buffer as the readFileIntoBufferUntilWhitespace function has already stopped reading into the
                     // buffer at the next valid character so we can assume the entire buffer is undefined
                 }
-                case CHAR -> {
+                case LETTER -> {
                     // A punctuation symbol when reading chars will break a token as it can only be made up of letters
                     // and numbers
-                    if (utils.matches(character, Utils.MatchTypes.PUNCTUATION)) {
+                    if (utils.matches(character, MatchTypes.PUNCTUATION)) {
                         tokenStringFound = true;
                     } else {
                         // Check for undefined tokens. Punctuation has already been checked so just need to match
                         // numbers and letters
-                        if (!(utils.matches(character, Utils.MatchTypes.NUMBER, Utils.MatchTypes.LETTER))) tokenStringFound = true;
+                        if (!(utils.matches(character, MatchTypes.NUMBER, MatchTypes.LETTER))) tokenStringFound = true;
                     }
 
                 }
-                case PUNC -> {
+                case PUNCTUATION -> {
                     // Punctuation tokens can only be made up exclusively of punctuation
-                    if (!utils.matches(character, Utils.MatchTypes.PUNCTUATION)) tokenStringFound = true;
+                    if (!utils.matches(character, MatchTypes.PUNCTUATION)) tokenStringFound = true;
                     // If the first two punctuation symbols do not combine to make a double operator, parse the first
                     // symbol as its own token and save the second for the next pass
-                    if (index == 1 && !utils.matches(buffer.substring(0, 2), Utils.MatchTypes.DOUBLE_OPERATOR)) {
+                    if (index == 1 && !utils.matches(buffer.substring(0, 2), MatchTypes.DOUBLE_OPERATOR)) {
                         tokenStringFound = true;
                     }
                     // If i has successfully gotten to this point we have found a double operator
                     if (index > 1) tokenStringFound = true;
                 }
-                case NUM -> {
+                case NUMBER -> {
                     // Numbers could be floats, so we need to check if the punctuation is a decimal
-                    if (utils.matches(character, Utils.MatchTypes.PUNCTUATION)) {
+                    if (utils.matches(character, MatchTypes.PUNCTUATION)) {
                         // If we have not seen a decimal point yet, a decimal is valid. If the punctuation is anything
                         // else or if we have already seen a decimal point, then it is no longer valid
                         if (character.compareTo(".") == 0 && decimalState == DecimalStates.INITIAL) {
@@ -264,11 +267,11 @@ public class Scanner {
                             tokenStringFound = true;
                         }
                     }
-                    // Numbers cannot contain letters so break to a token if a letter has been found
-                    if (utils.matches(character, Utils.MatchTypes.LETTER)) tokenStringFound = true;
+                    // Numbers cannot contain letters or undefined tokens so break to a token if such has been found
+                    else if (utils.matches(character, MatchTypes.LETTER, MatchTypes.UNDEFINED)) tokenStringFound = true;
 
                     // If we have previously found a decimal and now we have seen another number, we have found a float
-                    if (decimalState == DecimalStates.FOUND_DECIMAL && utils.matches(character, Utils.MatchTypes.NUMBER)) {
+                    else if (decimalState == DecimalStates.FOUND_DECIMAL && utils.matches(character, MatchTypes.NUMBER)) {
                         decimalState = DecimalStates.FOUND_FOLLOWING_NUMBER;
                     }
                 }
@@ -316,7 +319,7 @@ public class Scanner {
 
         // If the token is undefined we add an error to the error handler
         if (token.isUndf())
-            outputController.addError(currentRow, currentColumn, ErrorMessage.Errors.UNDEFINED_TOKEN, token.getTokenLiteral());
+            outputController.addError(currentRow, currentColumn, Errors.UNDEFINED_TOKEN, token.getTokenLiteral());
 
         return token;
     }

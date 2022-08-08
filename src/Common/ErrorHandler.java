@@ -6,6 +6,7 @@
  ****    This class handles the recording and output of error messages throughout
  ****    the compiling process
  *******************************************************************************/
+package Common; 
 
 import java.util.ArrayList;
 

@@ -8,6 +8,7 @@ a"Hello"
 "Hello /** **/"
 "Hello
 "
+a"Hello
 /-- "Hello"
 
 /** "Hello

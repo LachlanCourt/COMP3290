@@ -5,9 +5,10 @@
  ****    01/08/2022
  ****    This class represents a single error message stored in the error handler
  *******************************************************************************/
+package Common;
 
 public class ErrorMessage {
-    enum Errors {
+    public enum Errors {
         UNKNOWNM, UNDEFINED_TOKEN, WARNING_CD22_SEMANTIC_CASING,
     }
 

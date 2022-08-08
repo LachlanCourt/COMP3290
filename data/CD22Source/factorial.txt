@@ -1,0 +1,19 @@
+CD22 factorial
+
+func fact(num : int) : int
+    begin
+        if (num == 1)
+            return 1;
+        end
+        return fact(num - 1) * num;
+    end
+
+main
+    num : int;
+
+begin
+    input num;
+    printline(fact(num))
+
+
+end CD22 factorial

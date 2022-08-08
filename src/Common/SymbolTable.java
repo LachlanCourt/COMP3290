@@ -5,6 +5,7 @@
  ****    01/08/2022
  ****    This class manages the symbol table used throughout the compiling process
  *******************************************************************************/
+package Common; 
 
 import java.util.HashMap;
 import java.util.Map;

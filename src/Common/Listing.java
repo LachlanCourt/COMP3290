@@ -6,6 +6,7 @@
  ****    This class handles the generation of the program listing during the
  ****    compiling process
  *******************************************************************************/
+package Common;
 
 import java.io.FileWriter;
 import java.io.IOException;

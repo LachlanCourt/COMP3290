@@ -6,6 +6,7 @@
  ****    This class handles both the error handling and program listing of the
  ****    compiling process
  *******************************************************************************/
+package Common; 
 
 import java.io.File;
 import java.io.FileNotFoundException;

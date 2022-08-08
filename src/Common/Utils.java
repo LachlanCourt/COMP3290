@@ -6,6 +6,7 @@
  ****    This class contains some common functions and lists that are used throughout
  ****    the compiling process
  *******************************************************************************/
+package Common; 
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -15,21 +16,15 @@ public class Utils {
     private static Utils self;
     private static final ArrayList<String> validPunctuation = new ArrayList<String>(Arrays.asList(",", "[", "]", "(", ")", "=", "+", "-", "*", "/", "%", "^", "<", ">", "!", "\"", ":", ";", "."));
     private static final ArrayList<String> validStandaloneOperators = new ArrayList<String>(Arrays.asList(",", "[", "]", "(", ")", "=", "+", "-", "*", "/", "%", "^", "<", ">", ":", ";", "."));
+    private static final ArrayList<String> validDoubleOperators = new ArrayList<String>(Arrays.asList("!=", "==", "<=", ">=", "+=", "-=", "/=", "*="));
     private static final ArrayList<String> letters = new ArrayList<String>(Arrays.asList("a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o", "p", "q", "r", "s", "t", "u", "v", "w", "x", "y", "z"));
     private static final ArrayList<String> numbers = new ArrayList<String>(Arrays.asList("0", "1", "2", "3", "4", "5", "6", "7", "8", "9"));
-    private static final ArrayList<String> validDoubleOperators = new ArrayList<String>(Arrays.asList("!=", "==", "<=", ">=", "+=", "-=", "/=", "*="));
     private static final ArrayList<String> keywords = new ArrayList<String>(Arrays.asList("CD22", "constants", "types", "def", "arrays", "main", "begin", "end", "array", "of", "func", "void", "const", "int", "float", "bool", "for", "repeat", "until", "if", "else", "elif", "input", "print", "printline", "return", "not", "and", "or", "xor", "true", "false"));
 
-    enum MatchTypes {
-        LETTER,
-        NUMBER,
-        PUNCTUATION,
-        STANDALONE_OPERATOR,
-        DOUBLE_OPERATOR,
-        KEYWORD,
-        IDENTIFIER,
-        UNDEFINED
+    public enum MatchTypes {
+        LETTER, NUMBER, PUNCTUATION, STANDALONE_OPERATOR, DOUBLE_OPERATOR, KEYWORD, IDENTIFIER, UNDEFINED
     }
+
     /**
      * Singleton style constructor for utils to prevent it being declared multiple times unnecessarily
      */
@@ -46,18 +41,6 @@ public class Utils {
         return self;
     }
 
-    public ArrayList<String> getValidDoubleOperators() {
-        return validDoubleOperators;
-    }
-
-    public ArrayList<String> getValidStandaloneOperators() {
-        return validStandaloneOperators;
-    }
-
-    public static ArrayList<String> getKeywords() {
-        return keywords;
-    }
-
     public boolean matches(String candidate, MatchTypes matcher) {
         boolean matchFound = false;
 
@@ -69,9 +52,9 @@ public class Utils {
             case DOUBLE_OPERATOR -> matchFound = validDoubleOperators.contains(candidate);
             case STANDALONE_OPERATOR -> matchFound = validStandaloneOperators.contains(candidate);
             case IDENTIFIER -> matchFound = matchesIdentifier(candidate);
-            case UNDEFINED -> matchFound = !(matches(candidate, MatchTypes.LETTER) || matches(candidate, MatchTypes.NUMBER) || matches(candidate, MatchTypes.PUNCTUATION));
+            case UNDEFINED ->
+                    matchFound = !(matches(candidate, MatchTypes.LETTER, MatchTypes.NUMBER, MatchTypes.PUNCTUATION));
         }
-
         return matchFound;
     }
 
@@ -85,6 +68,7 @@ public class Utils {
 
     /**
      * Matches strings that start with a letter and only contain strings and letters
+     *
      * @param candidate a candidate string to be determined whether it matches the form of an identifier
      * @return boolean value representing whether it matches
      */

@@ -2,7 +2,7 @@
  ****    COMP3290 Assignment 1
  ****    c3308061
  ****    Lachlan Court
- ****    01/08/2022
+ ****    10/08/2022
  ****    This class is the main file for a Scanner for the CD22 programming language
  *******************************************************************************/
 
@@ -56,8 +56,10 @@ public class A1 {
         // Report any errors and warnings found so far in the compilation
         outputController.reportErrorsAndWarnings();
 
-        // Output the symbol table
-        System.out.println("\nSYMBOL TABLE\n" + symbolTable);
+        // Output the symbol table when debugging
+        if (System.getenv("DEBUG") != null && System.getenv("DEBUG").compareTo("true") == 0) {
+            System.out.println("\nSYMBOL TABLE\n" + symbolTable);
+        }
 
     }
 }

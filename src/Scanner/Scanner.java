@@ -2,7 +2,7 @@
  ****    COMP3290 Assignment 1
  ****    c3308061
  ****    Lachlan Court
- ****    01/08/2022
+ ****    10/08/2022
  ****    This class is a Scanner for the CD22 programming language
  *******************************************************************************/
 package Scanner;
@@ -47,7 +47,7 @@ public class Scanner {
 
 
     public Scanner(Common.OutputController outputController_, Common.SymbolTable symbolTable_) {
-        scannerColumnPosition = 0;
+        scannerColumnPosition = 1;
         scannerRowPosition = 1;
         buffer = "";
         fileReaderUndefinedTokenBuffer = "";
@@ -62,15 +62,24 @@ public class Scanner {
             fileScanner = new java.util.Scanner(new File(filename));
             fileScanner.useDelimiter("");
         } catch (FileNotFoundException e) {
-            System.err.println("File " + filename + "does not exist");
+            System.err.println("File \"" + filename + "\" does not exist");
             System.exit(1);
         }
     }
 
+    /**
+     * Returns whether the scanner has reached the end of file
+     * @return the result of a scanner hasNext function on the current source file
+     */
     private boolean eof() {
         return !fileScanner.hasNext();
     }
 
+    /**
+     * Reads from the file until any form of whitespace has been reached, or the end of a multiline comment, and places
+     * the result into a buffer to be interpreted later. Removes all comments and will never pass source code that is
+     * within comments through to the buffer
+     */
     private void readFileIntoBufferUntilWhitespace() {
         String bufferCandidate = "";
         String character;
@@ -109,7 +118,7 @@ public class Scanner {
             scannerColumnPosition++;
             if (character.compareTo("\n") == 0) {
                 scannerRowPosition++;
-                scannerColumnPosition = 0;
+                scannerColumnPosition = 1;
             }
 
             // If a " symbol has been found and we are currently scanning code, we have now entered a string
@@ -118,11 +127,8 @@ public class Scanner {
 
             // Check for invalid characters and break on whitespace
             if (readerState == ReaderStates.CODE || readerState == ReaderStates.IN_UNDEFINED_TOKEN) {
-                // Will be true for letters, numbers, newlines, and spaces. False for everything else
-//                boolean matchFound = utils.matches(character, MatchTypes.LETTER, MatchTypes.NUMBER) || character.compareTo("\n") == 0 || character.compareTo(" ") == 0 || character.charAt(0) == 9;
-
-                // If the character also does not match punctuation, it must be an invalid character. Enter the undefined
-                // token state, and consume until a valid character has been seen
+                // If the character is undefined, enter the undefined token state, and consume until a valid
+                // character has been seen
                 if (utils.matches(character, MatchTypes.UNDEFINED)) {
                     readerState = ReaderStates.IN_UNDEFINED_TOKEN;
                 } else if (readerState == ReaderStates.IN_UNDEFINED_TOKEN && !utils.matches(character, MatchTypes.UNDEFINED)) {
@@ -183,7 +189,8 @@ public class Scanner {
 
     /**
      * This context matcher allows us to handle cases where there is no whitespace between a sample but there is
-     * no syntactical way that it could be a single token
+     * no syntactical way that it could be a single token. It reads characters from the buffer and tries to find the
+     * longest candidate token string literal that it can see.
      * It follows some simple rules:
      * - Any sample that starts with a character is assumed to be an identifier all the way until a punctuation mark is reached
      * - Any sample that begins with a number ends at the next character or punctuation mark unless it is a decimal point followed by more numbers
@@ -302,21 +309,57 @@ public class Scanner {
         return tokenStringCandidate;
     }
 
+    /**
+     * Takes a string that has been determined to be one and only one token, and assigns the correct type to it
+     * @param tokenLiteral a string to be matched into one and only one token
+     * @return the token type that the string matches
+     */
     private Tokens getTokenTypeFromTokenLiteral(String tokenLiteral) {
+        // Keywords and operators are handled by a factory pattern in the token enum
         if (utils.matches(tokenLiteral.toLowerCase(), MatchTypes.KEYWORD, MatchTypes.STANDALONE_OPERATOR, MatchTypes.DOUBLE_OPERATOR)) {
+            // Add a warning for CD22 if it is not capitalised
             if (tokenLiteral.toLowerCase().compareTo("cd22") == 0 && tokenLiteral.compareTo("CD22") != 0)
                 outputController.addWarning(currentRow, currentColumn, Errors.WARNING_CD22_SEMANTIC_CASING);
             return Tokens.getToken(tokenLiteral.toLowerCase());
         }
 
+        // A string should start and end with " and be at least two characters long (A single " is not a string)
         if (tokenLiteral.startsWith("\"") && tokenLiteral.endsWith("\"") && tokenLiteral.length() > 1) {
             return Tokens.TSTRG;
         }
 
+        // If the first character is a number then it has to be either a float or an integer
         if (utils.matches(String.valueOf(tokenLiteral.charAt(0)), MatchTypes.NUMBER)) {
-            // Float literal
+            // If the string contains a decimal point it must be a float literal
             if (tokenLiteral.contains(".")) {
+                try {
+                    // Check that the float is not more than 64 bits long
+                    Long exponent = Long.parseLong(tokenLiteral.split("\\.")[0]);
+                    Long fraction = Long.parseLong(tokenLiteral.split("\\.")[1]);
+                    if (exponent > Math.pow(2, 11)) {
+                        throw new NumberFormatException();
+                    }
+                    if (fraction > Math.pow(2, 52)) {
+                        throw new NumberFormatException();
+                    }
+                }
+                catch (NumberFormatException e) {
+                    // If the float is too large, add and error and do not parse it as a valid token
+                    outputController.addError(currentRow, currentColumn, Errors.FLOAT_OUT_OF_RANGE, tokenLiteral);
+                    return Tokens.NUM_PARSE_ERROR;
+                }
                 return Tokens.TFLIT;
+            }
+            // If the string does not contain a decimal point, it must be an integer
+            // Make use of the java builtin method to convert a string to a 64 bit long to ensure it is not too large
+            try {
+                Long.parseLong(tokenLiteral);
+            }
+            catch (NumberFormatException e) {
+                // If the candidate string represents a number that is greater than 64 characters in length, add an
+                // error and do not parse it as a valid token
+                outputController.addError(currentRow, currentColumn, Errors.INTEGER_OUT_OF_RANGE, tokenLiteral);
+                return Tokens.NUM_PARSE_ERROR;
             }
             // Integer literal
             return Tokens.TILIT;
@@ -326,15 +369,22 @@ public class Scanner {
         if (utils.matches(tokenLiteral, MatchTypes.IDENTIFIER)) {
             return Tokens.TIDEN;
         }
+
+        // If the string has not matched anything at this point, it is likely a string of invalid characters and should
+        // not be parsed as a valid token
         return Tokens.TUNDF;
     }
 
+    /**
+     * Retrieve the next valid token from the source file
+     * @return a single token determined from the source code
+     */
     public Token getToken() {
         // If the buffer is empty, read from the file a sample to interpret
         if (buffer.length() == 0) {
             readFileIntoBufferUntilWhitespace();
         }
-        // If the buffer is empty and we the scanner is at the end of the file, there is no more code to scan so return
+        // If the buffer is empty and the scanner is at the end of the file, there is no more code to scan so return
         // an end of file token. If the buffer still has something in it, we need to still interpret it even if the
         // scanner is at the end of file
         if (buffer.length() == 0 && eof()) {

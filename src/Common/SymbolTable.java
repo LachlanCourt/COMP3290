@@ -2,7 +2,7 @@
  ****    COMP3290 Assignment 1
  ****    c3308061
  ****    Lachlan Court
- ****    01/08/2022
+ ****    10/08/2022
  ****    This class manages the symbol table used throughout the compiling process
  *******************************************************************************/
 package Common; 
@@ -19,16 +19,26 @@ public class SymbolTable {
         latestId = 1;
     }
 
+    /**
+     * Add a symbol to the symbol table
+     * @param ref an identifier to be added
+     * @param val a value to be added
+     * @return the unique id of the location in the symbol table
+     */
     public int addSymbol(String ref, String val) {
+        // Don't add the symbol if it already exists
         if (table.containsKey(ref)) {
             return table.get(ref).getId();
         }
+        // Create a new symbol and increment the id ready for the next symbol
         Symbol s = new Symbol(latestId, val);
         latestId++;
+        // Add the symbol to the table and return the id
         table.put(ref, s);
         return s.getId();
     }
 
+    // Getters for the value given either ref or id
     public String getSymbolValue(String ref) {
         return table.get(ref).getVal();
     }
@@ -42,6 +52,10 @@ public class SymbolTable {
         return null;
     }
 
+    /**
+     * Debug to string method of the table
+     * @return stringified version of the symbol table
+     */
     @Override
     public String toString() {
         String out = "";

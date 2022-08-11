@@ -2,7 +2,7 @@
  ****    COMP3290 Assignment 1
  ****    c3308061
  ****    Lachlan Court
- ****    01/08/2022
+ ****    10/08/2022
  ****    This class contains some common functions and lists that are used throughout
  ****    the compiling process
  *******************************************************************************/
@@ -42,6 +42,12 @@ public class Utils {
         return self;
     }
 
+    /**
+     * Matches a given string based on a specified type
+     * @param candidate a string to be matched
+     * @param matcher a type to match the string to
+     * @return true if the candidate matches the specified type and false if not
+     */
     public boolean matches(String candidate, MatchTypes matcher) {
         boolean matchFound = false;
 
@@ -75,7 +81,6 @@ public class Utils {
 
     /**
      * Matches strings that start with a letter and only contain strings and letters
-     *
      * @param candidate a candidate string to be determined whether it matches the form of an identifier
      * @return boolean value representing whether it matches
      */

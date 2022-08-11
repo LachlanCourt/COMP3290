@@ -2,7 +2,7 @@
  ****    COMP3290 Assignment 1
  ****    c3308061
  ****    Lachlan Court
- ****    01/08/2022
+ ****    10/08/2022
  ****    This class handles the generation of the program listing during the
  ****    compiling process
  *******************************************************************************/
@@ -10,6 +10,7 @@ package Common;
 
 import java.io.FileWriter;
 import java.io.IOException;
+import java.util.ArrayList;
 
 public class Listing {
     private String currentLine;
@@ -63,5 +64,22 @@ public class Listing {
      */
     public void flushListing() {
         outputCurrentLine();
+    }
+
+    /**
+     * Outputs a provided list of errors to the listing file
+     * @param errors a list of errors or warnings to be written to the listing
+     */
+    public void addErrorsToListing(ArrayList<ErrorMessage> errors) {
+        try {
+            FileWriter writer = new FileWriter("listing.txt", true);
+            for (ErrorMessage e : errors) {
+                writer.write(e +"\n");
+            }
+            writer.close();
+        } catch (IOException e) {
+            System.err.println("An error occurred outputting the listing to file");
+            e.printStackTrace();
+        }
     }
 }

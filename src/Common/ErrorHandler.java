@@ -2,7 +2,7 @@
  ****    COMP3290 Assignment 1
  ****    c3308061
  ****    Lachlan Court
- ****    01/08/2022
+ ****    10/08/2022
  ****    This class handles the recording and output of error messages throughout
  ****    the compiling process
  *******************************************************************************/
@@ -26,7 +26,7 @@ public class ErrorHandler {
     }
 
     /**
-     *
+     * Adds an error to the handler
      * @param row row number of the error
      * @param col column of the error
      * @param type enum type of error
@@ -40,6 +40,13 @@ public class ErrorHandler {
         errors.add(new ErrorMessage(row, col, type));
     }
 
+    /**
+     * Adds a warning to the handler
+     * @param row row number of the error
+     * @param col column of the error
+     * @param type enum type of error
+     * @param data additional data required for certain warnings
+     */
     public void addWarning(int row, int col, ErrorMessage.Errors type, String data) {
         warnings.add(new ErrorMessage(row, col, type, data));
     }
@@ -48,6 +55,7 @@ public class ErrorHandler {
         warnings.add(new ErrorMessage(row, col, type));
     }
 
+    // Getters and queries
     public boolean hasErrors() {
         return errors.size() > 0;
     }

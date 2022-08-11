@@ -1,16 +1,18 @@
- /*******************************************************************************
+/*******************************************************************************
  ****    COMP3290 Assignment 1
  ****    c3308061
  ****    Lachlan Court
  ****    01/08/2022
  ****    This class is a Scanner for the CD22 programming language
  *******************************************************************************/
- package Scanner;
+package Scanner;
+
+import Common.ErrorMessage.Errors;
+import Common.Utils.MatchTypes;
+import Scanner.Token.Tokens;
 
 import java.io.File;
 import java.io.FileNotFoundException;
-import Common.Utils.MatchTypes;
-import Common.ErrorMessage.Errors;
 
 public class Scanner {
 
@@ -42,7 +44,6 @@ public class Scanner {
     private final Common.OutputController outputController;
     private final Common.SymbolTable symbolTable;
     private final Common.Utils utils;
-
 
 
     public Scanner(Common.OutputController outputController_, Common.SymbolTable symbolTable_) {
@@ -118,13 +119,13 @@ public class Scanner {
             // Check for invalid characters and break on whitespace
             if (readerState == ReaderStates.CODE || readerState == ReaderStates.IN_UNDEFINED_TOKEN) {
                 // Will be true for letters, numbers, newlines, and spaces. False for everything else
-                boolean matchFound = utils.matches(character, MatchTypes.LETTER, MatchTypes.NUMBER) || character.compareTo("\n") == 0 || character.compareTo(" ") == 0 || character.charAt(0) == 9;
+//                boolean matchFound = utils.matches(character, MatchTypes.LETTER, MatchTypes.NUMBER) || character.compareTo("\n") == 0 || character.compareTo(" ") == 0 || character.charAt(0) == 9;
 
                 // If the character also does not match punctuation, it must be an invalid character. Enter the undefined
                 // token state, and consume until a valid character has been seen
-                if (!utils.matches(character, MatchTypes.PUNCTUATION) && !matchFound) {
+                if (utils.matches(character, MatchTypes.UNDEFINED)) {
                     readerState = ReaderStates.IN_UNDEFINED_TOKEN;
-                } else if (readerState == ReaderStates.IN_UNDEFINED_TOKEN && (utils.matches(character, MatchTypes.PUNCTUATION) || matchFound)) {
+                } else if (readerState == ReaderStates.IN_UNDEFINED_TOKEN && !utils.matches(character, MatchTypes.UNDEFINED)) {
                     // By reaching this point, the entire undefined token has been read into the bufferCandidate
                     // if the character in question is anything other than a newline we should save it in the file
                     // reader buffer to interpret in the next pass as it is a valid character
@@ -133,8 +134,8 @@ public class Scanner {
                     }
                     break;
                 }
-                // If the character is a space or a newline, we have grabbed a sufficient sample for the buffer
-                if (character.compareTo(" ") == 0 || character.compareTo("\n") == 0 || character.charAt(0) == 9) {
+                // If the character is a space, a newline or a tab, we have grabbed a sufficient sample for the buffer
+                if (utils.matches(character, MatchTypes.WHITESPACE)) {
                     break;
                 }
             }
@@ -270,7 +271,7 @@ public class Scanner {
                     // Numbers cannot contain letters or undefined tokens so break to a token if such has been found
                     else if (utils.matches(character, MatchTypes.LETTER, MatchTypes.UNDEFINED)) tokenStringFound = true;
 
-                    // If we have previously found a decimal and now we have seen another number, we have found a float
+                        // If we have previously found a decimal and now we have seen another number, we have found a float
                     else if (decimalState == DecimalStates.FOUND_DECIMAL && utils.matches(character, MatchTypes.NUMBER)) {
                         decimalState = DecimalStates.FOUND_FOLLOWING_NUMBER;
                     }
@@ -301,6 +302,33 @@ public class Scanner {
         return tokenStringCandidate;
     }
 
+    private Tokens getTokenTypeFromTokenLiteral(String tokenLiteral) {
+        if (utils.matches(tokenLiteral.toLowerCase(), MatchTypes.KEYWORD, MatchTypes.STANDALONE_OPERATOR, MatchTypes.DOUBLE_OPERATOR)) {
+            if (tokenLiteral.toLowerCase().compareTo("cd22") == 0 && tokenLiteral.compareTo("CD22") != 0)
+                outputController.addWarning(currentRow, currentColumn, Errors.WARNING_CD22_SEMANTIC_CASING);
+            return Tokens.getToken(tokenLiteral.toLowerCase());
+        }
+
+        if (tokenLiteral.startsWith("\"") && tokenLiteral.endsWith("\"") && tokenLiteral.length() > 1) {
+            return Tokens.TSTRG;
+        }
+
+        if (utils.matches(String.valueOf(tokenLiteral.charAt(0)), MatchTypes.NUMBER)) {
+            // Float literal
+            if (tokenLiteral.contains(".")) {
+                return Tokens.TFLIT;
+            }
+            // Integer literal
+            return Tokens.TILIT;
+        }
+
+        // Indentifier
+        if (utils.matches(tokenLiteral, MatchTypes.IDENTIFIER)) {
+            return Tokens.TIDEN;
+        }
+        return Tokens.TUNDF;
+    }
+
     public Token getToken() {
         // If the buffer is empty, read from the file a sample to interpret
         if (buffer.length() == 0) {
@@ -311,11 +339,18 @@ public class Scanner {
         // scanner is at the end of file
         if (buffer.length() == 0 && eof()) {
             outputController.flushListing();
+            fileScanner.close();
             return new Token(true);
         }
 
         // Create a new token by reading a candidate token string out of the buffer
-        Token token = new Token(outputController, symbolTable, getTokenStringFromBuffer(), currentRow, currentColumn);
+        String tokenLiteral = getTokenStringFromBuffer();
+        Tokens tokenType = getTokenTypeFromTokenLiteral(tokenLiteral);
+        Integer symbolTableId = null;
+        switch (tokenType) {
+            case TILIT, TFLIT, TSTRG, TIDEN -> symbolTableId = symbolTable.addSymbol(tokenLiteral, null);
+        }
+        Token token = new Token(tokenType, tokenLiteral, symbolTableId, currentRow, currentColumn);
 
         // If the token is undefined we add an error to the error handler
         if (token.isUndf())

@@ -1,0 +1,97 @@
+/**
+		Dan Bell
+	Comp3290
+Lexer
+	Test
+		Suite
+**/
+
+/-- Valid Delimiters
+; [ ] , ( ) = + - * / % ^ < > : . >= == += -= *= /= <= <<>>
+
+/-- Keywords - all valid
+CD22 constants types is arrays main begin end array of func void const int float bool for repeat until if else in out line return not and or xor true false end Cd22 ConsTants Types Is Arrays MaiN Begin End Array Of Func Void Const InT FloAt BoOl For Repeat unTil If Else In Out Line Return NoT And Or XOr True False eNd
+
+"This SHOULD NOT"BE RIGHT either";
+123
+3234
+234565
+23.995
+654.72
+
+/-- Challenges
+123.abc				/-- TINTG 123   TDOTT TSTRG "abc"
+123.345.789			/-- TREAL 123.456     TDOTT TINTG 789
+123.4bc				/-- test
+123,456.789
+123.O
+192.168.12.222
+
+[COMP]
+(zero)
+(101+47)
+[3.14159 * 11 = x]
+<== %== *=== %/- "asdlkfj@"
+!!= =-= (/-=) >=.
+"String #@??\# Boo" 
+"#@??\# String ":/
+"#@??\#" 
+
+
+/-- Invalid challenges
+123.4@5.789			/-- two valid TREAL and a TUNDF @
+Energi$ed
+Unenerg|sed
+00.00..00.0
+.5
+
+@ # ! ~ ` ?@@#  ?@$@#
+?@/@#
+?@!-$$@#   
+:'|==&&_ 
+
+
+/-- bad comments
+
+/- comment
+-/-/--/////-------////******
+
+/**
+Trick
+Catch */
+"CAUGHT YOU"
+**/
+
+/-- talkies
+>>= >> =>=>>
+<<= << =<=<<
+
+/-- Bonus : check if numbers are within the limits
+"11111111111111111111111111111111111111111111111111111111111"
+2147483647 /-- Signed int
+4294967295 /-- Unsigned int
+
+1234567890
+1234567890123456789 0
+12345678901234567890
+12345678901234567890.abcdefg
+0000000000000000000000000000000000000000000
+0000000000000000000000000000000000000000000000000000000000000000000000000
+1234567890123456789012345678901234567890
+9000000000000000000
+9200000000000000000
+9999999999999999999
+9000000000000000000.9000000000000000000
+1234456778890123445234.1
+2.3333333333333333333333333
+1234456778890123445234.158588888888888865
+98988987866574746536354234523352432134213123.788788777768750
+457654567885656745676578690.467870766788959987899689543677489
+657543.898675
+
+
+$$$$$$$$ %$^#
+!! !!!=
+
+
+<<= >>=< 

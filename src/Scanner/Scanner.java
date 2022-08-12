@@ -115,7 +115,8 @@ public class Scanner {
             // Keep track of the rows and columns from the perspective of the scanner. Note that the counters are separate
             // from the currentRow and currentColumn variables, which keep track of the location of the last token.
             // Comments can cause these values to become out of sync momentarily
-            scannerColumnPosition++;
+            // Tab characters count as 4 spaces for column positions, according to specification
+            scannerColumnPosition += character.charAt(0) == 9 ? 4 : 1;
             if (character.compareTo("\n") == 0) {
                 scannerRowPosition++;
                 scannerColumnPosition = 1;

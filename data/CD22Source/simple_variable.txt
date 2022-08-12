@@ -1,0 +1,28 @@
+CD22 ProgramName
+main
+    i : int;
+    j : int;
+    k : int;
+    l : float;
+
+begin
+
+    input i, j;
+
+     if (i < j)
+        printline "The first number inputted is less than the second";
+     else
+        printline "The second number inputted is less than or equal to the first";
+     end
+
+
+    k = i + j;
+    l = i / k;
+
+    print "Addition result is: ";
+    printline i;
+
+    print "Division result is: ";
+    printline l;
+
+end CD22 ProgramName

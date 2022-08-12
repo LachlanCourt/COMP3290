@@ -1,0 +1,71 @@
+/**
+* This file reads in exactly 10 integers from stdout and outputs both the smallest and largest value in the list
+**/
+CD22 FunctionParameterPassing
+constants
+
+    ARRAYSIZE = 10;
+
+types
+
+    arrayStruct def
+        x : int
+    end
+
+    arrayType def array [ARRAYSIZE] of arrayStruct end
+
+arrays
+
+    someArray : arrayType;
+
+/-- This function loops through the constant array and returns the smallest value
+func findSmallest(const someParameterArray : arrayType) : int
+    smallest : int;
+begin
+    /-- Assume the smallest is the first element to have a baseline
+    smallest = someParameterArray[0].x;
+    for (i = 0; i < arraySize)
+        if (someParameterArray[i].x < smallest)
+            smallest = someParameterArray[i].x;
+            i += 1;
+        end
+    end
+end
+
+/-- This function loops through the mutable array and returns the largest value
+func findLargest(someParameterArray : arrayType) : int
+    largest : int;
+begin
+    /-- Assume the smallest is the first element to have a baseline
+    largest = someParameterArray[0].x;
+    for (i = 0; i < arraySize)
+        if (someParameterArray[i].x > largest)
+            largest = someParameterArray[i].x;
+            i += 1;
+        end
+    end
+end
+
+/-- This function receives two input integers and outputs their value to stdout
+func showOutput(smallest : int, largest: int) : void
+begin
+    printline(smallest);
+    printline(largest);
+end
+
+main
+    i : int;
+    smallest : int;
+    largest : int;
+begin
+    /-- Read values in from stdin
+    for (i = 0; i < arraySize)
+        input someArray[i].x;
+        i += 1;
+    end
+
+    smallest = findSmallest(someArray);
+    largest = findLargest(someArray);
+    showOutput(smallest, largest);
+
+end CD22 FunctionParameterPassing

@@ -1,0 +1,5 @@
+CD22 SimpleProgram
+main
+    i : bool;
+begin
+end CD22 SimpleProgram

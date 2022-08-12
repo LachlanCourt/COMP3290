@@ -1,0 +1,107 @@
+CD22 Points
+
+constants
+
+    NUMBEROFVALUES = 20
+
+types
+
+    pointType def
+        x : int,
+        y : int,
+        z : int
+    end
+
+    furthestDistanceType def
+        a : int,
+        b : int,
+        distance : float
+    end
+
+    pointsListType def array [NUMBEROFVALUES] of pointType end
+
+arrays
+
+    pointsList : pointsListType;
+
+func calcDistance(a : pointType, b : pointType) : float
+begin
+    /-- Perform the distance formula for 3d cartesian coordinates and return the result
+    return ((a.x - b.x) ^ 2 + (a.y - b.y) ^ 2 + (a.z - b.z)) ^ 0.5;
+end
+
+func readIntoArray() : void
+    i : int;
+begin
+    for (i = 0; i < NUMBEROFVALUES)
+        input pointsList[i].x, pointsList[i].y, pointsList[i].z;
+    end
+end
+
+/-- Find the point with the furthest distance from the point identified by the index
+func findFurthestDistanceFromIndex(index : int, furthestDistance : furthestDistanceType) : int
+    i : int;
+begin
+    /-- Start by calculating according to the first item in the list as a baseline
+    furthestDistance.a = index;
+    furthestDistance.b = 0;
+    furthestDistance.distance = calcDistance(pointsList[index], pointsList[0]);
+    /-- Loop through and calculate for every element of the array
+    for (i = 0; i < NUMBEROFVALUES)
+        if (calcDistance(pointsList[index], pointsList[i]) > furthestDistance)
+            furthestDistance = calcDistance(pointsList[index], pointsList[i];
+            furthestDistanceIndex = i;
+        end
+        i += 1;
+    end
+    return furthestDistanceIndex;
+end
+
+func output(furthestDistance : furthestDistanceType) : void
+
+begin
+    printline "The two points that are furthest away from each other are at index ";
+    print furthestDistance.a;
+    printline " at coordinates ";
+    printline pointsList[furthestDistance.a].x;
+    printline pointsList[furthestDistance.a].y;
+    printline pointsList[furthestDistance.a].z;
+
+    print "And index ";
+    print furthestDistance.b;
+    printline " at coordinates ";
+    printline pointsList[furthestDistance.b].x;
+    printline pointsList[furthestDistance.b].y;
+    printline pointsList[furthestDistance.b].z;
+
+    print "With a distance of ";
+    print furthestDistance.distance;
+    printline " units"
+end
+
+main
+    i : int;
+    runningFurthestDistance : furthestDistanceType;
+    furthestDistance : furthestDistanceType;
+begin
+    /-- Add values to the pointsList array
+    readIntoArray();
+
+    /-- Calculate according to the first element as a baseline
+    findFurthestDistanceFromIndex(0, furthestDistance);
+    runningFurthestDistance = furthestDistance;
+
+    /** Loop through the array and calculate the furthest distance for every element to every other element, and update
+    the running total if needed **/
+    for (i = 0; i < NUMBEROFVALUES)
+        findFurthestDistanceFromIndex(i, furthestDistance);
+        if (furthestDistance.distance > runningFurthestDistance.distance)
+            runningFurthestDistance = furthestDistance;
+        end
+        i += 1;
+    end
+
+    /-- Output data to the user
+    output(runningFurthestDistance);
+
+end CD22 Points

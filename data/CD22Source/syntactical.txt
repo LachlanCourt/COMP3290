@@ -1,0 +1,9 @@
+CD22 ProgramWithSyntacticalErrors
+arrays
+constants
+main
+    i : bool;
+
+begin
+    true = i
+end CD22 ProgramWithSyntacticalErrors

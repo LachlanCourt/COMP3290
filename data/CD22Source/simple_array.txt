@@ -1,0 +1,31 @@
+/**
+* This program creates an array of length 5 and sets all of its values to true
+**/
+CD22 ArrayOfBooleans
+constants
+
+    ARRAYSIZE = 5;
+
+types
+
+    arrayStruct def
+        x : bool
+    end
+
+    arrayType def array [ARRAYSIZE] of arrayStruct end
+
+arrays
+
+    someArray : arrayType;
+
+main
+    i : int;
+
+begin
+
+    for (i = 0; i < ARRAYSIZE)
+        someArray[i].x = true;
+        i += 1;
+    end
+
+end CD22 ArrayOfBooleans

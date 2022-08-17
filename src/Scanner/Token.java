@@ -8,7 +8,7 @@
 package Scanner;
 
 public class Token {
-  enum Tokens {
+  public enum Tokens {
     TTEOF("TTEOF "),
     TCD22("TCD22 "),
     TCONS("TCONS "),
@@ -192,6 +192,10 @@ public class Token {
 
     public String getTokenLiteral() {
         return tokenLiteral;
+    }
+
+    public Tokens getToken() {
+        return token;
     }
 
     /**

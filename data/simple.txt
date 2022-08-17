@@ -1,0 +1,7 @@
+CD22 ProgramName
+constants
+    i = 20,
+    r = 5600,
+    someVar = 30.8,
+wee = 0
+

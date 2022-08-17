@@ -10,226 +10,245 @@ package Scanner;
 import Common.ErrorMessage.Errors;
 import Common.Utils.MatchTypes;
 import Scanner.Token.Tokens;
-
 import java.io.File;
 import java.io.FileNotFoundException;
 
 public class Scanner {
+  private enum ContextStates {
+    UNDEFINED,
+    LETTER,
+    NUMBER,
+    PUNCTUATION,
+  }
 
-    private enum ContextStates {
-        UNDEFINED, LETTER, NUMBER, PUNCTUATION,
+  private enum DecimalStates { INITIAL, FOUND_DECIMAL, FOUND_FOLLOWING_NUMBER }
+
+  private enum ReaderStates {
+    CODE,
+    IN_STRING,
+    IN_SINGLE_LINE_COMMENT,
+    IN_MULTI_LINE_COMMENT,
+    IN_UNDEFINED_TOKEN,
+  }
+
+  private java.util.Scanner fileScanner;
+  private int scannerRowPosition;
+  private int currentRow;
+  private int scannerColumnPosition;
+  private int currentColumn;
+
+  private String buffer;
+
+  // When scanning an undefined token, we keep consuming until we see a valid character. The issue
+  // here is that this valid character has now been read from the file, but we want to return the
+  // undefined token and not have the valid character included. So we save it in this buffer and
+  // return the undefined token string, then next time the file reader is called, clear this buffer
+  // first before reading from the file again.
+  private String fileReaderUndefinedTokenBuffer;
+  private final Common.OutputController outputController;
+  private final Common.SymbolTable symbolTable;
+  private final Common.Utils utils;
+
+  public Scanner(Common.OutputController outputController_, Common.SymbolTable symbolTable_) {
+    scannerColumnPosition = 1;
+    scannerRowPosition = 1;
+    buffer = "";
+    fileReaderUndefinedTokenBuffer = "";
+    outputController = outputController_;
+    symbolTable = symbolTable_;
+    utils = Common.Utils.getUtils();
+  }
+
+  public void init(String filename) {
+    fileScanner = null;
+    try {
+      fileScanner = new java.util.Scanner(new File(filename));
+      fileScanner.useDelimiter("");
+    } catch (FileNotFoundException e) {
+      System.err.println("File \"" + filename + "\" does not exist");
+      System.exit(1);
     }
+  }
 
-    private enum DecimalStates {
-        INITIAL, FOUND_DECIMAL, FOUND_FOLLOWING_NUMBER
-    }
+  /**
+   * Returns whether the scanner has reached the end of file
+   * @return the result of a scanner hasNext function on the current source file
+   */
+  private boolean eof() {
+    return !fileScanner.hasNext();
+  }
 
-    private enum ReaderStates {
-        CODE, IN_STRING, IN_SINGLE_LINE_COMMENT, IN_MULTI_LINE_COMMENT, IN_UNDEFINED_TOKEN,
-    }
+  /**
+   * Reads from the file until any form of whitespace has been reached, or the end of a multiline
+   * comment, and places the result into a buffer to be interpreted later. Removes all comments and
+   * will never pass source code that is within comments through to the buffer
+   */
+  private void readFileIntoBufferUntilWhitespace() {
+    String bufferCandidate = "";
+    String character;
 
-    private java.util.Scanner fileScanner;
-    private int scannerRowPosition;
-    private int currentRow;
-    private int scannerColumnPosition;
-    private int currentColumn;
+    // Start by assuming we are reading valid code
+    ReaderStates readerState = ReaderStates.CODE;
 
-    private String buffer;
+    // The current row and current column are the starting row and column of the buffer we are
+    // scanning. The line number and column number may change if a multiline comment begins
+    // immediately after the token and no whitespace, as these will be consumed and flushed before
+    // this function returns which will increment the line number and column number. Because of
+    // this, the line number cannot reliably identify the line of a token when read from the buffer
+    // so save it before we start scanning
+    currentRow = scannerRowPosition;
+    currentColumn = scannerColumnPosition;
 
-    // When scanning an undefined token, we keep consuming until we see a valid character. The issue here is that this
-    // valid character has now been read from the file, but we want to return the undefined token and not have the
-    // valid character included. So we save it in this buffer and return the undefined token string, then next time
-    // the file reader is called, clear this buffer first before reading from the file again.
-    private String fileReaderUndefinedTokenBuffer;
-    private final Common.OutputController outputController;
-    private final Common.SymbolTable symbolTable;
-    private final Common.Utils utils;
-
-
-    public Scanner(Common.OutputController outputController_, Common.SymbolTable symbolTable_) {
-        scannerColumnPosition = 1;
-        scannerRowPosition = 1;
-        buffer = "";
+    // Loop until we have reached the end of file, ensuring to check that the file reader buffer is
+    // empty
+    while (!eof() || fileReaderUndefinedTokenBuffer.length() > 0) {
+      // If the file reader buffer is empty, read a character from the file and immediately save it
+      // to the listing If the buffer is not empty, read out of there first.
+      if (fileReaderUndefinedTokenBuffer.length() == 0) {
+        character = fileScanner.next();
+        outputController.addListingCharacter(character);
+      } else {
+        character = fileReaderUndefinedTokenBuffer;
         fileReaderUndefinedTokenBuffer = "";
-        outputController = outputController_;
-        symbolTable = symbolTable_;
-        utils = Common.Utils.getUtils();
+        // For the character to be in the reader buffer, it has already been parsed and the counter
+        // incremented
+        currentColumn--;
+      }
+
+      // Ignore carriage returns
+      if (character.charAt(0) == 13)
+        continue;
+
+      // Keep track of the rows and columns from the perspective of the scanner. Note that the
+      // counters are separate from the currentRow and currentColumn variables, which keep track of
+      // the location of the last token. Comments can cause these values to become out of sync
+      // momentarily Tab characters count as 4 spaces for column positions, according to
+      // specification
+      scannerColumnPosition += character.charAt(0) == 9 ? 4 : 1;
+      if (character.compareTo("\n") == 0) {
+        scannerRowPosition++;
+        scannerColumnPosition = 1;
+      }
+
+      // If a " symbol has been found and we are currently scanning code, we have now entered a
+      // string
+      if (readerState == ReaderStates.CODE && character.compareTo("\"") == 0)
+        readerState = ReaderStates.IN_STRING;
+
+      // Check for invalid characters and break on whitespace
+      if (readerState == ReaderStates.CODE || readerState == ReaderStates.IN_UNDEFINED_TOKEN) {
+        // If the character is undefined, enter the undefined token state, and consume until a valid
+        // character has been seen
+        if (utils.matches(character, MatchTypes.UNDEFINED)) {
+          readerState = ReaderStates.IN_UNDEFINED_TOKEN;
+        } else if (readerState == ReaderStates.IN_UNDEFINED_TOKEN
+            && !utils.matches(character, MatchTypes.UNDEFINED)) {
+          // By reaching this point, the entire undefined token has been read into the
+          // bufferCandidate if the character in question is anything other than a newline we should
+          // save it in the file reader buffer to interpret in the next pass as it is a valid
+          // character
+          if (character.compareTo("\n") != 0) {
+            fileReaderUndefinedTokenBuffer = character;
+          }
+          break;
+        }
+        // If the character is a space, a newline or a tab, we have grabbed a sufficient sample for
+        // the buffer
+        if (utils.matches(character, MatchTypes.WHITESPACE)) {
+          break;
+        }
+      }
+
+      bufferCandidate += character;
+
+      // Check if adding that character has caused the context to change to inside a comment
+      if (bufferCandidate.contains("/--") && readerState == ReaderStates.CODE)
+        readerState = ReaderStates.IN_SINGLE_LINE_COMMENT;
+      if (bufferCandidate.contains("/**") && readerState == ReaderStates.CODE)
+        readerState = ReaderStates.IN_MULTI_LINE_COMMENT;
+
+      // Check if a single line comment has ended at a newline
+      if (readerState == ReaderStates.IN_SINGLE_LINE_COMMENT && character.compareTo("\n") == 0) {
+        bufferCandidate = bufferCandidate.substring(0, bufferCandidate.indexOf("/--"));
+        break;
+      }
+      // Check if a multiline comment has ended at a **/ or if the file has terminated
+      if (readerState == ReaderStates.IN_MULTI_LINE_COMMENT
+          && (bufferCandidate.endsWith("**/") || eof())) {
+        bufferCandidate = bufferCandidate.substring(0, bufferCandidate.indexOf("/**"));
+        break;
+      }
+      // Check if a string has ended (must start and end with a " and be at least 2 characters long
+      // so a single " does not get considered a string)
+      if (bufferCandidate.startsWith("\"") && bufferCandidate.endsWith("\"")
+          && bufferCandidate.length() > 1) {
+        break;
+      }
+      // Check if a string has been started but a newline has been reached before the second ", in
+      // which case remove the trailing newline character and return where it will be interpreted as
+      // an undefined token
+      if (readerState == ReaderStates.IN_STRING && character.compareTo("\n") == 0) {
+        bufferCandidate = bufferCandidate.substring(0, bufferCandidate.length() - 1);
+        break;
+      }
     }
 
-    public void init(String filename) {
-        fileScanner = null;
-        try {
-            fileScanner = new java.util.Scanner(new File(filename));
-            fileScanner.useDelimiter("");
-        } catch (FileNotFoundException e) {
-            System.err.println("File \"" + filename + "\" does not exist");
-            System.exit(1);
-        }
+    // Extra check for eof to prevent infinite loops if there is whitespace at the end of the file.
+    // Otherwise recurse to consume any repeated spaces or newlines mid-code
+    if ((!eof() || fileReaderUndefinedTokenBuffer.length() > 0) && bufferCandidate.length() == 0) {
+      readFileIntoBufferUntilWhitespace();
+    } else {
+      // Save the candidate to the buffer to be read from later
+      buffer = bufferCandidate;
+    }
+  }
+
+  /**
+   * This context matcher allows us to handle cases where there is no whitespace between a sample
+   * but there is no syntactical way that it could be a single token. It reads characters from the
+   * buffer and tries to find the longest candidate token string literal that it can see. It follows
+   * some simple rules:
+   * - Any sample that starts with a character is assumed to be an identifier all the way until a
+   * punctuation mark is reached
+   * - Any sample that begins with a number ends at the next character or punctuation mark unless it
+   * is a decimal point followed by more numbers
+   * - Any sample that begins with punctuation ends either at the next character, number, or when it
+   * no longer matches a valid operator
+   *
+   * @return A candidate token string to be passed to the Token constructor from the buffer
+   * @brief Scans the buffer and finds the next valid token string by following some basic
+   * syntactical rules
+   */
+  private String getTokenStringFromBuffer() {
+    String tokenStringCandidate = "";
+    String character;
+
+    // This could either be a full string or just a phrase that starts with a " . In either case,
+    // return it as a token candidate as regardless of whether the string ends or not, strings
+    // cannot be multiline so if it was not terminated correctly it should become an undefined token
+    if (buffer.startsWith("\"")) {
+      tokenStringCandidate = buffer;
+      buffer = "";
+      return tokenStringCandidate;
     }
 
-    /**
-     * Returns whether the scanner has reached the end of file
-     * @return the result of a scanner hasNext function on the current source file
-     */
-    private boolean eof() {
-        return !fileScanner.hasNext();
-    }
+    // Assume we are undefined, a state which will allow the context to be overwritten by any valid
+    // character
+    ContextStates contextState = ContextStates.UNDEFINED;
+    // Assume we have not found a token string from the buffer yet
+    boolean tokenStringFound = false;
+    // Used exclusively for matching floats, to keep track of whether we have seen a decimal point
+    // or not
+    DecimalStates decimalState = DecimalStates.INITIAL;
+    // The current index of the buffer we are observing. The buffer is only observed during this
+    // loop, not edited or consumed until the end of the function.
+    int index;
+    // Loop through the buffer and observe a new character each time
+    for (index = 0; index < buffer.length(); index++) {
+      character = String.valueOf(buffer.charAt(index));
 
-    /**
-     * Reads from the file until any form of whitespace has been reached, or the end of a multiline comment, and places
-     * the result into a buffer to be interpreted later. Removes all comments and will never pass source code that is
-     * within comments through to the buffer
-     */
-    private void readFileIntoBufferUntilWhitespace() {
-        String bufferCandidate = "";
-        String character;
-
-        // Start by assuming we are reading valid code
-        ReaderStates readerState = ReaderStates.CODE;
-
-        // The current row and current column are the starting row and column of the buffer we are scanning. The line
-        // number and column number may change if a multiline comment begins immediately after the token and no
-        // whitespace, as these will be consumed and flushed before this function returns which will increment the line
-        // number and column number. Because of this, the line number cannot reliably identify the line of a token
-        // when read from the buffer so save it before we start scanning
-        currentRow = scannerRowPosition;
-        currentColumn = scannerColumnPosition;
-
-        // Loop until we have reached the end of file, ensuring to check that the file reader buffer is empty
-        while (!eof() || fileReaderUndefinedTokenBuffer.length() > 0) {
-            // If the file reader buffer is empty, read a character from the file and immediately save it to the listing
-            // If the buffer is not empty, read out of there first.
-            if (fileReaderUndefinedTokenBuffer.length() == 0) {
-                character = fileScanner.next();
-                outputController.addListingCharacter(character);
-            } else {
-                character = fileReaderUndefinedTokenBuffer;
-                fileReaderUndefinedTokenBuffer = "";
-                // For the character to be in the reader buffer, it has already been parsed and the counter incremented
-                currentColumn--;
-            }
-
-            // Ignore carriage returns
-            if (character.charAt(0) == 13) continue;
-
-            // Keep track of the rows and columns from the perspective of the scanner. Note that the counters are separate
-            // from the currentRow and currentColumn variables, which keep track of the location of the last token.
-            // Comments can cause these values to become out of sync momentarily
-            // Tab characters count as 4 spaces for column positions, according to specification
-            scannerColumnPosition += character.charAt(0) == 9 ? 4 : 1;
-            if (character.compareTo("\n") == 0) {
-                scannerRowPosition++;
-                scannerColumnPosition = 1;
-            }
-
-            // If a " symbol has been found and we are currently scanning code, we have now entered a string
-            if (readerState == ReaderStates.CODE && character.compareTo("\"") == 0)
-                readerState = ReaderStates.IN_STRING;
-
-            // Check for invalid characters and break on whitespace
-            if (readerState == ReaderStates.CODE || readerState == ReaderStates.IN_UNDEFINED_TOKEN) {
-                // If the character is undefined, enter the undefined token state, and consume until a valid
-                // character has been seen
-                if (utils.matches(character, MatchTypes.UNDEFINED)) {
-                    readerState = ReaderStates.IN_UNDEFINED_TOKEN;
-                } else if (readerState == ReaderStates.IN_UNDEFINED_TOKEN && !utils.matches(character, MatchTypes.UNDEFINED)) {
-                    // By reaching this point, the entire undefined token has been read into the bufferCandidate
-                    // if the character in question is anything other than a newline we should save it in the file
-                    // reader buffer to interpret in the next pass as it is a valid character
-                    if (character.compareTo("\n") != 0) {
-                        fileReaderUndefinedTokenBuffer = character;
-                    }
-                    break;
-                }
-                // If the character is a space, a newline or a tab, we have grabbed a sufficient sample for the buffer
-                if (utils.matches(character, MatchTypes.WHITESPACE)) {
-                    break;
-                }
-            }
-
-            bufferCandidate += character;
-
-            // Check if adding that character has caused the context to change to inside a comment
-            if (bufferCandidate.contains("/--") && readerState == ReaderStates.CODE)
-                readerState = ReaderStates.IN_SINGLE_LINE_COMMENT;
-            if (bufferCandidate.contains("/**") && readerState == ReaderStates.CODE)
-                readerState = ReaderStates.IN_MULTI_LINE_COMMENT;
-
-            // Check if a single line comment has ended at a newline
-            if (readerState == ReaderStates.IN_SINGLE_LINE_COMMENT && character.compareTo("\n") == 0) {
-                bufferCandidate = bufferCandidate.substring(0, bufferCandidate.indexOf("/--"));
-                break;
-            }
-            // Check if a multiline comment has ended at a **/ or if the file has terminated
-            if (readerState == ReaderStates.IN_MULTI_LINE_COMMENT && (bufferCandidate.endsWith("**/") || eof())) {
-                bufferCandidate = bufferCandidate.substring(0, bufferCandidate.indexOf("/**"));
-                break;
-            }
-            // Check if a string has ended (must start and end with a " and be at least 2 characters long so a single "
-            // does not get considered a string)
-            if (bufferCandidate.startsWith("\"") && bufferCandidate.endsWith("\"") && bufferCandidate.length() > 1) {
-                break;
-            }
-            // Check if a string has been started but a newline has been reached before the second ", in which case
-            // remove the trailing newline character and return where it will be interpreted as an undefined token
-            if (readerState == ReaderStates.IN_STRING && character.compareTo("\n") == 0) {
-                bufferCandidate = bufferCandidate.substring(0, bufferCandidate.length() - 1);
-                break;
-            }
-        }
-
-        // Extra check for eof to prevent infinite loops if there is whitespace at the end of the file. Otherwise
-        // recurse to consume any repeated spaces or newlines mid-code
-        if ((!eof() || fileReaderUndefinedTokenBuffer.length() > 0) && bufferCandidate.length() == 0) {
-            readFileIntoBufferUntilWhitespace();
-        } else {
-            // Save the candidate to the buffer to be read from later
-            buffer = bufferCandidate;
-        }
-    }
-
-    /**
-     * This context matcher allows us to handle cases where there is no whitespace between a sample but there is
-     * no syntactical way that it could be a single token. It reads characters from the buffer and tries to find the
-     * longest candidate token string literal that it can see.
-     * It follows some simple rules:
-     * - Any sample that starts with a character is assumed to be an identifier all the way until a punctuation mark is reached
-     * - Any sample that begins with a number ends at the next character or punctuation mark unless it is a decimal point followed by more numbers
-     * - Any sample that begins with punctuation ends either at the next character, number, or when it no longer matches a valid operator
-     *
-     * @return A candidate token string to be passed to the Token constructor from the buffer
-     * @brief Scans the buffer and finds the next valid token string by following some basic syntactical rules
-     */
-    private String getTokenStringFromBuffer() {
-
-
-        String tokenStringCandidate = "";
-        String character;
-
-        // This could either be a full string or just a phrase that starts with a " . In either case, return it as a
-        // token candidate as regardless of whether the string ends or not, strings cannot be multiline so if it was
-        // not terminated correctly it should become an undefined token
-        if (buffer.startsWith("\"")) {
-            tokenStringCandidate = buffer;
-            buffer = "";
-            return tokenStringCandidate;
-        }
-
-        // Assume we are undefined, a state which will allow the context to be overwritten by any valid character
-        ContextStates contextState = ContextStates.UNDEFINED;
-        // Assume we have not found a token string from the buffer yet
-        boolean tokenStringFound = false;
-        // Used exclusively for matching floats, to keep track of whether we have seen a decimal point or not
-        DecimalStates decimalState = DecimalStates.INITIAL;
-        // The current index of the buffer we are observing. The buffer is only observed during this loop, not edited
-        // or consumed until the end of the function.
-        int index;
-        // Loop through the buffer and observe a new character each time
-        for (index = 0; index < buffer.length(); index++) {
-            character = String.valueOf(buffer.charAt(index));
-
-            // Context switching
-            switch (contextState) {
+      // Context switching
+      switch (contextState) {
                 case UNDEFINED -> {
                     // In the undefined state, any valid character will immediately switch context
                     if (utils.matches(character, MatchTypes.LETTER)) contextState = ContextStates.LETTER;

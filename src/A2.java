@@ -13,9 +13,9 @@ import Parser.Parser;
 
 import java.io.File;
 
-public class A1 {
+public class A2 {
     public static void main(String[] args) {
-        A1 a = new A1();
+        A2 a = new A2();
         // Only run the compiler if a valid filename has been provided
         if (a.validateArgs(args)) {
             a.run(args);

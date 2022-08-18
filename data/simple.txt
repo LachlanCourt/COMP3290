@@ -9,7 +9,6 @@ types
 
    arrayType def array [7] of arrayStruct end
 
-
     arrayStruct def
         x : bool,
         y : int,
@@ -18,7 +17,6 @@ types
 
     arrayType def array [8] of arrayStruct end
 
-
-
 arrays
 
+someArray : arrayType

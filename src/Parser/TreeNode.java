@@ -4,7 +4,7 @@ import Scanner.Token;
 
 public class TreeNode {
     enum TreeNodes {
-        NPROG, NGLOB, NILIST, NINIT, NILIT, NFLIT, NTYPEL, NIDEN, NATYPE, NRTYPE, NFLIST, NSDECL, NTDECL, NPRITYP
+        NPROG, NGLOB, NILIST, NINIT, NILIT, NFLIT, NTYPEL, NIDEN, NATYPE, NRTYPE, NFLIST, NSDECL, NTDECL, NPRITYP, NALIST, NARRD
     }
 
     private TreeNodes nodeType;

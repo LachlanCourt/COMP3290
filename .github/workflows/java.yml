@@ -20,4 +20,4 @@ jobs:
     - name: make
       run: cd src && javac A2.java
     - name: run
-      run: cd src && java A2 ../data/CD22Source/simple.txt
+      run: cd src && java A2 ../data/simple.txt

@@ -94,9 +94,14 @@ public class Parser {
 
   private TreeNode init() {
     TreeNode t = new TreeNode(TreeNodes.NINIT);
-    match(Tokens.TIDEN);
+    if (lookahead.getToken()  == Tokens.TIDEN) {
+      t.setLeft(new TreeNode(TreeNodes.NIDEN, lookahead));
+      match(Tokens.TIDEN);
+    }else{
+      error("Missing identifier");
+    }
     match(Tokens.TEQUL);
-    t.setLeft(expr());
+    t.setMid(expr());
     return t;
   }
 
@@ -143,19 +148,19 @@ public class Parser {
     } else if (lookahead.getToken() == Tokens.TIDEN) {
       // Struct
       t.setNodeType(TreeNodes.NRTYPE);
-      t.setMid(nflist());
+      t.setMid(fields());
     }
     match(Tokens.TTEND);
     return t;
   }
 
-  private TreeNode nflist() {
+  private TreeNode fields() {
     TreeNode t1 = sdecl(), t2 = null;
     if (lookahead.getToken() == Tokens.TTEND) {
       return t1;
     } else if (lookahead.getToken() == Tokens.TCOMA) {
       match(Tokens.TCOMA);
-      t2 = nflist();
+      t2 = fields();
     }
     return new TreeNode(TreeNodes.NFLIST, t1, t2);
   }
@@ -174,22 +179,31 @@ public class Parser {
       t.setMid(new TreeNode(TreeNodes.NIDEN, lookahead));
       t.setNodeType(TreeNodes.NTDECL);
       match(Tokens.TIDEN);
-    } else if (lookahead.getToken() == Tokens.TINTG || lookahead.getToken() == Tokens.TFLOT || lookahead.getToken() == Tokens.TBOOL) {
+    } else {
       //stype
-      switch (lookahead.getToken()) {
-        case TINTG -> {
-          t.setMid(new TreeNode(TreeNodes.NPRITYP, lookahead));
-          match(Tokens.TINTG);
-        }
-        case TFLOT -> {
-          t.setMid(new TreeNode(TreeNodes.NPRITYP, lookahead));
-          match(Tokens.TFLOT);
-        }
-        case TBOOL -> {
-          t.setMid(new TreeNode(TreeNodes.NPRITYP, lookahead));
-          match(Tokens.TBOOL);
-        }
+      t.setMid(stype());
+      t.setNodeType(TreeNodes.NTDECL);
+    }
+    return t;
+  }
+
+  private TreeNode stype() {
+    TreeNode t = new TreeNode(TreeNodes.NPRITYP);
+    switch (lookahead.getToken()) {
+      case TINTG -> {
+        t.setToken(lookahead);
+        match(Tokens.TINTG);
       }
+      case TFLOT -> {
+        t.setToken(lookahead);
+        match(Tokens.TFLOT);
+
+      }
+      case TBOOL -> {
+        t.setToken(lookahead);
+        match(Tokens.TBOOL);
+      }
+      default -> error ("Invalid type");
     }
     return t;
   }

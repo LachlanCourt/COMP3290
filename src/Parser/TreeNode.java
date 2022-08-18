@@ -76,4 +76,8 @@ public class TreeNode {
     public void setNodeType(TreeNodes type_) {
         nodeType = type_;
     }
+
+    public void setToken(Token token_) {
+        token = token_;
+    }
 }

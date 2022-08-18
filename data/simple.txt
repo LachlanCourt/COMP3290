@@ -3,5 +3,22 @@ constants
     i = 20,
     r = 5600,
     someVar = 30.8,
-wee = 0
+    weewoo = 0
+
+types
+
+   arrayType def array [7] of arrayStruct end
+
+
+    arrayStruct def
+        x : bool,
+        y : int,
+        z : float
+    end
+
+    arrayType def array [8] of arrayStruct end
+
+
+
+arrays
 

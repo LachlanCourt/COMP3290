@@ -1,9 +1,10 @@
 package Parser;
+
 import Scanner.Token;
 
 public class TreeNode {
     enum TreeNodes {
-        NPROG, NGLOB, NILIST, NINIT, NILIT, NFLIT,
+        NPROG, NGLOB, NILIST, NINIT, NILIT, NFLIT, NTYPEL, NIDEN, NATYPE, NRTYPE, NFLIST, NSDECL, NTDECL, NPRITYP
     }
 
     private TreeNodes nodeType;
@@ -12,7 +13,11 @@ public class TreeNode {
     private TreeNode right;
     private Token token;
 
-    public TreeNode (TreeNodes type_, Token token_, TreeNode left_, TreeNode mid_, TreeNode right_) {
+    public TreeNode() {
+
+    }
+
+    public TreeNode(TreeNodes type_, Token token_, TreeNode left_, TreeNode mid_, TreeNode right_) {
         nodeType = type_;
         token = token_;
         left = left_;
@@ -40,7 +45,7 @@ public class TreeNode {
         nodeType = type_;
         token = null;
         left = left_;
-        mid =  mid_;
+        mid = mid_;
         right = null;
     }
 
@@ -66,5 +71,9 @@ public class TreeNode {
 
     public void setRight(TreeNode right_) {
         right = right_;
+    }
+
+    public void setNodeType(TreeNodes type_) {
+        nodeType = type_;
     }
 }

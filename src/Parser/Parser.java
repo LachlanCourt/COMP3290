@@ -31,6 +31,12 @@ public class Parser {
     System.exit(1);
   }
 
+  private void error(String message) {
+    System.err.println("ERROR");
+    System.err.println(message);
+    System.exit(1);
+  }
+
   private void match(Tokens token) {
     if (token == lookahead.getToken()) lookahead = s.getToken();
     else error("Weewoo", new Token(false));
@@ -60,8 +66,8 @@ public class Parser {
   private TreeNode nglob() {
   TreeNode t = new TreeNode(TreeNodes.NGLOB);
   t.setLeft(consts_spec());
-    //    t.setMid(types_spec());
-//    t.setRight(arrays_spec());
+        t.setMid(types_spec());
+    t.setRight(arrays_spec());
 
     return t;
   }
@@ -92,6 +98,105 @@ public class Parser {
     match(Tokens.TEQUL);
     t.setLeft(expr());
     return t;
+  }
+
+  private TreeNode types_spec() {
+    if (lookahead.getToken() == Tokens.TTYPS) {
+      match(Tokens.TTYPS);
+      return typelist();
+    }
+    return null;
+  }
+
+  private TreeNode typelist() {
+    TreeNode t1 = type(), t2 = null;
+    if (lookahead.getToken() == Tokens.TARRS || lookahead.getToken() == Tokens.TFUNC || lookahead.getToken() == Tokens.TMAIN) {
+      return t1;
+    }
+    t2 = typelist();
+    return new TreeNode(TreeNodes.NTYPEL, t1, t2);
+  }
+
+  private TreeNode type() {
+    TreeNode t = new TreeNode();
+    if (lookahead.getToken()  == Tokens.TIDEN) {
+      t.setLeft(new TreeNode(TreeNodes.NIDEN, lookahead));
+      match(Tokens.TIDEN);
+    }else{
+      error("Missing identifier");
+    }
+    match(Tokens.TTDEF);
+    if (lookahead.getToken() == Tokens.TARAY) {
+      // Array
+      match(Tokens.TARAY);
+      match(Tokens.TLBRK);
+      t.setMid(expr());
+      match(Tokens.TRBRK);
+      match(Tokens.TTTOF);
+      if (lookahead.getToken()  == Tokens.TIDEN) {
+        t.setRight(new TreeNode(TreeNodes.NIDEN, lookahead));
+        match(Tokens.TIDEN);
+      }else{
+        error("Missing identifier");
+      }
+      t.setNodeType(TreeNodes.NATYPE);
+    } else if (lookahead.getToken() == Tokens.TIDEN) {
+      // Struct
+      t.setNodeType(TreeNodes.NRTYPE);
+      t.setMid(nflist());
+    }
+    match(Tokens.TTEND);
+    return t;
+  }
+
+  public TreeNode nflist() {
+    TreeNode t1 = sdecl(), t2 = null;
+    if (lookahead.getToken() == Tokens.TTEND) {
+      return t1;
+    } else if (lookahead.getToken() == Tokens.TCOMA) {
+      match(Tokens.TCOMA);
+      t2 = nflist();
+    }
+    return new TreeNode(TreeNodes.NFLIST, t1, t2);
+  }
+
+  public TreeNode sdecl() {
+    TreeNode t = new TreeNode();
+    if (lookahead.getToken()  == Tokens.TIDEN) {
+      t.setLeft(new TreeNode(TreeNodes.NIDEN, lookahead));
+      match(Tokens.TIDEN);
+    }else{
+      error("Missing identifier");
+    }
+    match(Tokens.TCOLN);
+    if (lookahead.getToken() == Tokens.TIDEN) {
+      //structid
+      t.setMid(new TreeNode(TreeNodes.NIDEN, lookahead));
+      t.setNodeType(TreeNodes.NTDECL);
+      match(Tokens.TIDEN);
+    } else if (lookahead.getToken() == Tokens.TINTG || lookahead.getToken() == Tokens.TFLOT || lookahead.getToken() == Tokens.TBOOL) {
+      //stype
+      switch (lookahead.getToken()) {
+        case TINTG -> {
+          t.setMid(new TreeNode(TreeNodes.NPRITYP, lookahead));
+          match(Tokens.TINTG);
+        }
+        case TFLOT -> {
+          t.setMid(new TreeNode(TreeNodes.NPRITYP, lookahead));
+          match(Tokens.TFLOT);
+        }
+        case TBOOL -> {
+          t.setMid(new TreeNode(TreeNodes.NPRITYP, lookahead));
+          match(Tokens.TBOOL);
+        }
+      }
+    }
+    return t;
+  }
+
+  private TreeNode arrays_spec() {
+    match(Tokens.TARRS);
+    return null;
   }
 
   private TreeNode expr() {

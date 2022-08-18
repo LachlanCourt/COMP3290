@@ -46,7 +46,7 @@ public class A2 {
 
     // Initialise the scanner and parser by passing the filename of the source code
     s.init(args[0]);
-    p.init();
+    p.initialise();
 
     // Start the parser's debug routine to output the result of a scanner getToken call
     p.run();

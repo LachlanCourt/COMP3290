@@ -360,9 +360,63 @@ private TreeNode fact() {
   }
 
   private TreeNode bool() {
+    TreeNode t = new TreeNode(TreeNodes.NBOOL);
+    t.setNextChild(rel());
+    boolr(t);
     return null;
   }
 
+  private TreeNode boolr(TreeNode t) {
+    t.setNextChild(logop());
+    if (t.getMid() != null) {
+      t.setNextChild(rel());
+    }
+    return t;
+  }
+
+  private TreeNode logop() {
+    if (lookahead.getToken() == Tokens.TTAND) {
+      match(Tokens.TTAND);
+      return new TreeNode(TreeNodes.NAND);
+    }
+    else if (lookahead.getToken() == Tokens.TTTOR) {
+      match(Tokens.TTTOR);
+      return new TreeNode(TreeNodes.NOR);
+    } else if (lookahead.getToken() == Tokens.TTXOR) {
+      match(Tokens.TTXOR);
+      return new TreeNode(TreeNodes.NXOR);
+    }
+    return null;
+  }
+
+  private TreeNode rel() {
+    if (lookahead.getToken() == Tokens.TNOTT) {
+      return new TreeNode(TreeNodes.NNOT, expr(), relop(), expr());
+    }
+    TreeNode exprNode = expr();
+    TreeNode relopNode = relop();
+    if (relopNode == null) {
+      return new TreeNode(TreeNodes.NREL, exprNode);
+    }
+    return new TreeNode(TreeNodes.NREL, exprNode, relopNode, expr());
+  }
+
+  private TreeNode relop() {
+    if (lookahead.getToken() == Tokens.TEQEQ) {
+      return new TreeNode(TreeNodes.NEQL);
+    } else if (lookahead.getToken() == Tokens.TNEQL) {
+      return new TreeNode(TreeNodes.NNEQ);
+    }else if (lookahead.getToken() == Tokens.TGRTR) {
+      return new TreeNode(TreeNodes.NGRT);
+    }else if (lookahead.getToken() == Tokens.TLESS) {
+      return new TreeNode(TreeNodes.NLSS);
+    }else if (lookahead.getToken() == Tokens.TLEQL) {
+      return new TreeNode(TreeNodes.NLEQ);
+    }else if (lookahead.getToken() == Tokens.TGEQL) {
+      return new TreeNode(TreeNodes.NGEQ);
+    }
+    return null;
+  }
 
   private TreeNode fncall() {
     if (lookahead.getToken() == Tokens.TIDEN) {
@@ -395,7 +449,7 @@ private TreeNode fact() {
       match(Tokens.TCOMA);
       t2 = elist();
     }
-      return new TreeNode(TreeNodes.NTYPEL, t1, t2);
+      return new TreeNode(TreeNodes.NEXPL, t1, t2);
     }
 
   private TreeNode var() {

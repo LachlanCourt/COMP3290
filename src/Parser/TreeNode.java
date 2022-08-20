@@ -31,7 +31,20 @@ public class TreeNode {
     NSIMV,
     NARRV,
     NAELT,
-    NFCALL
+    NFCALL,
+    NBOOL,
+    NAND,
+    NOR,
+    NXOR,
+    NNOT,
+    NREL,
+    NEQL,
+    NNEQ,
+    NGRT,
+    NLSS,
+    NLEQ,
+    NGEQ,
+    NEXPL
 
   }
 
@@ -80,6 +93,14 @@ public class TreeNode {
     left = left_;
     mid = mid_;
     right = null;
+  }
+
+  public TreeNode(TreeNodes type_, TreeNode left_, TreeNode mid_, TreeNode right_) {
+    nodeType = type_;
+    token = null;
+    left = left_;
+    mid = mid_;
+    right = right_;
   }
 
   public void setNextChild(TreeNode child) {

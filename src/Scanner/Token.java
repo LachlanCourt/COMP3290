@@ -198,6 +198,14 @@ public class Token {
         return token;
     }
 
+    public int getRow() {
+        return row;
+    }
+
+    public int getCol() {
+        return col;
+    }
+
     /**
      * A stringified version of the token, formatted to match specification
      * @return a stringified version of the token

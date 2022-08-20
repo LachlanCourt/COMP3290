@@ -44,7 +44,9 @@ public class TreeNode {
     NLSS,
     NLEQ,
     NGEQ,
-    NEXPL
+    NEXPL,NMAIN
+,NSDLST
+
 
   }
 

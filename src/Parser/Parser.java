@@ -16,6 +16,7 @@ import Scanner.Token.Tokens;
 public class Parser {
   private Scanner s;
   private Token lookahead;
+  private Token previousLookahead;
   public Parser(Scanner s_) {
     s = s_;
   }
@@ -38,10 +39,12 @@ public class Parser {
   }
 
   private void match(Tokens token) {
-    if (token == lookahead.getToken())
+    if (token == lookahead.getToken()) {
+      previousLookahead = lookahead;
       lookahead = s.getToken();
+    }
     else
-      error("Weewoo", new Token(false));
+      error("Failed to match " + token + " around " + previousLookahead.getRow() + ":" + previousLookahead.getCol());
   }
 
   /**
@@ -49,23 +52,24 @@ public class Parser {
    */
   public void run() {
     lookahead = s.getToken();
-    TreeNode syntaxTree = nprog();
+    TreeNode syntaxTree = program();
     if (!lookahead.isEof()) {
       error("Not at eof", new Token(false));
     }
+    System.out.println(syntaxTree);
   }
 
-  private TreeNode nprog() {
+  private TreeNode program() {
     TreeNode t = new TreeNode(TreeNodes.NPROG);
     match(Tokens.TCD22);
     match(Tokens.TIDEN);
-    t.setNextChild(nglob());
+    t.setNextChild(globals());
     //    t.setNextChild(nfuncs());
-    //    t.setNextChild(nmain());
+    t.setNextChild(mainbody());
     return t;
   }
 
-  private TreeNode nglob() {
+  private TreeNode globals() {
     TreeNode t = new TreeNode(TreeNodes.NGLOB);
     t.setNextChild(consts_spec());
     t.setNextChild(types_spec());
@@ -483,5 +487,35 @@ private TreeNode fact() {
     }
     // Simple variable
     return new TreeNode(TreeNodes.NSIMV, new TreeNode(TreeNodes.NIDEN, nameIdenToken));
+  }
+
+  private TreeNode mainbody() {
+    TreeNode t = new TreeNode(TreeNodes.NMAIN);
+    match(Tokens.TMAIN);
+    t.setNextChild(slist());
+    match(Tokens.TBEGN);
+    t.setNextChild(stats());
+    match(Tokens.TTEND);
+    match(Tokens.TCD22);
+    if (lookahead.getToken() == Tokens.TIDEN) {
+    match(Tokens.TIDEN);
+    t.setNextChild(new TreeNode(TreeNodes.NIDEN, lookahead));
+    } else {
+      error("Missing identifier");
+    }
+    return t;
+  }
+
+  private TreeNode slist() {
+      TreeNode t1 = sdecl(), t2 = null;
+      if (lookahead.getToken() == Tokens.TBEGN) {
+        return t1;
+      }
+      t2 = slist();
+      return new TreeNode(TreeNodes.NSDLST, t1, t2);
+    }
+
+  private TreeNode stats() {
+    return null;
   }
 }

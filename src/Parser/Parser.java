@@ -250,8 +250,66 @@ public class Parser {
     return t;
   }
 
-
   private TreeNode expr() {
+    TreeNode t = new TreeNode();
+    t.setNextChild(term());
+    // Sets node type, if it is not epsilon
+    t.setNextChild(exprr(t));
+    if (t.getNodeType() == null) {
+      // Epsilon path of recursive exprr rule. If no following token was found, just return the term as its own node
+      return t.getLeft();
+    }
+    return t;
+  }
+
+  private TreeNode exprr(TreeNode t) {
+    if (lookahead.getToken() == Tokens.TPLUS) {
+      match(Tokens.TPLUS);
+      t.setNodeType(TreeNodes.NADD);
+      t.setNextChild(term());
+    } else if (lookahead.getToken() == Tokens.TMINS) {
+      match(Tokens.TMINS);
+      t.setNodeType(TreeNodes.NSUB);
+      t.setNextChild(term());
+    }
+    return t;
+  }
+
+  private TreeNode term() {
+    TreeNode t = new TreeNode();
+    t.setNextChild(fact());
+    // Sets node type, if it is not epsilon
+    t.setNextChild(termr(t));
+    if (t.getNodeType() == null) {
+      // Epsilon path of recursive termr rule. If no following token was found, just return the term as its own node
+      return t.getLeft();
+    }
+    return t;
+  }
+
+  private TreeNode termr(TreeNode t) {
+    if (lookahead.getToken() == Tokens.TSTAR) {
+      match(Tokens.TSTAR);
+      t.setNodeType(TreeNodes.NMUL);
+      t.setNextChild(fact());
+    } else if (lookahead.getToken() == Tokens.TDIVD) {
+      match(Tokens.TDIVD);
+      t.setNodeType(TreeNodes.NDIV);
+      t.setNextChild(fact());
+
+  } else if (lookahead.getToken() == Tokens.TPERC) {
+    match(Tokens.TPERC);
+    t.setNodeType(TreeNodes.NMOD);
+    t.setNextChild(fact());
+  }
+    return t;
+  }
+
+private TreeNode fact() {
+    return exponent();
+}
+
+  private TreeNode exponent() {
     if (lookahead.getToken() == Tokens.TILIT ) {
       match(Tokens.TILIT);
       return new TreeNode(TreeNodes.NILIT);

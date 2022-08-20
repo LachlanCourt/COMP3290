@@ -19,8 +19,15 @@ public class TreeNode {
     NTDECL,
     NPRITYP,
     NALIST,
-    NARRD
-  }
+    NARRD,
+    NADD,
+    NSUB,
+    NMUL,
+    NDIV,
+            NMOD,
+
+
+    }
 
   private TreeNodes nodeType;
   private TreeNode left;
@@ -86,6 +93,10 @@ public class TreeNode {
 
   public void setNodeType(TreeNodes type_) {
     nodeType = type_;
+  }
+
+  public TreeNodes getNodeType() {
+    return nodeType;
   }
 
   public void setToken(Token token_) {

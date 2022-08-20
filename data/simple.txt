@@ -5,7 +5,7 @@ constants
     b = 10 + 3 * 5,
     c = 6 / 3,
     d = 5 % 7,
-    e = 5 ^ 3
+    e = 5 ^ 3,
     r = 5600,
     someVar = 30.8,
     weewoo = 0

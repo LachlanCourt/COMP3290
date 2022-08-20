@@ -24,10 +24,16 @@ public class TreeNode {
     NSUB,
     NMUL,
     NDIV,
-            NMOD,
+    NMOD,
+    NPOW,
+    NTRUE,
+    NFALS,NSIMV,
+    NARRV,
+            NAELT,NFCALL
 
 
-    }
+
+  }
 
   private TreeNodes nodeType;
   private TreeNode left;
@@ -61,6 +67,13 @@ public class TreeNode {
     right = null;
   }
 
+  public TreeNode(TreeNodes type_, TreeNode left_) {
+    nodeType = type_;
+    token = null;
+    left = left_;
+    mid = null;
+    right = null;
+  }
   public TreeNode(TreeNodes type_, TreeNode left_, TreeNode mid_) {
     nodeType = type_;
     token = null;

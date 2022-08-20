@@ -19,7 +19,33 @@ public class TreeNode {
     NTDECL,
     NPRITYP,
     NALIST,
-    NARRD
+    NARRD,
+    NADD,
+    NSUB,
+    NMUL,
+    NDIV,
+    NMOD,
+    NPOW,
+    NTRUE,
+    NFALS,
+    NSIMV,
+    NARRV,
+    NAELT,
+    NFCALL,
+    NBOOL,
+    NAND,
+    NOR,
+    NXOR,
+    NNOT,
+    NREL,
+    NEQL,
+    NNEQ,
+    NGRT,
+    NLSS,
+    NLEQ,
+    NGEQ,
+    NEXPL
+
   }
 
   private TreeNodes nodeType;
@@ -54,12 +80,27 @@ public class TreeNode {
     right = null;
   }
 
+  public TreeNode(TreeNodes type_, TreeNode left_) {
+    nodeType = type_;
+    token = null;
+    left = left_;
+    mid = null;
+    right = null;
+  }
   public TreeNode(TreeNodes type_, TreeNode left_, TreeNode mid_) {
     nodeType = type_;
     token = null;
     left = left_;
     mid = mid_;
     right = null;
+  }
+
+  public TreeNode(TreeNodes type_, TreeNode left_, TreeNode mid_, TreeNode right_) {
+    nodeType = type_;
+    token = null;
+    left = left_;
+    mid = mid_;
+    right = right_;
   }
 
   public void setNextChild(TreeNode child) {
@@ -86,6 +127,10 @@ public class TreeNode {
 
   public void setNodeType(TreeNodes type_) {
     nodeType = type_;
+  }
+
+  public TreeNodes getNodeType() {
+    return nodeType;
   }
 
   public void setToken(Token token_) {

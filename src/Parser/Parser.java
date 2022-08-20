@@ -250,16 +250,238 @@ public class Parser {
     return t;
   }
 
-
   private TreeNode expr() {
+    TreeNode t = new TreeNode();
+    t.setNextChild(term());
+    // Sets node type, if it is not epsilon
+    t.setNextChild(exprr(t));
+    if (t.getNodeType() == null) {
+      // Epsilon path of recursive exprr rule. If no following token was found, just return the term as its own node
+      return t.getLeft();
+    }
+    return t;
+  }
+
+  private TreeNode exprr(TreeNode t) {
+    if (lookahead.getToken() == Tokens.TPLUS) {
+      match(Tokens.TPLUS);
+      t.setNodeType(TreeNodes.NADD);
+      t.setNextChild(term());
+    } else if (lookahead.getToken() == Tokens.TMINS) {
+      match(Tokens.TMINS);
+      t.setNodeType(TreeNodes.NSUB);
+      t.setNextChild(term());
+    }
+    return t;
+  }
+
+  private TreeNode term() {
+    TreeNode t = new TreeNode();
+    t.setNextChild(fact());
+    // Sets node type, if it is not epsilon
+    t.setNextChild(termr(t));
+    if (t.getNodeType() == null) {
+      // Epsilon path of recursive termr rule. If no following token was found, just return the term as its own node
+      return t.getLeft();
+    }
+    return t;
+  }
+
+  private TreeNode termr(TreeNode t) {
+    if (lookahead.getToken() == Tokens.TSTAR) {
+      match(Tokens.TSTAR);
+      t.setNodeType(TreeNodes.NMUL);
+      t.setNextChild(fact());
+    } else if (lookahead.getToken() == Tokens.TDIVD) {
+      match(Tokens.TDIVD);
+      t.setNodeType(TreeNodes.NDIV);
+      t.setNextChild(fact());
+
+  } else if (lookahead.getToken() == Tokens.TPERC) {
+    match(Tokens.TPERC);
+    t.setNodeType(TreeNodes.NMOD);
+    t.setNextChild(fact());
+  }
+    return t;
+  }
+
+private TreeNode fact() {
+  TreeNode t = new TreeNode();
+  t.setNextChild(exponent());
+  // Sets node type, if it is not epsilon
+  t.setNextChild(factr(t));
+  if (t.getNodeType() == null) {
+    // Epsilon path of recursive factr rule. If no following token was found, just return the term as its own node
+    return t.getLeft();
+  }
+  return t;
+}
+
+  private TreeNode factr(TreeNode t) {
+    if (lookahead.getToken() == Tokens.TCART) {
+      match(Tokens.TCART);
+      t.setNodeType(TreeNodes.NPOW);
+      t.setNextChild(exponent());
+    }
+    return t;
+  }
+
+  private TreeNode exponent() {
     if (lookahead.getToken() == Tokens.TILIT ) {
       match(Tokens.TILIT);
       return new TreeNode(TreeNodes.NILIT);
     } else if (lookahead.getToken() == Tokens.TFLIT){
      match(Tokens.TFLIT);
      return new TreeNode(TreeNodes.NFLIT);
+    } else if (lookahead.getToken() == Tokens.TTRUE) {
+      match(Tokens.TTRUE);
+      return new TreeNode(TreeNodes.NTRUE);
+    }else if (lookahead.getToken() == Tokens.TFALS) {
+      match(Tokens.TFALS);
+      return new TreeNode(TreeNodes.NFALS);
+    } else if (lookahead.getToken() == Tokens.TLPAR) {
+      match(Tokens.TLPAR);
+      TreeNode t = bool();
+      match(Tokens.TRPAR);
+      return t;
+    } else if (lookahead.getToken() == Tokens.TIDEN) {
+      Token token = lookahead;
+      match(Tokens.TIDEN);
+      if (lookahead.getToken() == Tokens.TLPAR) {
+        return fncall(token);
+      }
+      // If the node is not a function call, it's either an ID or an array accessor. Either way start by passing the id
+      // token straight to the overridden function
+      return var(token);
+
     }
-    error("Not a number", new Token(true));
+    error("Not a number");
     return null;
+  }
+
+  private TreeNode bool() {
+    TreeNode t = new TreeNode(TreeNodes.NBOOL);
+    t.setNextChild(rel());
+    boolr(t);
+    return null;
+  }
+
+  private TreeNode boolr(TreeNode t) {
+    t.setNextChild(logop());
+    if (t.getMid() != null) {
+      t.setNextChild(rel());
+    }
+    return t;
+  }
+
+  private TreeNode logop() {
+    if (lookahead.getToken() == Tokens.TTAND) {
+      match(Tokens.TTAND);
+      return new TreeNode(TreeNodes.NAND);
+    }
+    else if (lookahead.getToken() == Tokens.TTTOR) {
+      match(Tokens.TTTOR);
+      return new TreeNode(TreeNodes.NOR);
+    } else if (lookahead.getToken() == Tokens.TTXOR) {
+      match(Tokens.TTXOR);
+      return new TreeNode(TreeNodes.NXOR);
+    }
+    return null;
+  }
+
+  private TreeNode rel() {
+    if (lookahead.getToken() == Tokens.TNOTT) {
+      return new TreeNode(TreeNodes.NNOT, expr(), relop(), expr());
+    }
+    TreeNode exprNode = expr();
+    TreeNode relopNode = relop();
+    if (relopNode == null) {
+      return new TreeNode(TreeNodes.NREL, exprNode);
+    }
+    return new TreeNode(TreeNodes.NREL, exprNode, relopNode, expr());
+  }
+
+  private TreeNode relop() {
+    if (lookahead.getToken() == Tokens.TEQEQ) {
+      return new TreeNode(TreeNodes.NEQL);
+    } else if (lookahead.getToken() == Tokens.TNEQL) {
+      return new TreeNode(TreeNodes.NNEQ);
+    }else if (lookahead.getToken() == Tokens.TGRTR) {
+      return new TreeNode(TreeNodes.NGRT);
+    }else if (lookahead.getToken() == Tokens.TLESS) {
+      return new TreeNode(TreeNodes.NLSS);
+    }else if (lookahead.getToken() == Tokens.TLEQL) {
+      return new TreeNode(TreeNodes.NLEQ);
+    }else if (lookahead.getToken() == Tokens.TGEQL) {
+      return new TreeNode(TreeNodes.NGEQ);
+    }
+    return null;
+  }
+
+  private TreeNode fncall() {
+    if (lookahead.getToken() == Tokens.TIDEN) {
+      Token token = lookahead;
+      match(Tokens.TIDEN);
+      return fncall(token);
+    }
+    error("Expected identifier");
+    return null;
+  }
+
+  private TreeNode fncall(Token nameIdenToken)
+  {
+    TreeNode t = new TreeNode(TreeNodes.NFCALL);
+    t.setNextChild(new TreeNode(TreeNodes.NIDEN, nameIdenToken));
+    match(Tokens.TLPAR);
+    if (lookahead.getToken() != Tokens.TRPAR) {
+      t.setNextChild(elist());
+    }
+    match(Tokens.TRPAR);
+    return t;
+  }
+
+  private TreeNode elist() {
+      TreeNode t1 = bool(), t2 = null;
+      if (lookahead.getToken() == Tokens.TRPAR) {
+        return t1;
+      }
+    if (lookahead.getToken() == Tokens.TCOMA) {
+      match(Tokens.TCOMA);
+      t2 = elist();
+    }
+      return new TreeNode(TreeNodes.NEXPL, t1, t2);
+    }
+
+  private TreeNode var() {
+    if (lookahead.getToken() == Tokens.TIDEN) {
+      Token token = lookahead;
+      match(Tokens.TIDEN);
+      return var(token);
+    }
+    error("Expected identifier");
+    return null;
+  }
+
+  private TreeNode var(Token nameIdenToken) {
+    if (lookahead.getToken() == Tokens.TLBRK) {
+      TreeNode t = new TreeNode();
+      match(Tokens.TLBRK);
+      t.setNextChild(new TreeNode(TreeNodes.NIDEN, nameIdenToken));
+      t.setNextChild(expr());
+      match(Tokens.TRBRK);
+      // Access struct field
+      if (lookahead.getToken() == Tokens.TDOTT) {
+        match(Tokens.TDOTT);
+        if (lookahead.getToken() == Tokens.TIDEN) {
+          Token fieldIdenToken = lookahead;
+          match(Tokens.TIDEN);
+          t.setNextChild(new TreeNode(TreeNodes.NIDEN, fieldIdenToken));
+        }
+      }
+      // Either return with whole struct or individual field if the above if ran
+      return t;
+    }
+    // Simple variable
+    return new TreeNode(TreeNodes.NSIMV, new TreeNode(TreeNodes.NIDEN, nameIdenToken));
   }
 }

@@ -380,11 +380,23 @@ private TreeNode fact() {
     t.setNextChild(new TreeNode(TreeNodes.NIDEN, nameIdenToken));
     match(Tokens.TLPAR);
     if (lookahead.getToken() != Tokens.TRPAR) {
-      t.setNextChild(expr());
+      t.setNextChild(elist());
     }
     match(Tokens.TRPAR);
     return t;
   }
+
+  private TreeNode elist() {
+      TreeNode t1 = bool(), t2 = null;
+      if (lookahead.getToken() == Tokens.TRPAR) {
+        return t1;
+      }
+    if (lookahead.getToken() == Tokens.TCOMA) {
+      match(Tokens.TCOMA);
+      t2 = elist();
+    }
+      return new TreeNode(TreeNodes.NTYPEL, t1, t2);
+    }
 
   private TreeNode var() {
     if (lookahead.getToken() == Tokens.TIDEN) {
@@ -419,4 +431,3 @@ private TreeNode fact() {
     return new TreeNode(TreeNodes.NSIMV, new TreeNode(TreeNodes.NIDEN, nameIdenToken));
   }
 }
-

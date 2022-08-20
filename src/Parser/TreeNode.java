@@ -27,11 +27,11 @@ public class TreeNode {
     NMOD,
     NPOW,
     NTRUE,
-    NFALS,NSIMV,
+    NFALS,
+    NSIMV,
     NARRV,
-            NAELT,NFCALL
-
-
+    NAELT,
+    NFCALL
 
   }
 

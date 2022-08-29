@@ -46,6 +46,7 @@ public class TreeNode {
     NGEQ,
     NEXPL,NMAIN
 ,NSDLST
+,NSTATS
 
 
   }

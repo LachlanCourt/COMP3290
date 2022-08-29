@@ -516,6 +516,46 @@ private TreeNode fact() {
     }
 
   private TreeNode stats() {
+    TreeNode t = null;
+    // Assign t1
+    if (lookahead.getToken() == Tokens.TTFOR || lookahead.getToken() == Tokens.TIFTH) {
+      t = strstat();
+    } else if (lookahead.getToken() == Tokens.TREPT || lookahead.getToken() == Tokens.TIDEN || lookahead.getToken() == Tokens.TINPT || lookahead.getToken() == Tokens.TPRNT || lookahead.getToken() == Tokens.TPRLN || lookahead.getToken() == Tokens.TRETN) {
+      t = stat();
+    }
+    // Epsilon path
+    if (lookahead.getToken() != Tokens.TTFOR && lookahead.getToken() != Tokens.TIFTH && lookahead.getToken() != Tokens.TREPT && lookahead.getToken() != Tokens.TIDEN && lookahead.getToken() != Tokens.TINPT && lookahead.getToken() != Tokens.TPRNT && lookahead.getToken() != Tokens.TPRLN && lookahead.getToken() != Tokens.TRETN) {
+      return t;
+    }
+    return new TreeNode(TreeNodes.NSTATS, t, stats());
+  }
+
+
+private TreeNode stat() {
+    if (lookahead.getToken() == Tokens.TREPT) {
+      return reptstat();
+    } else if (lookahead.getToken() == Tokens.TINPT || lookahead.getToken() == Tokens.TPRNT || lookahead.getToken() == Tokens.TPRLN) {
+      return iostat();
+    } else if (lookahead.getToken() == Tokens.TRETN) {
+      return returnstat();
+    }
+
+
+  return null;
+}
+
+private TreeNode reptstat() {
+    return null;
+}
+
+private TreeNode iostat() {
+    return null;
+}
+
+private TreeNode returnstat() {
+    return null;
+}
+  private TreeNode strstat() {
     return null;
   }
 }

@@ -11,7 +11,6 @@ public class TreeNode {
         NILIT,
         NFLIT,
         NTYPEL,
-        NIDEN,
         NATYPE,
         NRTYPE,
         NFLIST,
@@ -37,7 +36,6 @@ public class TreeNode {
         NOR,
         NXOR,
         NNOT,
-        NREL,
         NEQL,
         NNEQ,
         NGRT,
@@ -68,6 +66,16 @@ public class TreeNode {
         NSTRG,
         NCALL,
         NRETN,
+        NFUNCS,
+        NFUND,
+
+        NPLIST,
+
+        NSIMP,
+        NARRP,
+        NARRC,
+
+        NDLIST,
     }
 
     private TreeNodes nodeType;

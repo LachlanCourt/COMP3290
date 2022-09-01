@@ -67,7 +67,7 @@ public class Parser {
         match(Tokens.TCD22);
         match(Tokens.TIDEN);
         t.setNextChild(globals());
-        //    t.setNextChild(nfuncs());
+        t.setNextChild(funcs());
         t.setNextChild(mainbody());
         return t;
     }
@@ -105,7 +105,7 @@ public class Parser {
     private TreeNode init() {
         TreeNode t = new TreeNode(TreeNodes.NINIT);
         if (lookahead.getToken() == Tokens.TIDEN) {
-            t.setNextChild(new TreeNode(TreeNodes.NIDEN, lookahead));
+            t.setNextChild(new TreeNode(TreeNodes.NSIMV, lookahead));
             match(Tokens.TIDEN);
         } else {
             error("Missing identifier");
@@ -136,7 +136,7 @@ public class Parser {
     private TreeNode type() {
         TreeNode t = new TreeNode();
         if (lookahead.getToken() == Tokens.TIDEN) {
-            t.setNextChild(new TreeNode(TreeNodes.NIDEN, lookahead));
+            t.setNextChild(new TreeNode(TreeNodes.NSIMV, lookahead));
             match(Tokens.TIDEN);
         } else {
             error("Missing identifier");
@@ -150,7 +150,7 @@ public class Parser {
             match(Tokens.TRBRK);
             match(Tokens.TTTOF);
             if (lookahead.getToken() == Tokens.TIDEN) {
-                t.setNextChild(new TreeNode(TreeNodes.NIDEN, lookahead));
+                t.setNextChild(new TreeNode(TreeNodes.NSIMV, lookahead));
                 match(Tokens.TIDEN);
             } else {
                 error("Missing identifier");
@@ -179,7 +179,7 @@ public class Parser {
     private TreeNode sdecl() {
         TreeNode t = new TreeNode();
         if (lookahead.getToken() == Tokens.TIDEN) {
-            t.setNextChild(new TreeNode(TreeNodes.NIDEN, lookahead));
+            t.setNextChild(new TreeNode(TreeNodes.NSIMV, lookahead));
             match(Tokens.TIDEN);
         } else {
             error("Missing identifier");
@@ -187,7 +187,7 @@ public class Parser {
         match(Tokens.TCOLN);
         if (lookahead.getToken() == Tokens.TIDEN) {
             // structid
-            t.setNextChild(new TreeNode(TreeNodes.NIDEN, lookahead));
+            t.setNextChild(new TreeNode(TreeNodes.NSIMV, lookahead));
             t.setNodeType(TreeNodes.NTDECL);
             match(Tokens.TIDEN);
         } else {
@@ -242,14 +242,14 @@ public class Parser {
     private TreeNode arrdecl() {
         TreeNode t = new TreeNode(TreeNodes.NARRD);
         if (lookahead.getToken() == Tokens.TIDEN) {
-            t.setNextChild(new TreeNode(TreeNodes.NIDEN, lookahead));
+            t.setNextChild(new TreeNode(TreeNodes.NSIMV, lookahead));
             match(Tokens.TIDEN);
         } else {
             error("Missing identifier");
         }
         match(Tokens.TCOLN);
         if (lookahead.getToken() == Tokens.TIDEN) {
-            t.setNextChild(new TreeNode(TreeNodes.NIDEN, lookahead));
+            t.setNextChild(new TreeNode(TreeNodes.NSIMV, lookahead));
             match(Tokens.TIDEN);
         } else {
             error("Missing identifier");
@@ -396,15 +396,26 @@ public class Parser {
     }
 
     private TreeNode rel() {
+        boolean not = false;
         if (lookahead.getToken() == Tokens.TNOTT) {
-            return new TreeNode(TreeNodes.NNOT, expr(), relop(), expr());
+            match(Tokens.TNOTT);
+            not = true;
+//            return new TreeNode(TreeNodes.NNOT, expr(), relop(), expr());
         }
         TreeNode exprNode = expr();
         TreeNode relopNode = relop();
         if (relopNode == null) {
-            return new TreeNode(TreeNodes.NREL, exprNode);
+            if (not) {
+                return new TreeNode(TreeNodes.NNOT, exprNode);
+            }
+            return exprNode;
         }
-        return new TreeNode(TreeNodes.NREL, exprNode, relopNode, expr());
+        relopNode.setNextChild(exprNode);
+        relopNode.setNextChild(expr());
+        if (not) {
+            return new TreeNode(TreeNodes.NNOT, relopNode);
+        }
+        return relopNode;
     }
 
     private TreeNode relop() {
@@ -442,7 +453,7 @@ public class Parser {
 
     private TreeNode fncall(Token nameIdenToken) {
         TreeNode t = new TreeNode(TreeNodes.NFCALL);
-        t.setNextChild(new TreeNode(TreeNodes.NIDEN, nameIdenToken));
+        t.setNextChild(new TreeNode(TreeNodes.NSIMV, nameIdenToken));
         match(Tokens.TLPAR);
         if (lookahead.getToken() != Tokens.TRPAR) {
             t.setNextChild(elist());
@@ -477,7 +488,7 @@ public class Parser {
         if (lookahead.getToken() == Tokens.TLBRK) {
             TreeNode t = new TreeNode();
             match(Tokens.TLBRK);
-            t.setNextChild(new TreeNode(TreeNodes.NIDEN, nameIdenToken));
+            t.setNextChild(new TreeNode(TreeNodes.NSIMV, nameIdenToken));
             t.setNextChild(expr());
             match(Tokens.TRBRK);
             // Access struct field
@@ -486,14 +497,14 @@ public class Parser {
                 if (lookahead.getToken() == Tokens.TIDEN) {
                     Token fieldIdenToken = lookahead;
                     match(Tokens.TIDEN);
-                    t.setNextChild(new TreeNode(TreeNodes.NIDEN, fieldIdenToken));
+                    t.setNextChild(new TreeNode(TreeNodes.NSIMV, fieldIdenToken));
                 }
             }
             // Either return with whole struct or individual field if the above if ran
             return t;
         }
         // Simple variable
-        return new TreeNode(TreeNodes.NSIMV, new TreeNode(TreeNodes.NIDEN, nameIdenToken));
+        return new TreeNode(TreeNodes.NSIMV, nameIdenToken);
     }
 
     private TreeNode mainbody() {
@@ -505,8 +516,9 @@ public class Parser {
         match(Tokens.TTEND);
         match(Tokens.TCD22);
         if (lookahead.getToken() == Tokens.TIDEN) {
+            Token token = lookahead;
             match(Tokens.TIDEN);
-            t.setNextChild(new TreeNode(TreeNodes.NIDEN, lookahead));
+            t.setNextChild(new TreeNode(TreeNodes.NSIMV, token));
         } else {
             error("Missing identifier");
         }
@@ -754,5 +766,105 @@ public class Parser {
             return new TreeNode(TreeNodes.NSTRG, token);
         }
         return expr();
+    }
+
+    private TreeNode funcs() {
+        if (lookahead.getToken()!= Tokens.TFUNC) {
+            return null;
+        }
+        TreeNode t = new TreeNode(TreeNodes.NFUNCS, func());
+        if (lookahead.getToken() == Tokens.TFUNC) {
+            t.setNextChild(funcs());
+        }
+        return t;
+    }
+
+    private TreeNode func() {
+        TreeNode t = new TreeNode(TreeNodes.NFUND);
+        match(Tokens.TFUNC);
+        Token token = lookahead;
+        match(Tokens.TIDEN);
+        t.setToken(token);
+        match(Tokens.TLPAR);
+        TreeNode plistNode = plist();
+        if (plistNode!= null)t.setNextChild(plistNode);
+        match(Tokens.TRPAR);
+        match(Tokens.TCOLN);
+        //TODO add rtype to symbol table
+        TreeNode rtype = rtype();
+        TreeNode funcbodyNode = funcbody();
+        t.setNextChild(funcbodyNode.getLeft());
+        t.setNextChild(funcbodyNode.getMid());
+        return t;
+    }
+
+    private TreeNode plist() {
+        if (lookahead.getToken() == Tokens.TIDEN || lookahead.getToken() == Tokens.TCNST) {
+            return params();
+        }
+        return null;
+    }
+
+    private TreeNode rtype() {
+        if (lookahead.getToken() == Tokens.TVOID) {
+            match(Tokens.TVOID);
+            return null;
+        }
+        return stype();
+    }
+
+    private TreeNode funcbody() {
+        TreeNode t = new TreeNode();
+        t.setNextChild(locals());
+        match(Tokens.TBEGN);
+        t.setNextChild(stats());
+        match(Tokens.TTEND);
+        return t;
+    }
+
+    private TreeNode params() {
+        TreeNode t1 = param(), t2;
+        if (lookahead.getToken() != Tokens.TCOMA) {
+            return t1;
+        } else {
+            match(Tokens.TCOMA);
+            t2 = params();
+        }
+        return new TreeNode(TreeNodes.NPLIST, t1, t2);
+    }
+
+    private TreeNode param() {
+        if (lookahead.getToken() == Tokens.TCNST) {
+            match(Tokens.TCNST);
+            return new TreeNode(TreeNodes.NARRC, arrdecl());
+        } else if (lookahead.getToken() == Tokens.TIDEN) {
+            //TODO CHECK SYMBOL TABLE HERE BECAUSE SDECL AND ARRDECL HAVE SAME SYNTAX BUT WE NEED TO KNOW WHICH
+            // ONE, THIS COULD WELL BE NARRP and ARRDECL
+            return new TreeNode(TreeNodes.NSIMP, sdecl());
+        }
+        return null;
+    }
+
+    private TreeNode locals() {
+        if (lookahead.getToken() == Tokens.TIDEN) {
+            return dlist();
+        }
+        return null;
+    }
+
+    private TreeNode dlist() {
+        TreeNode t1 = decl(), t2;
+        if (lookahead.getToken() != Tokens.TCOMA) {
+            return t1;
+        } else {
+            match(Tokens.TCOMA);
+            t2 = dlist();
+        }
+        return new TreeNode(TreeNodes.NDLIST, t1, t2);
+    }
+
+    private TreeNode decl() {
+        //TODO CHECK SYMBOL TABLE THIS COULD BE ARRDECL
+        return sdecl();
     }
 }

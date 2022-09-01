@@ -22,7 +22,7 @@ types
 
 arrays
 
-    pointsList : pointsListType;
+    pointsList : pointsListType
 
 func calcDistance(a : pointType, b : pointType) : float
 begin
@@ -31,16 +31,17 @@ begin
 end
 
 func readIntoArray() : void
-    i : int;
+    i : int
 begin
     for (i = 0; i < NUMBEROFVALUES)
         input pointsList[i].x, pointsList[i].y, pointsList[i].z;
+        i += 1;
     end
 end
 
 /-- Find the point with the furthest distance from the point identified by the index
 func findFurthestDistanceFromIndex(index : int, furthestDistance : furthestDistanceType) : int
-    i : int;
+    i : int
 begin
     /-- Start by calculating according to the first item in the list as a baseline
     furthestDistance.a = index;
@@ -76,13 +77,13 @@ begin
 
     print "With a distance of ";
     print furthestDistance.distance;
-    printline " units"
+    printline " units";
 end
 
 main
-    i : int;
-    runningFurthestDistance : furthestDistanceType;
-    furthestDistance : furthestDistanceType;
+    i : int,
+    runningFurthestDistance : furthestDistanceType,
+    furthestDistance : furthestDistanceType
 begin
     /-- Add values to the pointsList array
     readIntoArray();

@@ -2,18 +2,18 @@ CD22 fibonacci
 
 func fib(num : int) : int
     begin
-        if (num == 1 or num == 2):
+        if (num == 1 or num == 2)
             return 1;
         end
         return fib(num - 2) + fib(num - 1);
     end
 
 main
-    num : int;
+    num : int
 
 begin
     input num;
-    printline(fib(num))
+    printline(fib(num));
 
 
 end CD22 fibonacci

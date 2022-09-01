@@ -68,6 +68,16 @@ public class TreeNode {
         NSTRG,
         NCALL,
         NRETN,
+        NFUNCS,
+        NFUND,
+
+        NPLIST,
+
+        NSIMP,
+        NARRP,
+        NARRC,
+
+        NDLIST,
     }
 
     private TreeNodes nodeType;

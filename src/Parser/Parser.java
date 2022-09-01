@@ -396,15 +396,26 @@ public class Parser {
     }
 
     private TreeNode rel() {
+        boolean not = false;
         if (lookahead.getToken() == Tokens.TNOTT) {
-            return new TreeNode(TreeNodes.NNOT, expr(), relop(), expr());
+            match(Tokens.TNOTT);
+            not = true;
+//            return new TreeNode(TreeNodes.NNOT, expr(), relop(), expr());
         }
         TreeNode exprNode = expr();
         TreeNode relopNode = relop();
         if (relopNode == null) {
-            return new TreeNode(TreeNodes.NREL, exprNode);
+            if (not) {
+                return new TreeNode(TreeNodes.NNOT, exprNode);
+            }
+            return exprNode;
         }
-        return new TreeNode(TreeNodes.NREL, exprNode, relopNode, expr());
+        relopNode.setNextChild(exprNode);
+        relopNode.setNextChild(expr());
+        if (not) {
+            return new TreeNode(TreeNodes.NNOT, relopNode);
+        }
+        return relopNode;
     }
 
     private TreeNode relop() {

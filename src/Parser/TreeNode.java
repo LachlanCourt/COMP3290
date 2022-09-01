@@ -37,7 +37,6 @@ public class TreeNode {
         NOR,
         NXOR,
         NNOT,
-        NREL,
         NEQL,
         NNEQ,
         NGRT,

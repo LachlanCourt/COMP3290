@@ -4,14 +4,69 @@ import Scanner.Token;
 
 public class TreeNode {
     enum TreeNodes {
-        NPROG, NGLOB, NILIST, NINIT, NILIT, NFLIT, NTYPEL, NIDEN, NATYPE, NRTYPE, NFLIST, NSDECL, NTDECL, NPRITYP, NALIST, NARRD, NADD, NSUB, NMUL, NDIV, NMOD, NPOW, NTRUE, NFALS, NSIMV, NARRV, NAELT, NFCALL, NBOOL, NAND, NOR, NXOR, NNOT, NREL, NEQL, NNEQ, NGRT, NLSS, NLEQ, NGEQ, NEXPL, NMAIN, NSDLST, NSTATS, NREPT, NASGNS, NASGN, NPLEQ, NMNEQ, NSTEA, NDVEQ, NFORL,
+        NPROG,
+        NGLOB,
+        NILIST,
+        NINIT,
+        NILIT,
+        NFLIT,
+        NTYPEL,
+        NIDEN,
+        NATYPE,
+        NRTYPE,
+        NFLIST,
+        NSDECL,
+        NTDECL,
+        NPRITYP,
+        NALIST,
+        NARRD,
+        NADD,
+        NSUB,
+        NMUL,
+        NDIV,
+        NMOD,
+        NPOW,
+        NTRUE,
+        NFALS,
+        NSIMV,
+        NARRV,
+        NAELT,
+        NFCALL,
+        NBOOL,
+        NAND,
+        NOR,
+        NXOR,
+        NNOT,
+        NREL,
+        NEQL,
+        NNEQ,
+        NGRT,
+        NLSS,
+        NLEQ,
+        NGEQ,
+        NEXPL,
+        NMAIN,
+        NSDLST,
+        NSTATS,
+        NREPT,
+        NASGNS,
+        NASGN,
+        NPLEQ,
+        NMNEQ,
+        NSTEA,
+        NDVEQ,
+        NFORL,
         NIFTH,
         NIFTE,
-                NIFEF,NINPUT,
+        NIFEF,
+        NINPUT,
         NPRINT,
-                NPRLN,NVLIST,NPRLST,
+        NPRLN,
+        NVLIST,
+        NPRLST,
 
-        NSTRG,NCALL,
+        NSTRG,
+        NCALL,
         NRETN,
     }
 
@@ -21,8 +76,7 @@ public class TreeNode {
     private TreeNode right;
     private Token token;
 
-    public TreeNode() {
-    }
+    public TreeNode() {}
 
     public TreeNode(TreeNodes type_, Token token_, TreeNode left_, TreeNode mid_, TreeNode right_) {
         nodeType = type_;

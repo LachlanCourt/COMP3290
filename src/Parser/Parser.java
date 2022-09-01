@@ -27,8 +27,7 @@ public class Parser {
     /**
      * Placeholder initialisation function
      */
-    public void initialise() {
-    }
+    public void initialise() {}
 
     private void error(String message, Token token) {
         System.err.println("ERROR");
@@ -47,7 +46,8 @@ public class Parser {
             previousLookahead = lookahead;
             lookahead = s.getToken();
         } else
-            error("Failed to match " + token + " around " + previousLookahead.getRow() + ":" + previousLookahead.getCol());
+            error("Failed to match " + token + " around " + previousLookahead.getRow() + ":"
+                + previousLookahead.getCol());
     }
 
     /**
@@ -91,7 +91,8 @@ public class Parser {
 
     private TreeNode initlist() {
         TreeNode t1 = init(), t2 = null;
-        if (lookahead.getToken() == Tokens.TTYPS || lookahead.getToken() == Tokens.TARRS || lookahead.getToken() == Tokens.TFUNC || lookahead.getToken() == Tokens.TMAIN) {
+        if (lookahead.getToken() == Tokens.TTYPS || lookahead.getToken() == Tokens.TARRS
+            || lookahead.getToken() == Tokens.TFUNC || lookahead.getToken() == Tokens.TMAIN) {
             return t1;
         }
         if (lookahead.getToken() == Tokens.TCOMA) {
@@ -124,7 +125,8 @@ public class Parser {
 
     private TreeNode typelist() {
         TreeNode t1 = type(), t2 = null;
-        if (lookahead.getToken() == Tokens.TARRS || lookahead.getToken() == Tokens.TFUNC || lookahead.getToken() == Tokens.TMAIN) {
+        if (lookahead.getToken() == Tokens.TARRS || lookahead.getToken() == Tokens.TFUNC
+            || lookahead.getToken() == Tokens.TMAIN) {
             return t1;
         }
         t2 = typelist();

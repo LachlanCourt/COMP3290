@@ -4,7 +4,7 @@
 CD22 ArrayOfBooleans
 constants
 
-    ARRAYSIZE = 5;
+    ARRAYSIZE = 5
 
 types
 
@@ -16,10 +16,10 @@ types
 
 arrays
 
-    someArray : arrayType;
+    someArray : arrayType
 
 main
-    i : int;
+    i : int
 
 begin
 

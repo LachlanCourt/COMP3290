@@ -33,4 +33,6 @@ d : int
 
 begin
 
+repeat () until false
+
 end CD22 ProgramName

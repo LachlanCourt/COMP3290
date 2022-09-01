@@ -9,11 +9,11 @@ func fact(num : int) : int
     end
 
 main
-    num : int;
+    num : int
 
 begin
     input num;
-    printline(fact(num))
+    printline(fact(num));
 
 
 end CD22 factorial

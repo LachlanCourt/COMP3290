@@ -4,7 +4,7 @@
 CD22 FunctionParameterPassing
 constants
 
-    ARRAYSIZE = 10;
+    ARRAYSIZE = 10
 
 types
 
@@ -16,11 +16,11 @@ types
 
 arrays
 
-    someArray : arrayType;
+    someArray : arrayType
 
 /-- This function loops through the constant array and returns the smallest value
 func findSmallest(const someParameterArray : arrayType) : int
-    smallest : int;
+    smallest : int
 begin
     /-- Assume the smallest is the first element to have a baseline
     smallest = someParameterArray[0].x;
@@ -34,7 +34,7 @@ end
 
 /-- This function loops through the mutable array and returns the largest value
 func findLargest(someParameterArray : arrayType) : int
-    largest : int;
+    largest : int
 begin
     /-- Assume the smallest is the first element to have a baseline
     largest = someParameterArray[0].x;
@@ -54,9 +54,9 @@ begin
 end
 
 main
-    i : int;
-    smallest : int;
-    largest : int;
+    i : int,
+    smallest : int,
+    largest : int
 begin
     /-- Read values in from stdin
     for (i = 0; i < arraySize)

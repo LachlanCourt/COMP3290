@@ -778,13 +778,16 @@ public class Parser {
         if (plistNode!= null)t.setNextChild(plistNode);
         match(Tokens.TRPAR);
         match(Tokens.TCOLN);
-        t.setNextChild(rtype());
-        t.setNextChild(funcbody());
+        //TODO add rtype to symbol table
+        TreeNode rtype = rtype();
+        TreeNode funcbodyNode = funcbody();
+        t.setNextChild(funcbodyNode.getLeft());
+        t.setNextChild(funcbodyNode.getMid());
         return t;
     }
 
     private TreeNode plist() {
-        if (lookahead.getToken() == Tokens.TIDEN || lookahead.getToken() == Tokens.TCONS) {
+        if (lookahead.getToken() == Tokens.TIDEN || lookahead.getToken() == Tokens.TCNST) {
             return params();
         }
         return null;
@@ -792,14 +795,19 @@ public class Parser {
 
     private TreeNode rtype() {
         if (lookahead.getToken() == Tokens.TVOID) {
+            match(Tokens.TVOID);
             return null;
         }
         return stype();
     }
 
     private TreeNode funcbody() {
-        TreeNode t = 
-        return null;
+        TreeNode t = new TreeNode();
+        t.setNextChild(locals());
+        match(Tokens.TBEGN);
+        t.setNextChild(stats());
+        match(Tokens.TTEND);
+        return t;
     }
 
     private TreeNode params() {
@@ -814,8 +822,8 @@ public class Parser {
     }
 
     private TreeNode param() {
-        if (lookahead.getToken() == Tokens.TCONS) {
-            match(Tokens.TCONS);
+        if (lookahead.getToken() == Tokens.TCNST) {
+            match(Tokens.TCNST);
             return new TreeNode(TreeNodes.NARRC, arrdecl());
         } else if (lookahead.getToken() == Tokens.TIDEN) {
             //TODO CHECK SYMBOL TABLE HERE BECAUSE SDECL AND ARRDECL HAVE SAME SYNTAX BUT WE NEED TO KNOW WHICH
@@ -823,5 +831,28 @@ public class Parser {
             return new TreeNode(TreeNodes.NSIMP, sdecl());
         }
         return null;
+    }
+
+    private TreeNode locals() {
+        if (lookahead.getToken() == Tokens.TIDEN) {
+            return dlist();
+        }
+        return null;
+    }
+
+    private TreeNode dlist() {
+        TreeNode t1 = decl(), t2;
+        if (lookahead.getToken() != Tokens.TCOMA) {
+            return t1;
+        } else {
+            match(Tokens.TCOMA);
+            t2 = dlist();
+        }
+        return new TreeNode(TreeNodes.NDLIST, t1, t2);
+    }
+
+    private TreeNode decl() {
+        //TODO CHECK SYMBOL TABLE THIS COULD BE ARRDECL
+        return sdecl();
     }
 }

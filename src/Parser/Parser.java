@@ -532,11 +532,15 @@ public class Parser {
             t = stat();
             match(Tokens.TSEMI);
         }
-        // Epsilon path
-        if (lookahead.getToken() != Tokens.TTFOR && lookahead.getToken() != Tokens.TIFTH && lookahead.getToken() != Tokens.TREPT && lookahead.getToken() != Tokens.TIDEN && lookahead.getToken() != Tokens.TINPT && lookahead.getToken() != Tokens.TPRNT && lookahead.getToken() != Tokens.TPRLN && lookahead.getToken() != Tokens.TRETN) {
-            return t;
+        if (t != null) {
+            // Epsilon path
+            if (lookahead.getToken() != Tokens.TTFOR && lookahead.getToken() != Tokens.TIFTH && lookahead.getToken() != Tokens.TREPT && lookahead.getToken() != Tokens.TIDEN && lookahead.getToken() != Tokens.TINPT && lookahead.getToken() != Tokens.TPRNT && lookahead.getToken() != Tokens.TPRLN && lookahead.getToken() != Tokens.TRETN) {
+                return t;
+            }
+            return new TreeNode(TreeNodes.NSTATS, t, stats());
         }
-        return new TreeNode(TreeNodes.NSTATS, t, stats());
+        error("At least one statement is required");
+        return null;
     }
 
 

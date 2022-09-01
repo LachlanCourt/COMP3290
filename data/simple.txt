@@ -28,11 +28,15 @@ someArray : arrayType,
 someOtherArray : weewoo
 
 main
-i : bool
+i : bool,
 d : int
 
 begin
 
-repeat () until false
+repeat ()
+ i = true;
+ d = 0;
+ d += 45;
+until false;
 
 end CD22 ProgramName

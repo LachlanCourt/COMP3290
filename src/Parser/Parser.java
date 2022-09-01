@@ -105,7 +105,7 @@ public class Parser {
     private TreeNode init() {
         TreeNode t = new TreeNode(TreeNodes.NINIT);
         if (lookahead.getToken() == Tokens.TIDEN) {
-            t.setNextChild(new TreeNode(TreeNodes.NIDEN, lookahead));
+            t.setNextChild(new TreeNode(TreeNodes.NSIMV, lookahead));
             match(Tokens.TIDEN);
         } else {
             error("Missing identifier");
@@ -136,7 +136,7 @@ public class Parser {
     private TreeNode type() {
         TreeNode t = new TreeNode();
         if (lookahead.getToken() == Tokens.TIDEN) {
-            t.setNextChild(new TreeNode(TreeNodes.NIDEN, lookahead));
+            t.setNextChild(new TreeNode(TreeNodes.NSIMV, lookahead));
             match(Tokens.TIDEN);
         } else {
             error("Missing identifier");
@@ -150,7 +150,7 @@ public class Parser {
             match(Tokens.TRBRK);
             match(Tokens.TTTOF);
             if (lookahead.getToken() == Tokens.TIDEN) {
-                t.setNextChild(new TreeNode(TreeNodes.NIDEN, lookahead));
+                t.setNextChild(new TreeNode(TreeNodes.NSIMV, lookahead));
                 match(Tokens.TIDEN);
             } else {
                 error("Missing identifier");
@@ -179,7 +179,7 @@ public class Parser {
     private TreeNode sdecl() {
         TreeNode t = new TreeNode();
         if (lookahead.getToken() == Tokens.TIDEN) {
-            t.setNextChild(new TreeNode(TreeNodes.NIDEN, lookahead));
+            t.setNextChild(new TreeNode(TreeNodes.NSIMV, lookahead));
             match(Tokens.TIDEN);
         } else {
             error("Missing identifier");
@@ -187,7 +187,7 @@ public class Parser {
         match(Tokens.TCOLN);
         if (lookahead.getToken() == Tokens.TIDEN) {
             // structid
-            t.setNextChild(new TreeNode(TreeNodes.NIDEN, lookahead));
+            t.setNextChild(new TreeNode(TreeNodes.NSIMV, lookahead));
             t.setNodeType(TreeNodes.NTDECL);
             match(Tokens.TIDEN);
         } else {
@@ -242,14 +242,14 @@ public class Parser {
     private TreeNode arrdecl() {
         TreeNode t = new TreeNode(TreeNodes.NARRD);
         if (lookahead.getToken() == Tokens.TIDEN) {
-            t.setNextChild(new TreeNode(TreeNodes.NIDEN, lookahead));
+            t.setNextChild(new TreeNode(TreeNodes.NSIMV, lookahead));
             match(Tokens.TIDEN);
         } else {
             error("Missing identifier");
         }
         match(Tokens.TCOLN);
         if (lookahead.getToken() == Tokens.TIDEN) {
-            t.setNextChild(new TreeNode(TreeNodes.NIDEN, lookahead));
+            t.setNextChild(new TreeNode(TreeNodes.NSIMV, lookahead));
             match(Tokens.TIDEN);
         } else {
             error("Missing identifier");
@@ -453,7 +453,7 @@ public class Parser {
 
     private TreeNode fncall(Token nameIdenToken) {
         TreeNode t = new TreeNode(TreeNodes.NFCALL);
-        t.setNextChild(new TreeNode(TreeNodes.NIDEN, nameIdenToken));
+        t.setNextChild(new TreeNode(TreeNodes.NSIMV, nameIdenToken));
         match(Tokens.TLPAR);
         if (lookahead.getToken() != Tokens.TRPAR) {
             t.setNextChild(elist());
@@ -488,7 +488,7 @@ public class Parser {
         if (lookahead.getToken() == Tokens.TLBRK) {
             TreeNode t = new TreeNode();
             match(Tokens.TLBRK);
-            t.setNextChild(new TreeNode(TreeNodes.NIDEN, nameIdenToken));
+            t.setNextChild(new TreeNode(TreeNodes.NSIMV, nameIdenToken));
             t.setNextChild(expr());
             match(Tokens.TRBRK);
             // Access struct field
@@ -497,14 +497,14 @@ public class Parser {
                 if (lookahead.getToken() == Tokens.TIDEN) {
                     Token fieldIdenToken = lookahead;
                     match(Tokens.TIDEN);
-                    t.setNextChild(new TreeNode(TreeNodes.NIDEN, fieldIdenToken));
+                    t.setNextChild(new TreeNode(TreeNodes.NSIMV, fieldIdenToken));
                 }
             }
             // Either return with whole struct or individual field if the above if ran
             return t;
         }
         // Simple variable
-        return new TreeNode(TreeNodes.NSIMV, new TreeNode(TreeNodes.NIDEN, nameIdenToken));
+        return new TreeNode(TreeNodes.NSIMV, nameIdenToken);
     }
 
     private TreeNode mainbody() {
@@ -516,8 +516,9 @@ public class Parser {
         match(Tokens.TTEND);
         match(Tokens.TCD22);
         if (lookahead.getToken() == Tokens.TIDEN) {
+            Token token = lookahead;
             match(Tokens.TIDEN);
-            t.setNextChild(new TreeNode(TreeNodes.NIDEN, lookahead));
+            t.setNextChild(new TreeNode(TreeNodes.NSIMV, token));
         } else {
             error("Missing identifier");
         }

@@ -11,7 +11,6 @@ public class TreeNode {
         NILIT,
         NFLIT,
         NTYPEL,
-        NIDEN,
         NATYPE,
         NRTYPE,
         NFLIST,

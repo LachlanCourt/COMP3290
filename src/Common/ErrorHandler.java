@@ -11,61 +11,61 @@ package Common;
 import java.util.ArrayList;
 
 public class ErrorHandler {
-  enum CompilerPhases { SCANNING, PARSING, SEMANTIC_ANALYSIS, CODE_GENERATION }
+    enum CompilerPhases { SCANNING, PARSING, SEMANTIC_ANALYSIS, CODE_GENERATION }
 
-  private CompilerPhases phase;
-  private ArrayList<ErrorMessage> errors;
-  private ArrayList<ErrorMessage> warnings;
+    private CompilerPhases phase;
+    private ArrayList<ErrorMessage> errors;
+    private ArrayList<ErrorMessage> warnings;
 
-  public ErrorHandler() {
-    phase = CompilerPhases.SCANNING;
-    errors = new ArrayList<ErrorMessage>();
-    warnings = new ArrayList<ErrorMessage>();
-  }
+    public ErrorHandler() {
+        phase = CompilerPhases.SCANNING;
+        errors = new ArrayList<ErrorMessage>();
+        warnings = new ArrayList<ErrorMessage>();
+    }
 
-  /**
-   * Adds an error to the handler
-   * @param row row number of the error
-   * @param col column of the error
-   * @param type enum type of error
-   * @param data additional data required for certain errors
-   */
-  public void addError(int row, int col, ErrorMessage.Errors type, String data) {
-    errors.add(new ErrorMessage(row, col, type, data));
-  }
+    /**
+     * Adds an error to the handler
+     * @param row row number of the error
+     * @param col column of the error
+     * @param type enum type of error
+     * @param data additional data required for certain errors
+     */
+    public void addError(int row, int col, ErrorMessage.Errors type, String data) {
+        errors.add(new ErrorMessage(row, col, type, data));
+    }
 
-  public void addError(int row, int col, ErrorMessage.Errors type) {
-    errors.add(new ErrorMessage(row, col, type));
-  }
+    public void addError(int row, int col, ErrorMessage.Errors type) {
+        errors.add(new ErrorMessage(row, col, type));
+    }
 
-  /**
-   * Adds a warning to the handler
-   * @param row row number of the error
-   * @param col column of the error
-   * @param type enum type of error
-   * @param data additional data required for certain warnings
-   */
-  public void addWarning(int row, int col, ErrorMessage.Errors type, String data) {
-    warnings.add(new ErrorMessage(row, col, type, data));
-  }
+    /**
+     * Adds a warning to the handler
+     * @param row row number of the error
+     * @param col column of the error
+     * @param type enum type of error
+     * @param data additional data required for certain warnings
+     */
+    public void addWarning(int row, int col, ErrorMessage.Errors type, String data) {
+        warnings.add(new ErrorMessage(row, col, type, data));
+    }
 
-  public void addWarning(int row, int col, ErrorMessage.Errors type) {
-    warnings.add(new ErrorMessage(row, col, type));
-  }
+    public void addWarning(int row, int col, ErrorMessage.Errors type) {
+        warnings.add(new ErrorMessage(row, col, type));
+    }
 
-  // Getters and queries
-  public boolean hasErrors() {
-    return errors.size() > 0;
-  }
-  public boolean hasWarnings() {
-    return warnings.size() > 0;
-  }
+    // Getters and queries
+    public boolean hasErrors() {
+        return errors.size() > 0;
+    }
+    public boolean hasWarnings() {
+        return warnings.size() > 0;
+    }
 
-  public ArrayList<ErrorMessage> getErrors() {
-    return errors;
-  }
+    public ArrayList<ErrorMessage> getErrors() {
+        return errors;
+    }
 
-  public ArrayList<ErrorMessage> getWarnings() {
-    return warnings;
-  }
+    public ArrayList<ErrorMessage> getWarnings() {
+        return warnings;
+    }
 }

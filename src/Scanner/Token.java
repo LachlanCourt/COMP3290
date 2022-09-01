@@ -8,90 +8,90 @@
 package Scanner;
 
 public class Token {
-  public enum Tokens {
-    TTEOF("TTEOF "),
-    TCD22("TCD22 "),
-    TCONS("TCONS "),
-    TTYPS("TTYPS "),
-    TTDEF("TTDEF "),
-    TARRS("TARRS "),
-    TMAIN("TMAIN "),
-    TBEGN("TBEGN "),
-    TTEND("TTEND "),
-    TARAY("TARAY "),
-    TTTOF("TTTOF "),
-    TFUNC("TFUNC "),
-    TVOID("TVOID "),
-    TCNST("TCNST "),
-    TINTG("TINTG "),
-    TFLOT("TFLOT "),
-    TBOOL("TBOOL "),
-    TTFOR("TTFOR "),
-    TREPT("TREPT "),
-    TUNTL("TUNTL "),
-    TIFTH("TIFTH "),
-    TELSE("TELSE "),
-    TELIF("TELIF "),
-    TINPT("TINPT "),
-    TPRNT("TPRNT "),
-    TPRLN("TPRLN "),
-    TRETN("TRETN "),
-    TNOTT("TNO "),
-    TTAND("TTAND "),
-    TTTOR("TTTOR "),
-    TTXOR("TTXOR "),
-    TTRUE("TTRUE "),
-    TFALS("TFALS "),
-    TCOMA("TCOMA "),
-    TLBRK("TLBRK "),
-    TRBRK("TRBRK "),
-    TLPAR("TLPAR "),
-    TRPAR("TRPAR "),
-    TEQUL("TEQUL "),
-    TPLUS("TPLUS "),
-    TMINS("TMINS "),
-    TSTAR("TSTAR "),
-    TDIVD("TDIVD "),
-    TPERC("TPERC "),
-    TCART("TCART "),
-    TLESS("TLESS "),
-    TGRTR("TGRTR "),
-    TCOLN("TCOLN "),
-    TSEMI("TSEMI "),
-    TDOTT("TDOTT "),
-    TLEQL("TLEQL "),
-    TGEQL("TGEQL "),
-    TNEQL("TNEQL "),
-    TEQEQ("TEQEQ "),
-    TPLEQ("TPLEQ "),
-    TMNEQ("TMNEQ "),
-    TSTEQ("TSTEQ "),
-    TDVEQ("TDVEQ "),
-    TIDEN("TIDEN "),
-    TILIT("TILIT "),
-    TFLIT("TFLIT "),
-    TSTRG("TSTRG "),
-    TUNDF("TUNDF "),
-    NUM_PARSE_ERROR("");
+    public enum Tokens {
+        TTEOF("TTEOF "),
+        TCD22("TCD22 "),
+        TCONS("TCONS "),
+        TTYPS("TTYPS "),
+        TTDEF("TTDEF "),
+        TARRS("TARRS "),
+        TMAIN("TMAIN "),
+        TBEGN("TBEGN "),
+        TTEND("TTEND "),
+        TARAY("TARAY "),
+        TTTOF("TTTOF "),
+        TFUNC("TFUNC "),
+        TVOID("TVOID "),
+        TCNST("TCNST "),
+        TINTG("TINTG "),
+        TFLOT("TFLOT "),
+        TBOOL("TBOOL "),
+        TTFOR("TTFOR "),
+        TREPT("TREPT "),
+        TUNTL("TUNTL "),
+        TIFTH("TIFTH "),
+        TELSE("TELSE "),
+        TELIF("TELIF "),
+        TINPT("TINPT "),
+        TPRNT("TPRNT "),
+        TPRLN("TPRLN "),
+        TRETN("TRETN "),
+        TNOTT("TNO "),
+        TTAND("TTAND "),
+        TTTOR("TTTOR "),
+        TTXOR("TTXOR "),
+        TTRUE("TTRUE "),
+        TFALS("TFALS "),
+        TCOMA("TCOMA "),
+        TLBRK("TLBRK "),
+        TRBRK("TRBRK "),
+        TLPAR("TLPAR "),
+        TRPAR("TRPAR "),
+        TEQUL("TEQUL "),
+        TPLUS("TPLUS "),
+        TMINS("TMINS "),
+        TSTAR("TSTAR "),
+        TDIVD("TDIVD "),
+        TPERC("TPERC "),
+        TCART("TCART "),
+        TLESS("TLESS "),
+        TGRTR("TGRTR "),
+        TCOLN("TCOLN "),
+        TSEMI("TSEMI "),
+        TDOTT("TDOTT "),
+        TLEQL("TLEQL "),
+        TGEQL("TGEQL "),
+        TNEQL("TNEQL "),
+        TEQEQ("TEQEQ "),
+        TPLEQ("TPLEQ "),
+        TMNEQ("TMNEQ "),
+        TSTEQ("TSTEQ "),
+        TDVEQ("TDVEQ "),
+        TIDEN("TIDEN "),
+        TILIT("TILIT "),
+        TFLIT("TFLIT "),
+        TSTRG("TSTRG "),
+        TUNDF("TUNDF "),
+        NUM_PARSE_ERROR("");
 
-    private String value;
+        private String value;
 
-    Tokens(String initialiser) {
-      value = initialiser;
-    }
+        Tokens(String initialiser) {
+            value = initialiser;
+        }
 
-    public String getValue() {
-      return value;
-    }
+        public String getValue() {
+            return value;
+        }
 
-    /**
-     * Factory pattern to determine predefined keywords and operators
-     * @param initialiser string to be determined as a token
-     * @return the token type that represents the keyword or operator passed in
-     */
-    public static Tokens getToken(String initialiser) {
-      Tokens t;
-      switch (initialiser) {
+        /**
+         * Factory pattern to determine predefined keywords and operators
+         * @param initialiser string to be determined as a token
+         * @return the token type that represents the keyword or operator passed in
+         */
+        public static Tokens getToken(String initialiser) {
+            Tokens t;
+            switch (initialiser) {
                 case "cd22" -> t = TCD22;
                 case "constants" -> t = TCONS;
                 case "types" -> t = TTYPS;
@@ -196,6 +196,14 @@ public class Token {
 
     public Tokens getToken() {
         return token;
+    }
+
+    public int getRow() {
+        return row;
+    }
+
+    public int getCol() {
+        return col;
     }
 
     /**

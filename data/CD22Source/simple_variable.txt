@@ -1,9 +1,9 @@
 CD22 ProgramName
 main
-    i : int;
-    j : int;
-    k : int;
-    l : float;
+    i : int,
+    j : int,
+    k : int,
+    l : float
 
 begin
 

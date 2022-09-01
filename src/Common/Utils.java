@@ -12,63 +12,65 @@ import java.util.ArrayList;
 import java.util.Arrays;
 
 public class Utils {
-  private static Utils self;
-  // Definition Lists for custom matching
-  private static final ArrayList<String> validPunctuation = new ArrayList<String>(Arrays.asList(",",
-      "[", "]", "(", ")", "=", "+", "-", "*", "/", "%", "^", "<", ">", "!", "\"", ":", ";", "."));
-  private static final ArrayList<String> validStandaloneOperators =
-      new ArrayList<String>(Arrays.asList(
-          ",", "[", "]", "(", ")", "=", "+", "-", "*", "/", "%", "^", "<", ">", ":", ";", "."));
-  private static final ArrayList<String> validDoubleOperators =
-      new ArrayList<String>(Arrays.asList("!=", "==", "<=", ">=", "+=", "-=", "/=", "*="));
-  private static final ArrayList<String> letters =
-      new ArrayList<String>(Arrays.asList("a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k",
-          "l", "m", "n", "o", "p", "q", "r", "s", "t", "u", "v", "w", "x", "y", "z"));
-  private static final ArrayList<String> numbers =
-      new ArrayList<String>(Arrays.asList("0", "1", "2", "3", "4", "5", "6", "7", "8", "9"));
-  private static final ArrayList<String> keywords = new ArrayList<String>(Arrays.asList("cd22",
-      "constants", "types", "def", "arrays", "main", "begin", "end", "array", "of", "func", "void",
-      "const", "int", "float", "bool", "for", "repeat", "until", "if", "else", "elif", "input",
-      "print", "printline", "return", "not", "and", "or", "xor", "true", "false"));
+    private static Utils self;
+    // Definition Lists for custom matching
+    private static final ArrayList<String> validPunctuation =
+        new ArrayList<String>(Arrays.asList(",", "[", "]", "(", ")", "=", "+", "-", "*", "/", "%",
+            "^", "<", ">", "!", "\"", ":", ";", "."));
+    private static final ArrayList<String> validStandaloneOperators =
+        new ArrayList<String>(Arrays.asList(
+            ",", "[", "]", "(", ")", "=", "+", "-", "*", "/", "%", "^", "<", ">", ":", ";", "."));
+    private static final ArrayList<String> validDoubleOperators =
+        new ArrayList<String>(Arrays.asList("!=", "==", "<=", ">=", "+=", "-=", "/=", "*="));
+    private static final ArrayList<String> letters =
+        new ArrayList<String>(Arrays.asList("a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k",
+            "l", "m", "n", "o", "p", "q", "r", "s", "t", "u", "v", "w", "x", "y", "z"));
+    private static final ArrayList<String> numbers =
+        new ArrayList<String>(Arrays.asList("0", "1", "2", "3", "4", "5", "6", "7", "8", "9"));
+    private static final ArrayList<String> keywords = new ArrayList<String>(Arrays.asList("cd22",
+        "constants", "types", "def", "arrays", "main", "begin", "end", "array", "of", "func",
+        "void", "const", "int", "float", "bool", "for", "repeat", "until", "if", "else", "elif",
+        "input", "print", "printline", "return", "not", "and", "or", "xor", "true", "false"));
 
-  public enum MatchTypes {
-    LETTER,
-    NUMBER,
-    PUNCTUATION,
-    STANDALONE_OPERATOR,
-    DOUBLE_OPERATOR,
-    KEYWORD,
-    IDENTIFIER,
-    UNDEFINED,
-    WHITESPACE
-  }
-
-  /**
-   * Singleton style constructor for utils to prevent it being declared multiple times unnecessarily
-   */
-  private Utils() {
-    for (int i = 0; i < 26; i++) {
-      letters.add(letters.get(i).toUpperCase());
+    public enum MatchTypes {
+        LETTER,
+        NUMBER,
+        PUNCTUATION,
+        STANDALONE_OPERATOR,
+        DOUBLE_OPERATOR,
+        KEYWORD,
+        IDENTIFIER,
+        UNDEFINED,
+        WHITESPACE
     }
-  }
 
-  public static Utils getUtils() {
-    if (self == null) {
-      self = new Utils();
+    /**
+     * Singleton style constructor for utils to prevent it being declared multiple times
+     * unnecessarily
+     */
+    private Utils() {
+        for (int i = 0; i < 26; i++) {
+            letters.add(letters.get(i).toUpperCase());
+        }
     }
-    return self;
-  }
 
-  /**
-   * Matches a given string based on a specified type
-   * @param candidate a string to be matched
-   * @param matcher a type to match the string to
-   * @return true if the candidate matches the specified type and false if not
-   */
-  public boolean matches(String candidate, MatchTypes matcher) {
-    boolean matchFound = false;
+    public static Utils getUtils() {
+        if (self == null) {
+            self = new Utils();
+        }
+        return self;
+    }
 
-    switch (matcher) {
+    /**
+     * Matches a given string based on a specified type
+     * @param candidate a string to be matched
+     * @param matcher a type to match the string to
+     * @return true if the candidate matches the specified type and false if not
+     */
+    public boolean matches(String candidate, MatchTypes matcher) {
+        boolean matchFound = false;
+
+        switch (matcher) {
             case LETTER -> matchFound = letters.contains(candidate);
             case NUMBER -> matchFound = numbers.contains(candidate);
             case KEYWORD -> matchFound = keywords.contains(candidate);
@@ -104,9 +106,9 @@ public class Utils {
     public boolean matchesIdentifier(String candidate) {
         if (!letters.contains(String.valueOf(candidate.charAt(0)))) return false;
         for (String c : candidate.split("")) {
-                if (!letters.contains(c) && !numbers.contains(c))
-                  return false;
-              }
-              return true;
+                    if (!letters.contains(c) && !numbers.contains(c))
+                        return false;
+                }
+                return true;
+        }
     }
-  }

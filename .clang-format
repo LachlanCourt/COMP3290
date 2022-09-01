@@ -1,5 +1,6 @@
 ---
 Language: Java
 BasedOnStyle: Google
+IndentWidth: 4
 
 ---

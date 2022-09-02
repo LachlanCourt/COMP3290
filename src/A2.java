@@ -11,6 +11,7 @@ import Common.OutputController;
 import Common.SymbolTable;
 import Parser.Parser;
 import Scanner.Scanner;
+
 import java.io.File;
 
 public class A2 {
@@ -44,11 +45,17 @@ public class A2 {
         SymbolTable symbolTable = new SymbolTable();
         Scanner s = new Scanner(outputController, symbolTable);
         Parser p = new Parser(s);
-         CodeGenerator cg = new CodeGenerator(p);
+        CodeGenerator cg = new CodeGenerator(p);
 
-        // Initialise the scanner and parser by passing the filename of the source code
+        // Initialise the scanner passing the filename of the source code
         s.init(args[0]);
+
+        // Initialise the parser which gets the token stream from the scanner. As undefined tokens should not be parsed,
+        // check for errors before continuing
         p.initialise();
+        if (outputController.hasErrors()) outputController.reportErrorsAndWarnings();
+
+        // Initialise the code generator
         cg.initialise();
 
         // Start the code generator's debug routine to output the syntax tree

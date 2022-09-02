@@ -1,4 +1,4 @@
-CD22 ProgramWithInvalidCharacter
+cD22 ProgramWithInvalidCharacter
 main
     i : bool;&
 

@@ -293,11 +293,11 @@ public class Parser {
         if (lookahead.getToken() == Tokens.TPLUS) {
             match(Tokens.TPLUS);
             t.setNodeType(TreeNodes.NADD);
-            t.setNextChild(term());
+            return term();
         } else if (lookahead.getToken() == Tokens.TMINS) {
             match(Tokens.TMINS);
             t.setNodeType(TreeNodes.NSUB);
-            t.setNextChild(term());
+            return term();
         }
         return t;
     }
@@ -318,16 +318,16 @@ public class Parser {
         if (lookahead.getToken() == Tokens.TSTAR) {
             match(Tokens.TSTAR);
             t.setNodeType(TreeNodes.NMUL);
-            t.setNextChild(fact());
+            return fact();
         } else if (lookahead.getToken() == Tokens.TDIVD) {
             match(Tokens.TDIVD);
             t.setNodeType(TreeNodes.NDIV);
-            t.setNextChild(fact());
+            return fact();
 
         } else if (lookahead.getToken() == Tokens.TPERC) {
             match(Tokens.TPERC);
             t.setNodeType(TreeNodes.NMOD);
-            t.setNextChild(fact());
+            return fact();
         }
         return t;
     }
@@ -348,7 +348,7 @@ public class Parser {
         if (lookahead.getToken() == Tokens.TCART) {
             match(Tokens.TCART);
             t.setNodeType(TreeNodes.NPOW);
-            t.setNextChild(exponent());
+           return exponent();
         }
         return t;
     }
@@ -897,11 +897,11 @@ public class Parser {
         return sdecl();
     }
 
-    private String outputHelper(TreeNode node) {
+    private String outputHelper(TreeNode node, boolean debug) {
         if (node == null) return "";
 
         String data = "";
-        if (System.getenv("DEBUG") != null && System.getenv("DEBUG").compareTo("true") == 0) {
+        if (debug) {
             data = "<" + node.toString(false) + "> ";
             data += node.getTokenString();
         } else {
@@ -909,10 +909,10 @@ public class Parser {
         }
 
         for (int i = 0; i < 3; i++) {
-            data += outputHelper(node.getChildByIndex(i));
+            data += outputHelper(node.getChildByIndex(i), debug);
         }
 
-        if (System.getenv("DEBUG") != null && System.getenv("DEBUG").compareTo("true") == 0) {
+        if (debug) {
             data += "</" + node.toString(false) + "> ";
         }
         return data;
@@ -920,7 +920,8 @@ public class Parser {
 
     @Override
     public String toString() {
-        String stringifiedTree = outputHelper(syntaxTree);
+        boolean debug = System.getenv("DEBUG") != null && System.getenv("DEBUG").compareTo("true") == 0;
+        String stringifiedTree = outputHelper(syntaxTree, debug);
         String[] treeList = stringifiedTree.split("\s");
         String formattedTree = "";
         String line = "";

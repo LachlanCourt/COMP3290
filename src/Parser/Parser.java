@@ -13,15 +13,16 @@ import Parser.TreeNode.TreeNodes;
 import Scanner.Scanner;
 import Scanner.Token;
 import Scanner.Token.Tokens;
-import com.sun.source.tree.Tree;
 
 public class Parser {
-    private Scanner s;
+    private Scanner scanner;
     private Token lookahead;
     private Token previousLookahead;
 
+    private TreeNode syntaxTree;
+
     public Parser(Scanner s_) {
-        s = s_;
+        scanner = s_;
     }
 
     /**
@@ -44,7 +45,7 @@ public class Parser {
     private void match(Tokens token) {
         if (token == lookahead.getToken()) {
             previousLookahead = lookahead;
-            lookahead = s.getToken();
+            lookahead = scanner.getToken();
         } else
             error("Failed to match " + token + " around " + previousLookahead.getRow() + ":"
                 + previousLookahead.getCol());
@@ -54,8 +55,8 @@ public class Parser {
      * Main run method of the parser
      */
     public void run() {
-        lookahead = s.getToken();
-        TreeNode syntaxTree = program();
+        lookahead = scanner.getToken();
+        syntaxTree = program();
         if (!lookahead.isEof()) {
             error("Not at eof", new Token(false));
         }
@@ -866,5 +867,18 @@ public class Parser {
     private TreeNode decl() {
         //TODO CHECK SYMBOL TABLE THIS COULD BE ARRDECL
         return sdecl();
+    }
+
+    private String outputHelper(TreeNode node) {
+        return "";
+    }
+
+    @Override
+    public String toString() {
+        return outputHelper(syntaxTree);
+    }
+
+    public TreeNode getSyntaxTree() {
+        return syntaxTree;
     }
 }

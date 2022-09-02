@@ -72,8 +72,9 @@ public class Listing {
     public void addErrorsToListing(ArrayList<ErrorMessage> errors) {
         try {
             FileWriter writer = new FileWriter("listing.txt", true);
+            writer.write("\n");
             for (ErrorMessage e : errors) {
-                writer.write(e + "\n");
+                writer.write(e.toString(false) + "\n");
             }
             writer.close();
         } catch (IOException e) {

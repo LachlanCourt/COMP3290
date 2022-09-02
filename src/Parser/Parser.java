@@ -13,21 +13,36 @@ import Parser.TreeNode.TreeNodes;
 import Scanner.Scanner;
 import Scanner.Token;
 import Scanner.Token.Tokens;
-import com.sun.source.tree.Tree;
+import java.util.ArrayList;
 
 public class Parser {
-    private Scanner s;
+    private ArrayList<Token> tokenStream;
+    private int tokenStreamIndex;
+    private Scanner scanner;
     private Token lookahead;
     private Token previousLookahead;
 
+    private TreeNode syntaxTree;
+
     public Parser(Scanner s_) {
-        s = s_;
+        scanner = s_;
+        tokenStreamIndex = 0;
     }
 
     /**
-     * Placeholder initialisation function
+     *  Initialisation function
      */
-    public void initialise() {}
+    public void initialise() {
+        tokenStream = scanner.getTokenStream();
+    }
+
+    public Token getToken() {
+        if (tokenStreamIndex < tokenStream.size()) {
+            return tokenStream.get(tokenStreamIndex++);
+        } else {
+            return tokenStream.get(tokenStream.size() - 1);
+        }
+    }
 
     private void error(String message, Token token) {
         System.err.println("ERROR");
@@ -44,7 +59,7 @@ public class Parser {
     private void match(Tokens token) {
         if (token == lookahead.getToken()) {
             previousLookahead = lookahead;
-            lookahead = s.getToken();
+            lookahead = getToken();
         } else
             error("Failed to match " + token + " around " + previousLookahead.getRow() + ":"
                 + previousLookahead.getCol());
@@ -54,21 +69,26 @@ public class Parser {
      * Main run method of the parser
      */
     public void run() {
-        lookahead = s.getToken();
-        TreeNode syntaxTree = program();
+        lookahead = getToken();
+        syntaxTree = program();
         if (!lookahead.isEof()) {
             error("Not at eof", new Token(false));
         }
-        System.out.println(syntaxTree);
     }
 
     private TreeNode program() {
         TreeNode t = new TreeNode(TreeNodes.NPROG);
         match(Tokens.TCD22);
-        match(Tokens.TIDEN);
+        if (lookahead.getToken() == Tokens.TIDEN) {
+            t.setToken(lookahead);
+            match(Tokens.TIDEN);
+        } else {
+            error("Program name is missing");
+        }
         t.setNextChild(globals());
         t.setNextChild(funcs());
         t.setNextChild(mainbody());
+        match(Tokens.TTEOF);
         return t;
     }
 
@@ -177,7 +197,7 @@ public class Parser {
     }
 
     private TreeNode sdecl() {
-        TreeNode t = new TreeNode();
+        TreeNode t = new TreeNode(TreeNodes.NTDECL);
         if (lookahead.getToken() == Tokens.TIDEN) {
             t.setNextChild(new TreeNode(TreeNodes.NSIMV, lookahead));
             match(Tokens.TIDEN);
@@ -188,18 +208,18 @@ public class Parser {
         if (lookahead.getToken() == Tokens.TIDEN) {
             // structid
             t.setNextChild(new TreeNode(TreeNodes.NSIMV, lookahead));
-            t.setNodeType(TreeNodes.NTDECL);
             match(Tokens.TIDEN);
         } else {
             // stype
-            t.setNextChild(stype());
-            t.setNodeType(TreeNodes.NTDECL);
+            // TODO Add to symbol table
+            TreeNode type = stype();
         }
         return t;
     }
 
+    // TODO This probably should return some kind of enum not a node, add type to symbol table
     private TreeNode stype() {
-        TreeNode t = new TreeNode(TreeNodes.NPRITYP);
+        TreeNode t = new TreeNode();
         switch (lookahead.getToken()) {
             case TINTG -> {
                 t.setToken(lookahead);
@@ -273,11 +293,11 @@ public class Parser {
         if (lookahead.getToken() == Tokens.TPLUS) {
             match(Tokens.TPLUS);
             t.setNodeType(TreeNodes.NADD);
-            t.setNextChild(term());
+            return term();
         } else if (lookahead.getToken() == Tokens.TMINS) {
             match(Tokens.TMINS);
             t.setNodeType(TreeNodes.NSUB);
-            t.setNextChild(term());
+            return term();
         }
         return t;
     }
@@ -288,7 +308,7 @@ public class Parser {
         // Sets node type, if it is not epsilon
         t.setNextChild(termr(t));
         if (t.getNodeType() == null) {
-            // Epsilon path of recursive termr rule. If no following token was found, just return the term as its own node
+            // Epsilon path of recursive termr rule. If no following token was found, just return the fact as its own node
             return t.getLeft();
         }
         return t;
@@ -298,16 +318,16 @@ public class Parser {
         if (lookahead.getToken() == Tokens.TSTAR) {
             match(Tokens.TSTAR);
             t.setNodeType(TreeNodes.NMUL);
-            t.setNextChild(fact());
+            return fact();
         } else if (lookahead.getToken() == Tokens.TDIVD) {
             match(Tokens.TDIVD);
             t.setNodeType(TreeNodes.NDIV);
-            t.setNextChild(fact());
+            return fact();
 
         } else if (lookahead.getToken() == Tokens.TPERC) {
             match(Tokens.TPERC);
             t.setNodeType(TreeNodes.NMOD);
-            t.setNextChild(fact());
+            return fact();
         }
         return t;
     }
@@ -318,7 +338,7 @@ public class Parser {
         // Sets node type, if it is not epsilon
         t.setNextChild(factr(t));
         if (t.getNodeType() == null) {
-            // Epsilon path of recursive factr rule. If no following token was found, just return the term as its own node
+            // Epsilon path of recursive factr rule. If no following token was found, just return the exponent as its own node
             return t.getLeft();
         }
         return t;
@@ -328,24 +348,28 @@ public class Parser {
         if (lookahead.getToken() == Tokens.TCART) {
             match(Tokens.TCART);
             t.setNodeType(TreeNodes.NPOW);
-            t.setNextChild(exponent());
+           return exponent();
         }
         return t;
     }
 
     private TreeNode exponent() {
         if (lookahead.getToken() == Tokens.TILIT) {
+            TreeNode t = new TreeNode(TreeNodes.NILIT, lookahead);
             match(Tokens.TILIT);
-            return new TreeNode(TreeNodes.NILIT);
+            return t;
         } else if (lookahead.getToken() == Tokens.TFLIT) {
+            TreeNode t = new TreeNode(TreeNodes.NFLIT, lookahead);
             match(Tokens.TFLIT);
-            return new TreeNode(TreeNodes.NFLIT);
+            return t;
         } else if (lookahead.getToken() == Tokens.TTRUE) {
+            TreeNode t = new TreeNode(TreeNodes.NTRUE, lookahead);
             match(Tokens.TTRUE);
-            return new TreeNode(TreeNodes.NTRUE);
+            return t;
         } else if (lookahead.getToken() == Tokens.TFALS) {
+            TreeNode t = new TreeNode(TreeNodes.NFALS, lookahead);
             match(Tokens.TFALS);
-            return new TreeNode(TreeNodes.NFALS);
+            return t;
         } else if (lookahead.getToken() == Tokens.TLPAR) {
             match(Tokens.TLPAR);
             TreeNode t = bool();
@@ -493,12 +517,17 @@ public class Parser {
             match(Tokens.TRBRK);
             // Access struct field
             if (lookahead.getToken() == Tokens.TDOTT) {
+                // Change the node type as we know now that it is a field on a struct
+                t.setNodeType(TreeNodes.NARRV);
                 match(Tokens.TDOTT);
                 if (lookahead.getToken() == Tokens.TIDEN) {
                     Token fieldIdenToken = lookahead;
                     match(Tokens.TIDEN);
                     t.setNextChild(new TreeNode(TreeNodes.NSIMV, fieldIdenToken));
                 }
+            } else {
+                // If the if didn't run it is not accessing a struct field, but is instead the entire struct
+                t.setNodeType(TreeNodes.NAELT);
             }
             // Either return with whole struct or individual field if the above if ran
             return t;
@@ -866,5 +895,49 @@ public class Parser {
     private TreeNode decl() {
         //TODO CHECK SYMBOL TABLE THIS COULD BE ARRDECL
         return sdecl();
+    }
+
+    private String outputHelper(TreeNode node, boolean debug) {
+        if (node == null) return "";
+
+        String data = "";
+        if (debug) {
+            data = "<" + node.toString(false) + "> ";
+            data += node.getTokenString();
+        } else {
+            data = node.toString();
+        }
+
+        for (int i = 0; i < 3; i++) {
+            data += outputHelper(node.getChildByIndex(i), debug);
+        }
+
+        if (debug) {
+            data += "</" + node.toString(false) + "> ";
+        }
+        return data;
+    }
+
+    @Override
+    public String toString() {
+        boolean debug = System.getenv("DEBUG") != null && System.getenv("DEBUG").compareTo("true") == 0;
+        String stringifiedTree = outputHelper(syntaxTree, debug);
+        String[] treeList = stringifiedTree.split("\s");
+        String formattedTree = "";
+        String line = "";
+        for (int i = 0; i < treeList.length; i++) {
+            line += treeList[i] + " ";
+            if (line.length() >= 70) {
+                formattedTree += line + "\n";
+                line = "";
+            }
+        }
+        if (line.length() > 0)
+            formattedTree += line;
+        return formattedTree;
+    }
+
+    public TreeNode getSyntaxTree() {
+        return syntaxTree;
     }
 }

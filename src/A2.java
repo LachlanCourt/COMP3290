@@ -6,6 +6,7 @@
  ****    This class is the main file for a Scanner for the CD22 programming language
  *******************************************************************************/
 
+import CodeGenerator.CodeGenerator;
 import Common.OutputController;
 import Common.SymbolTable;
 import Parser.Parser;
@@ -43,13 +44,22 @@ public class A2 {
         SymbolTable symbolTable = new SymbolTable();
         Scanner s = new Scanner(outputController, symbolTable);
         Parser p = new Parser(s);
+        CodeGenerator cg = new CodeGenerator(p);
 
-        // Initialise the scanner and parser by passing the filename of the source code
+        // Initialise the scanner passing the filename of the source code
         s.init(args[0]);
-        p.initialise();
 
-        // Start the parser's debug routine to output the result of a scanner getToken call
-        p.run();
+        // Initialise the parser which gets the token stream from the scanner. As undefined tokens
+        // should not be parsed, check for errors before continuing
+        p.initialise();
+        if (outputController.hasErrors())
+            outputController.reportErrorsAndWarnings();
+
+        // Initialise the code generator
+        cg.initialise();
+
+        // Start the code generator's debug routine to output the syntax tree
+        cg.run();
 
         // Report any errors and warnings found so far in the compilation
         outputController.reportErrorsAndWarnings();

@@ -27,7 +27,7 @@ public class OutputController {
         if (errorHandler.hasErrors()) {
             System.err.println("Errors exist within the compiling process:\n");
             for (ErrorMessage error : errorHandler.getErrors()) {
-                System.err.println(error);
+                System.err.println(error.toString(true));
             }
         }
     }
@@ -39,7 +39,7 @@ public class OutputController {
         if (errorHandler.hasWarnings()) {
             System.err.println("\nWarnings exist within the compiling process:\n");
             for (ErrorMessage warning : errorHandler.getWarnings()) {
-                System.err.println(warning);
+                System.err.println(warning.toString(true));
             }
         }
     }
@@ -52,7 +52,7 @@ public class OutputController {
         reportWarnings();
         listing.addErrorsToListing(errorHandler.getErrors());
         listing.addErrorsToListing(errorHandler.getWarnings());
-        if (errorHandler.hasErrors())
+        if (hasErrors())
             System.exit(1);
     }
 
@@ -118,5 +118,17 @@ public class OutputController {
         line = line.substring(String.valueOf(row).length());
         // Return the character at the specified column
         return String.valueOf(line.charAt(col));
+    }
+
+    public boolean hasErrors() {
+        return errorHandler.hasErrors();
+    }
+
+    public boolean hasWarnings() {
+        return errorHandler.hasWarnings();
+    }
+
+    public boolean hasWarningsOrErrors() {
+        return hasErrors() || hasWarnings();
     }
 }

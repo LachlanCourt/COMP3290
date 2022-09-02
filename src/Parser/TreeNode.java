@@ -16,7 +16,6 @@ public class TreeNode {
         NFLIST,
         NSDECL,
         NTDECL,
-        NPRITYP,
         NALIST,
         NARRD,
         NADD,
@@ -62,20 +61,17 @@ public class TreeNode {
         NPRLN,
         NVLIST,
         NPRLST,
-
         NSTRG,
         NCALL,
         NRETN,
         NFUNCS,
         NFUND,
-
         NPLIST,
-
         NSIMP,
         NARRP,
         NARRC,
-
         NDLIST,
+
     }
 
     private TreeNodes nodeType;
@@ -144,6 +140,18 @@ public class TreeNode {
         }
     }
 
+    public TreeNode getChildByIndex(int index) {
+        switch (index) {
+            case 0:
+                return left;
+            case 1:
+                return mid;
+            case 2:
+                return right;
+        }
+        return null;
+    }
+
     public TreeNode getLeft() {
         return left;
     }
@@ -166,5 +174,26 @@ public class TreeNode {
 
     public void setToken(Token token_) {
         token = token_;
+    }
+
+    @Override
+    public String toString() {
+        return nodeType.name() + getTokenString() + " ";
+    }
+
+    public String toString(boolean includeData) {
+        if (includeData) {
+            return toString();
+        }
+        return nodeType.name();
+    }
+
+    public String getTokenString() {
+        switch (nodeType) {
+            case NSIMV, NSTRG, NILIT, NFLIT, NTRUE, NFALS -> {
+                return " " + token.getTokenLiteral();
+            }
+        }
+        return "";
     }
 }

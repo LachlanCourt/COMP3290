@@ -12,6 +12,7 @@ import Common.Utils.MatchTypes;
 import Scanner.Token.Tokens;
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.util.ArrayList;
 
 public class Scanner {
     private enum ContextStates {
@@ -403,7 +404,7 @@ public class Scanner {
      * Retrieve the next valid token from the source file
      * @return a single token determined from the source code
      */
-    public Token getToken() {
+    private Token getToken() {
         // If the buffer is empty, read from the file a sample to interpret
         if (buffer.length() == 0) {
             readFileIntoBufferUntilWhitespace();
@@ -431,5 +432,16 @@ public class Scanner {
             outputController.addError(currentRow, currentColumn, Errors.UNDEFINED_TOKEN, token.getTokenLiteral());
 
         return token;
+    }
+
+    public ArrayList<Token> getTokenStream() {
+        ArrayList<Token> tokenStream = new ArrayList<Token>();
+
+        Token t = null;
+        while (t==null || !t.isEof()) {
+            t = getToken();
+            tokenStream.add(t);
+        }
+        return tokenStream;
     }
 }

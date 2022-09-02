@@ -51,7 +51,7 @@ public class A2 {
         p.initialise();
         cg.initialise();
 
-        // Start the parser's debug routine to output the result of a scanner getToken call
+        // Start the code generator's debug routine to output the syntax tree
         cg.run();
 
         // Report any errors and warnings found so far in the compilation

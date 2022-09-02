@@ -14,7 +14,11 @@ import Scanner.Scanner;
 import Scanner.Token;
 import Scanner.Token.Tokens;
 
+import java.util.ArrayList;
+
 public class Parser {
+    private ArrayList<Token> tokenStream;
+    private int tokenStreamIndex;
     private Scanner scanner;
     private Token lookahead;
     private Token previousLookahead;
@@ -23,12 +27,23 @@ public class Parser {
 
     public Parser(Scanner s_) {
         scanner = s_;
+        tokenStreamIndex = 0;
     }
 
     /**
-     * Placeholder initialisation function
+     *  Initialisation function
      */
-    public void initialise() {}
+    public void initialise() {
+        tokenStream = scanner.getTokenStream();
+    }
+
+    public Token getToken() {
+        if (tokenStreamIndex < tokenStream.size()) {
+            return tokenStream.get(tokenStreamIndex++);
+        } else {
+            return tokenStream.get(tokenStream.size()- 1);
+        }
+    }
 
     private void error(String message, Token token) {
         System.err.println("ERROR");
@@ -44,8 +59,9 @@ public class Parser {
 
     private void match(Tokens token) {
         if (token == lookahead.getToken()) {
+            System.out.println(lookahead);
             previousLookahead = lookahead;
-            lookahead = scanner.getToken();
+            lookahead = getToken();
         } else
             error("Failed to match " + token + " around " + previousLookahead.getRow() + ":"
                 + previousLookahead.getCol());
@@ -55,7 +71,7 @@ public class Parser {
      * Main run method of the parser
      */
     public void run() {
-        lookahead = scanner.getToken();
+        lookahead = getToken();
         syntaxTree = program();
         if (!lookahead.isEof()) {
             error("Not at eof", new Token(false));
@@ -70,6 +86,7 @@ public class Parser {
         t.setNextChild(globals());
         t.setNextChild(funcs());
         t.setNextChild(mainbody());
+        match(Tokens.TTEOF);
         return t;
     }
 

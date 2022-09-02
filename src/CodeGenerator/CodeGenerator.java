@@ -3,10 +3,9 @@ package CodeGenerator;
 import Parser.Parser;
 
 public class CodeGenerator {
-
     public Parser parser;
 
-    public CodeGenerator (Parser p_) {
+    public CodeGenerator(Parser p_) {
         parser = p_;
     }
 
@@ -19,4 +18,3 @@ public class CodeGenerator {
         System.out.println(parser);
     }
 }
-

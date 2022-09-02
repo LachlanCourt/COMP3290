@@ -13,7 +13,6 @@ import Parser.TreeNode.TreeNodes;
 import Scanner.Scanner;
 import Scanner.Token;
 import Scanner.Token.Tokens;
-
 import java.util.ArrayList;
 
 public class Parser {
@@ -41,7 +40,7 @@ public class Parser {
         if (tokenStreamIndex < tokenStream.size()) {
             return tokenStream.get(tokenStreamIndex++);
         } else {
-            return tokenStream.get(tokenStream.size()- 1);
+            return tokenStream.get(tokenStream.size() - 1);
         }
     }
 
@@ -212,13 +211,13 @@ public class Parser {
             match(Tokens.TIDEN);
         } else {
             // stype
-            //TODO Add to symbol table
+            // TODO Add to symbol table
             TreeNode type = stype();
         }
         return t;
     }
 
-    //TODO This probably should return some kind of enum not a node, add type to symbol table
+    // TODO This probably should return some kind of enum not a node, add type to symbol table
     private TreeNode stype() {
         TreeNode t = new TreeNode();
         switch (lookahead.getToken()) {

@@ -72,7 +72,6 @@ public class TreeNode {
         NARRC,
         NDLIST,
 
-
     }
 
     private TreeNodes nodeType;
@@ -143,9 +142,12 @@ public class TreeNode {
 
     public TreeNode getChildByIndex(int index) {
         switch (index) {
-            case 0: return left;
-            case 1: return mid;
-            case 2: return right;
+            case 0:
+                return left;
+            case 1:
+                return mid;
+            case 2:
+                return right;
         }
         return null;
     }
@@ -176,7 +178,6 @@ public class TreeNode {
 
     @Override
     public String toString() {
-
         return nodeType.name() + getTokenString() + " ";
     }
 

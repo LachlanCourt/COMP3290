@@ -19,13 +19,13 @@ public class ErrorMessage {
     // Unix operating systems let us use some fancy colours by top and tailing the strings but
     // unfortunately these are not available on Windows :(
     public static final String RESET =
-            System.getProperty("os.name").toLowerCase().contains("windows") ? ""
-                    : "\033[0m"; // Text Reset
+        System.getProperty("os.name").toLowerCase().contains("windows") ? ""
+                                                                        : "\033[0m"; // Text Reset
     public static final String RED =
-            System.getProperty("os.name").toLowerCase().contains("windows") ? "" : "\033[0;31m"; // RED
+        System.getProperty("os.name").toLowerCase().contains("windows") ? "" : "\033[0;31m"; // RED
     public static final String YELLOW =
-            System.getProperty("os.name").toLowerCase().contains("windows") ? ""
-                    : "\033[0;33m"; // YELLOW
+        System.getProperty("os.name").toLowerCase().contains("windows") ? ""
+                                                                        : "\033[0;33m"; // YELLOW
 
     private int row;
     private int col;
@@ -71,18 +71,18 @@ public class ErrorMessage {
         }
 
         errorMessage = (isWarning ? "Warning" : "Error") + " on line " + row + " at column " + col + ": " + errorText;
-    }
+        }
 
-    @Override
-    public String toString() {
-        return errorMessage;
-    }
+        @Override
+        public String toString() {
+            return errorMessage;
+        }
 
-    public String toString(boolean showColouredText) {
-        if (showColouredText) {
-            return (isWarning ? YELLOW  : RED) + toString() + RESET;
-        } else {
-            return toString();
+        public String toString(boolean showColouredText) {
+            if (showColouredText) {
+                return (isWarning ? YELLOW : RED) + toString() + RESET;
+            } else {
+                return toString();
+            }
         }
     }
-}

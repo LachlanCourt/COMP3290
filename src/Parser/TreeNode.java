@@ -176,10 +176,23 @@ public class TreeNode {
 
     @Override
     public String toString() {
-        String additionalData = "";
-        switch (nodeType) {
-            case NSIMV, NSTRG, NILIT, NFLIT, NTRUE, NFALS -> additionalData += " " + token.getTokenLiteral();
+
+        return nodeType.name() + getTokenString() + " ";
+    }
+
+    public String toString(boolean includeData) {
+        if (includeData) {
+            return toString();
         }
-        return nodeType.name() + additionalData + " ";
+        return nodeType.name();
+    }
+
+    public String getTokenString() {
+        switch (nodeType) {
+            case NSIMV, NSTRG, NILIT, NFLIT, NTRUE, NFALS -> {
+                return " " + token.getTokenLiteral();
+            }
+        }
+        return "";
     }
 }

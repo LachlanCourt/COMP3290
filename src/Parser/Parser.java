@@ -900,9 +900,21 @@ public class Parser {
 
     private String outputHelper(TreeNode node) {
         if (node == null) return "";
-        String data = node.toString();
+
+        String data = "";
+        if (System.getenv("DEBUG") != null && System.getenv("DEBUG").compareTo("true") == 0) {
+            data = "<" + node.toString(false) + "> ";
+            data += node.getTokenString();
+        } else {
+            data = node.toString();
+        }
+
         for (int i = 0; i < 3; i++) {
             data += outputHelper(node.getChildByIndex(i));
+        }
+
+        if (System.getenv("DEBUG") != null && System.getenv("DEBUG").compareTo("true") == 0) {
+            data += "</" + node.toString(false) + "> ";
         }
         return data;
     }
@@ -920,6 +932,8 @@ public class Parser {
                 line = "";
             }
         }
+        if (line.length() > 0)
+            formattedTree += line;
         return formattedTree;
     }
 

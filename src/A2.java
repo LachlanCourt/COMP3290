@@ -42,7 +42,7 @@ public class A2 {
         // Create instances of the necessary classes
         OutputController outputController = new OutputController();
         SymbolTable symbolTable = new SymbolTable();
-        Scanner s = new Scanner(outputController, symbolTable);
+        Scanner s = new Scanner(outputController);
         Parser p = new Parser(s);
         CodeGenerator cg = new CodeGenerator(p);
 

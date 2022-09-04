@@ -44,6 +44,9 @@ public class SymbolTable {
     //    }
 
     public int addSymbol(SymbolType symbolType_, Token token_) {
+        if (symbolType_ == SymbolType.LITERAL) {
+            return addSymbol(symbolType_, token_, "literals");
+        }
         return addSymbol(symbolType_, token_, "global");
     }
 

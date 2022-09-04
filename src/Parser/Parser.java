@@ -365,19 +365,19 @@ public class Parser {
 
     private TreeNode exponent() {
         if (lookahead.getToken() == Tokens.TILIT) {
-            TreeNode t = new TreeNode(TreeNodes.NILIT, symbolTable.addSymbol(SymbolType.LITERAL, lookahead, "literals"));
+            TreeNode t = new TreeNode(TreeNodes.NILIT, symbolTable.addSymbol(SymbolType.LITERAL, lookahead));
             match(Tokens.TILIT);
             return t;
         } else if (lookahead.getToken() == Tokens.TFLIT) {
-            TreeNode t = new TreeNode(TreeNodes.NFLIT, symbolTable.addSymbol(SymbolType.LITERAL, lookahead, "literals"));
+            TreeNode t = new TreeNode(TreeNodes.NFLIT, symbolTable.addSymbol(SymbolType.LITERAL, lookahead));
             match(Tokens.TFLIT);
             return t;
         } else if (lookahead.getToken() == Tokens.TTRUE) {
-            TreeNode t = new TreeNode(TreeNodes.NTRUE, symbolTable.addSymbol(SymbolType.LITERAL, lookahead, "literals"));
+            TreeNode t = new TreeNode(TreeNodes.NTRUE, symbolTable.addSymbol(SymbolType.LITERAL, lookahead));
             match(Tokens.TTRUE);
             return t;
         } else if (lookahead.getToken() == Tokens.TFALS) {
-            TreeNode t = new TreeNode(TreeNodes.NFALS, symbolTable.addSymbol(SymbolType.LITERAL, lookahead, "literals"));
+            TreeNode t = new TreeNode(TreeNodes.NFALS, symbolTable.addSymbol(SymbolType.LITERAL, lookahead));
             match(Tokens.TFALS);
             return t;
         } else if (lookahead.getToken() == Tokens.TLPAR) {
@@ -800,9 +800,10 @@ public class Parser {
 
     private TreeNode printitem() {
         if (lookahead.getToken() == Tokens.TSTRG) {
-            Token token = lookahead;
+
+            int symbolTableReference = symbolTable.addSymbol(SymbolType.LITERAL, lookahead);
             match(Tokens.TSTRG);
-            return new TreeNode(TreeNodes.NSTRG, token);
+            return new TreeNode(TreeNodes.NSTRG, symbolTableReference);
         }
         return expr();
     }

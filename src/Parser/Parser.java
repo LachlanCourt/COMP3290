@@ -9,6 +9,7 @@
  *******************************************************************************/
 package Parser;
 
+import Common.SymbolTable;
 import Parser.TreeNode.TreeNodes;
 import Scanner.Scanner;
 import Scanner.Token;
@@ -24,13 +25,16 @@ public class Parser {
 
     private TreeNode syntaxTree;
 
-    public Parser(Scanner s_) {
+    private SymbolTable symbolTable;
+
+    public Parser(Scanner s_, SymbolTable symbolTable_) {
         scanner = s_;
+        symbolTable = symbolTable_;
         tokenStreamIndex = 0;
     }
 
     /**
-     *  Initialisation function
+     * Initialisation function
      */
     public void initialise() {
         tokenStream = scanner.getTokenStream();
@@ -72,7 +76,7 @@ public class Parser {
         lookahead = getToken();
         syntaxTree = program();
         if (!lookahead.isEof()) {
-            error("Not at eof", new Token(false));
+            error("Not at eof");
         }
     }
 
@@ -80,7 +84,8 @@ public class Parser {
         TreeNode t = new TreeNode(TreeNodes.NPROG);
         match(Tokens.TCD22);
         if (lookahead.getToken() == Tokens.TIDEN) {
-            t.setToken(lookahead);
+            t.setSymbolTableReference(
+                symbolTable.addSymbol(SymbolTable.SymbolType.PROGRAM_IDEN, lookahead));
             match(Tokens.TIDEN);
         } else {
             error("Program name is missing");
@@ -348,7 +353,7 @@ public class Parser {
         if (lookahead.getToken() == Tokens.TCART) {
             match(Tokens.TCART);
             t.setNodeType(TreeNodes.NPOW);
-           return exponent();
+            return exponent();
         }
         return t;
     }
@@ -798,7 +803,7 @@ public class Parser {
     }
 
     private TreeNode funcs() {
-        if (lookahead.getToken()!= Tokens.TFUNC) {
+        if (lookahead.getToken() != Tokens.TFUNC) {
             return null;
         }
         TreeNode t = new TreeNode(TreeNodes.NFUNCS, func());
@@ -816,7 +821,7 @@ public class Parser {
         t.setToken(token);
         match(Tokens.TLPAR);
         TreeNode plistNode = plist();
-        if (plistNode!= null)t.setNextChild(plistNode);
+        if (plistNode != null) t.setNextChild(plistNode);
         match(Tokens.TRPAR);
         match(Tokens.TCOLN);
         //TODO add rtype to symbol table
@@ -921,8 +926,7 @@ public class Parser {
     @Override
     public String toString() {
         boolean debug = System.getenv("DEBUG") != null && System.getenv("DEBUG").compareTo("true") == 0;
-        String stringifiedTree = outputHelper(syntaxTree, debug);
-        String[] treeList = stringifiedTree.split("\s");
+        String[] treeList = outputHelper(syntaxTree, debug).split("\s");
         String formattedTree = "";
         String line = "";
         for (int i = 0; i < treeList.length; i++) {

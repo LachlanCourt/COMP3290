@@ -43,7 +43,7 @@ public class A2 {
         OutputController outputController = new OutputController();
         SymbolTable symbolTable = new SymbolTable();
         Scanner s = new Scanner(outputController);
-        Parser p = new Parser(s);
+        Parser p = new Parser(s, symbolTable);
         CodeGenerator cg = new CodeGenerator(p);
 
         // Initialise the scanner passing the filename of the source code

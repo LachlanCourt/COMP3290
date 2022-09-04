@@ -80,6 +80,8 @@ public class TreeNode {
     private TreeNode right;
     private Token token;
 
+    int symbolTableReference;
+
     public TreeNode() {}
 
     public TreeNode(TreeNodes type_, Token token_, TreeNode left_, TreeNode mid_, TreeNode right_) {
@@ -174,6 +176,14 @@ public class TreeNode {
 
     public void setToken(Token token_) {
         token = token_;
+    }
+
+    public void setSymbolTableReference(int reference) {
+        symbolTableReference = reference;
+    }
+
+    public int getSymbolTableReference() {
+        return symbolTableReference;
     }
 
     @Override

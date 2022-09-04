@@ -7,22 +7,36 @@
  *******************************************************************************/
 package Common;
 
+import Common.SymbolTable.SymbolType;
+
 public class Symbol {
     // The id assigned by the symbol table
-    private int id;
+    private String ref;
     // The data value of the symbol
     private String val;
 
-    public Symbol(int id_, String val_) {
-        id = id_;
+    private SymbolType symbolType;
+
+    public Symbol(SymbolType symbolType_, String ref_, String val_) {
+        symbolType = symbolType_;
+        ref = ref_;
         val = val_;
     }
 
-    public int getId() {
-        return id;
+    public Symbol(SymbolType symbolType_, String ref_) {
+        symbolType = symbolType_;
+        ref = ref_;
+    }
+
+    public String getRef() {
+        return ref;
     }
 
     public String getVal() {
         return val;
+    }
+
+    public SymbolType getSymbolType() {
+        return symbolType;
     }
 }

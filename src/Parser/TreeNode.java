@@ -108,6 +108,22 @@ public class TreeNode {
         right = null;
     }
 
+    public TreeNode(TreeNodes type_, int symbolTableReference_) {
+        nodeType = type_;
+        symbolTableReference = symbolTableReference_;
+        left = null;
+        mid = null;
+        right = null;
+    }
+
+    public TreeNode(TreeNodes type_, int symbolTableReference_, TreeNode left_) {
+        nodeType = type_;
+        symbolTableReference = symbolTableReference_;
+        left = left_;
+        mid = null;
+        right = null;
+    }
+
     public TreeNode(TreeNodes type_, TreeNode left_) {
         nodeType = type_;
         token = null;

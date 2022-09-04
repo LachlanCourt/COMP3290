@@ -22,7 +22,8 @@ public class SymbolTable {
         CONSTANT_ARRAY,
         CONSTANT,
         VARIABLE,
-        FUNCTION
+        FUNCTION,
+        LITERAL
     }
     public SymbolTable() {
         table = new HashMap<String, HashMap<Integer, Symbol>>();
@@ -50,17 +51,31 @@ public class SymbolTable {
         if (!table.containsKey(scope)) {
             table.put(scope, new HashMap<Integer, Symbol>());
         }
-        Symbol symbol = new Symbol(symbolType, token.getTokenLiteral(), null);
-        table.get(scope).put(latestId, symbol);
-        return 0;
-    }
-    public int addSymbol(SymbolType symbolType, Token token, String scope, String value) {
-        if (!table.containsKey(scope)) {
-            table.put(scope, new HashMap<Integer, Symbol>());
+        Symbol symbol;
+        if (symbolType == SymbolType.LITERAL) {
+            symbol = new Symbol(symbolType, null, token.getTokenLiteral());
+
+        } else {
+            symbol = new Symbol(symbolType, token.getTokenLiteral(), null);
         }
-        Symbol symbol = new Symbol(symbolType, token.getTokenLiteral(), value);
-        table.get(scope).put(latestId, symbol);
-        return latestId++;
+        int symbolTableReference = containsEntry(table.get(scope), token);
+        if (symbolTableReference == -1) {
+            table.get(scope).put(latestId, symbol);
+            return latestId++;
+        }
+        return symbolTableReference;
+    }
+
+    private int containsEntry(HashMap<Integer, Symbol> map, Token token) {
+        for (Map.Entry<Integer, Symbol> entry : map.entrySet()) {
+            if (entry.getValue().getSymbolType() == SymbolType.LITERAL) {
+                if (entry.getValue().getVal().compareTo(token.getTokenLiteral()) == 0) return entry.getKey();
+            }
+            else {
+                if (entry.getValue().getRef().compareTo(token.getTokenLiteral()) == 0) return entry.getKey();
+            }
+        }
+        return -1;
     }
 
     // Getters for the value given either ref or id
@@ -85,11 +100,11 @@ public class SymbolTable {
      */
     @Override
     public String toString() {
-        String out = "";
+        String out = "SymbolId, Reference, Val, Type\n";
         for (Map.Entry<String, HashMap<Integer, Symbol>> scopeEntry : table.entrySet()) {
-            out += scopeEntry.getKey() + "\n";
+            out += "\n" + scopeEntry.getKey() + "\n";
             for (Map.Entry<Integer, Symbol> entry : table.get(scopeEntry.getKey()).entrySet()) {
-                out += entry.getKey() + ", " + entry.getValue().getRef() + ", " + entry.getValue().getVal() + ", "
+                out += entry.getKey() + ", " + entry.getValue().getRef() + ", " + entry.getValue().getVal()  + ", "
                         + entry.getValue().getSymbolType() + "\n";
             }
         }

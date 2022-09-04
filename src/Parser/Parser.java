@@ -10,6 +10,7 @@
 package Parser;
 
 import Common.SymbolTable;
+import Common.SymbolTable.SymbolType;
 import Parser.TreeNode.TreeNodes;
 import Scanner.Scanner;
 import Scanner.Token;
@@ -129,14 +130,18 @@ public class Parser {
 
     private TreeNode init() {
         TreeNode t = new TreeNode(TreeNodes.NINIT);
+        int symbolTableReference = 0;
         if (lookahead.getToken() == Tokens.TIDEN) {
-            t.setNextChild(new TreeNode(TreeNodes.NSIMV, lookahead));
+            symbolTableReference = symbolTable.addSymbol(SymbolType.CONSTANT, lookahead);
+            t.setNextChild(new TreeNode(TreeNodes.NSIMV, symbolTableReference));
             match(Tokens.TIDEN);
         } else {
             error("Missing identifier");
         }
         match(Tokens.TEQUL);
-        t.setNextChild(expr());
+        TreeNode exprNode = expr();
+        symbolTable.getSymbol(symbolTableReference).setVal(String.valueOf(exprNode.getSymbolTableReference()));
+        t.setNextChild(exprNode);
         return t;
     }
 
@@ -360,19 +365,19 @@ public class Parser {
 
     private TreeNode exponent() {
         if (lookahead.getToken() == Tokens.TILIT) {
-            TreeNode t = new TreeNode(TreeNodes.NILIT, lookahead);
+            TreeNode t = new TreeNode(TreeNodes.NILIT, symbolTable.addSymbol(SymbolType.LITERAL, lookahead, "literals"));
             match(Tokens.TILIT);
             return t;
         } else if (lookahead.getToken() == Tokens.TFLIT) {
-            TreeNode t = new TreeNode(TreeNodes.NFLIT, lookahead);
+            TreeNode t = new TreeNode(TreeNodes.NFLIT, symbolTable.addSymbol(SymbolType.LITERAL, lookahead, "literals"));
             match(Tokens.TFLIT);
             return t;
         } else if (lookahead.getToken() == Tokens.TTRUE) {
-            TreeNode t = new TreeNode(TreeNodes.NTRUE, lookahead);
+            TreeNode t = new TreeNode(TreeNodes.NTRUE, symbolTable.addSymbol(SymbolType.LITERAL, lookahead, "literals"));
             match(Tokens.TTRUE);
             return t;
         } else if (lookahead.getToken() == Tokens.TFALS) {
-            TreeNode t = new TreeNode(TreeNodes.NFALS, lookahead);
+            TreeNode t = new TreeNode(TreeNodes.NFALS, symbolTable.addSymbol(SymbolType.LITERAL, lookahead, "literals"));
             match(Tokens.TFALS);
             return t;
         } else if (lookahead.getToken() == Tokens.TLPAR) {
@@ -482,7 +487,7 @@ public class Parser {
 
     private TreeNode fncall(Token nameIdenToken) {
         TreeNode t = new TreeNode(TreeNodes.NFCALL);
-        t.setNextChild(new TreeNode(TreeNodes.NSIMV, nameIdenToken));
+        t.setNextChild(new TreeNode(TreeNodes.NSIMV, symbolTable.addSymbol(SymbolType.FUNCTION, nameIdenToken)));
         match(Tokens.TLPAR);
         if (lookahead.getToken() != Tokens.TRPAR) {
             t.setNextChild(elist());
@@ -517,7 +522,7 @@ public class Parser {
         if (lookahead.getToken() == Tokens.TLBRK) {
             TreeNode t = new TreeNode();
             match(Tokens.TLBRK);
-            t.setNextChild(new TreeNode(TreeNodes.NSIMV, nameIdenToken));
+            t.setNextChild(new TreeNode(TreeNodes.NSIMV, symbolTable.addSymbol(SymbolType.VARIABLE, nameIdenToken)));
             t.setNextChild(expr());
             match(Tokens.TRBRK);
             // Access struct field
@@ -550,9 +555,9 @@ public class Parser {
         match(Tokens.TTEND);
         match(Tokens.TCD22);
         if (lookahead.getToken() == Tokens.TIDEN) {
-            Token token = lookahead;
+            int symbolTableReference = symbolTable.addSymbol(SymbolType.PROGRAM_IDEN, lookahead);
             match(Tokens.TIDEN);
-            t.setNextChild(new TreeNode(TreeNodes.NSIMV, token));
+            t.setNextChild(new TreeNode(TreeNodes.NSIMV, symbolTableReference));
         } else {
             error("Missing identifier");
         }
@@ -908,7 +913,7 @@ public class Parser {
         String data = "";
         if (debug) {
             data = "<" + node.toString(false) + "> ";
-            data += node.getTokenString();
+            data += node.getSymbolTableReference();
         } else {
             data = node.toString();
         }

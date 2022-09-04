@@ -39,4 +39,8 @@ public class Symbol {
     public SymbolType getSymbolType() {
         return symbolType;
     }
+
+    public void setVal(String val_) {
+        val = val_;
+    }
 }

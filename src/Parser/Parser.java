@@ -140,7 +140,7 @@ public class Parser {
         }
         match(Tokens.TEQUL);
         TreeNode exprNode = expr();
-        symbolTable.getSymbol(symbolTableReference).setVal(String.valueOf(exprNode.getSymbolTableReference()));
+        symbolTable.getSymbol(symbolTableReference).setForeignSymbolTableReference(exprNode.getSymbolTableReference());
         t.setNextChild(exprNode);
         return t;
     }

@@ -9,15 +9,17 @@ package Common;
 
 import Common.SymbolTable.SymbolType;
 
-public class Symbol {
+public class Symbol<T extends Comparable> {
     // The id assigned by the symbol table
-    private String ref;
+    private final String ref;
     // The data value of the symbol
-    private String val;
+    private T val;
 
-    private SymbolType symbolType;
+    private final SymbolType symbolType;
 
-    public Symbol(SymbolType symbolType_, String ref_, String val_) {
+    private Integer foreignSymbolTableReference;
+
+    public Symbol(SymbolType symbolType_, String ref_, T val_) {
         symbolType = symbolType_;
         ref = ref_;
         val = val_;
@@ -32,7 +34,7 @@ public class Symbol {
         return ref;
     }
 
-    public String getVal() {
+    public T getVal() {
         return val;
     }
 
@@ -40,7 +42,15 @@ public class Symbol {
         return symbolType;
     }
 
-    public void setVal(String val_) {
+    public void setVal(T val_) {
         val = val_;
+    }
+
+    public void setForeignSymbolTableReference(int reference_) {
+        foreignSymbolTableReference = reference_;
+    }
+
+    public Integer getForeignSymbolTableReference() {
+        return foreignSymbolTableReference;
     }
 }

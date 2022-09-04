@@ -103,11 +103,13 @@ public class SymbolTable {
      */
     @Override
     public String toString() {
-        String out = "SymbolId, Reference, Val, Type\n";
+        String out = "SymbolId, Reference, Val, ForeignSymbolTableReference, Type\n";
         for (Map.Entry<String, HashMap<Integer, Symbol>> scopeEntry : table.entrySet()) {
             out += "\n" + scopeEntry.getKey() + "\n";
             for (Map.Entry<Integer, Symbol> entry : table.get(scopeEntry.getKey()).entrySet()) {
-                out += entry.getKey() + ", " + entry.getValue().getRef() + ", " + entry.getValue().getVal()  + ", "
+                out += entry.getKey() + ", " + entry.getValue().getRef() + ", " + entry.getValue().getVal()  + ", " + entry.getValue().getForeignSymbolTableReference() +
+
+                        ", "
                         + entry.getValue().getSymbolType() + "\n";
             }
         }

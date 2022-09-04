@@ -284,15 +284,19 @@ public class Parser {
 
     private TreeNode arrdecl() {
         TreeNode t = new TreeNode(TreeNodes.NARRD);
+        int symbolTableReference = 0;
         if (lookahead.getToken() == Tokens.TIDEN) {
-            t.setNextChild(new TreeNode(TreeNodes.NSIMV, lookahead));
+            symbolTableReference = symbolTable.addSymbol(SymbolType.VARIABLE, lookahead);
+            t.setNextChild(new TreeNode(TreeNodes.NSIMV, symbolTableReference));
             match(Tokens.TIDEN);
         } else {
             error("Missing identifier");
         }
         match(Tokens.TCOLN);
         if (lookahead.getToken() == Tokens.TIDEN) {
-            t.setNextChild(new TreeNode(TreeNodes.NSIMV, lookahead));
+            int typeReference = symbolTable.getSymbolIdFromReference(lookahead.getTokenLiteral(), currentScope);
+            symbolTable.getSymbol(symbolTableReference).setForeignSymbolTableReference(typeReference);
+            t.setNextChild(new TreeNode(TreeNodes.NSIMV, typeReference));
             match(Tokens.TIDEN);
         } else {
             error("Missing identifier");
@@ -543,7 +547,7 @@ public class Parser {
             TreeNode t = new TreeNode();
             match(Tokens.TLBRK);
             t.setNextChild(new TreeNode(
-                TreeNodes.NSIMV, symbolTable.addSymbol(SymbolType.VARIABLE, nameIdenToken)));
+                TreeNodes.NSIMV, symbolTable.getSymbolIdFromReference(nameIdenToken.getTokenLiteral(), currentScope)));
             t.setNextChild(expr());
             match(Tokens.TRBRK);
             // Access struct field

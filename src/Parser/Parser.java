@@ -9,6 +9,7 @@
  *******************************************************************************/
 package Parser;
 
+import Common.Symbol;
 import Common.SymbolTable;
 import Common.SymbolTable.PrimitiveTypes;
 import Common.SymbolTable.SymbolType;
@@ -170,8 +171,10 @@ public class Parser {
 
     private TreeNode type() {
         TreeNode t = new TreeNode();
+        Token typeNameToken = null;
         if (lookahead.getToken() == Tokens.TIDEN) {
-            t.setNextChild(new TreeNode(TreeNodes.NSIMV, lookahead));
+            typeNameToken = lookahead;
+            t.setNextChild(new TreeNode(TreeNodes.NSIMV));
             match(Tokens.TIDEN);
         } else {
             error("Missing identifier");
@@ -181,20 +184,30 @@ public class Parser {
             // Array
             match(Tokens.TARAY);
             match(Tokens.TLBRK);
-            t.setNextChild(expr());
+            TreeNode exprNode = expr();
+            t.setNextChild(exprNode);
             match(Tokens.TRBRK);
             match(Tokens.TTTOF);
+            int symbolTableReference = 0;
             if (lookahead.getToken() == Tokens.TIDEN) {
-                t.setNextChild(new TreeNode(TreeNodes.NSIMV, lookahead));
+                symbolTableReference = symbolTable.getSymbolIdFromReference(lookahead.getTokenLiteral(), currentScope);
+                t.setNextChild(new TreeNode(TreeNodes.NSIMV, symbolTableReference));
                 match(Tokens.TIDEN);
             } else {
                 error("Missing identifier");
             }
             t.setNodeType(TreeNodes.NATYPE);
+
+            Symbol newSymbol = symbolTable.getSymbol(symbolTable.addSymbol(SymbolType.ARRAY_TYPE, typeNameToken));
+            newSymbol.setForeignSymbolTableReference(symbolTableReference);
+            newSymbol.setForeignSymbolTableReference("size", exprNode.getSymbolTableReference());
+
         } else if (lookahead.getToken() == Tokens.TIDEN) {
             // Struct
-            t.setNodeType(TreeNodes.NRTYPE);
             t.setNextChild(fields());
+            t.setNodeType(TreeNodes.NRTYPE);
+
+            symbolTable.getSymbol(symbolTable.addSymbol(SymbolType.STRUCT_TYPE, typeNameToken));
         }
         match(Tokens.TTEND);
         return t;

@@ -10,6 +10,7 @@
 package Parser;
 
 import Common.SymbolTable;
+import Common.SymbolTable.PrimitiveTypes;
 import Common.SymbolTable.SymbolType;
 import Parser.TreeNode.TreeNodes;
 import Scanner.Scanner;
@@ -28,6 +29,8 @@ public class Parser {
 
     private SymbolTable symbolTable;
 
+    private String currentScope;
+
     public Parser(Scanner s_, SymbolTable symbolTable_) {
         scanner = s_;
         symbolTable = symbolTable_;
@@ -39,6 +42,7 @@ public class Parser {
      */
     public void initialise() {
         tokenStream = scanner.getTokenStream();
+        currentScope = "global";
     }
 
     public Token getToken() {
@@ -140,7 +144,8 @@ public class Parser {
         }
         match(Tokens.TEQUL);
         TreeNode exprNode = expr();
-        symbolTable.getSymbol(symbolTableReference).setForeignSymbolTableReference(exprNode.getSymbolTableReference());
+        symbolTable.getSymbol(symbolTableReference)
+            .setForeignSymbolTableReference(exprNode.getSymbolTableReference());
         t.setNextChild(exprNode);
         return t;
     }
@@ -222,31 +227,26 @@ public class Parser {
         } else {
             // stype
             // TODO Add to symbol table
-            TreeNode type = stype();
+            PrimitiveTypes type = stype();
         }
         return t;
     }
 
     // TODO This probably should return some kind of enum not a node, add type to symbol table
-    private TreeNode stype() {
-        TreeNode t = new TreeNode();
+    private PrimitiveTypes stype() {
         switch (lookahead.getToken()) {
-            case TINTG -> {
-                t.setToken(lookahead);
+            case TINTG:
                 match(Tokens.TINTG);
-            }
-            case TFLOT -> {
-                t.setToken(lookahead);
+                return PrimitiveTypes.INTEGER;
+            case TFLOT:
                 match(Tokens.TFLOT);
-
-            }
-            case TBOOL -> {
-                t.setToken(lookahead);
+                return PrimitiveTypes.FLOAT;
+            case TBOOL:
                 match(Tokens.TBOOL);
-            }
-            default -> error("Invalid type");
+                return PrimitiveTypes.BOOLEAN;
+            default:
+                return PrimitiveTypes.UNKNOWN;
         }
-        return t;
     }
 
     private TreeNode arrays() {
@@ -293,7 +293,8 @@ public class Parser {
         // Sets node type, if it is not epsilon
         t.setNextChild(exprr(t));
         if (t.getNodeType() == null) {
-            // Epsilon path of recursive exprr rule. If no following token was found, just return the term as its own node
+            // Epsilon path of recursive exprr rule. If no following token was found, just return
+            // the term as its own node
             return t.getLeft();
         }
         return t;
@@ -318,7 +319,8 @@ public class Parser {
         // Sets node type, if it is not epsilon
         t.setNextChild(termr(t));
         if (t.getNodeType() == null) {
-            // Epsilon path of recursive termr rule. If no following token was found, just return the fact as its own node
+            // Epsilon path of recursive termr rule. If no following token was found, just return
+            // the fact as its own node
             return t.getLeft();
         }
         return t;
@@ -348,7 +350,8 @@ public class Parser {
         // Sets node type, if it is not epsilon
         t.setNextChild(factr(t));
         if (t.getNodeType() == null) {
-            // Epsilon path of recursive factr rule. If no following token was found, just return the exponent as its own node
+            // Epsilon path of recursive factr rule. If no following token was found, just return
+            // the exponent as its own node
             return t.getLeft();
         }
         return t;
@@ -365,19 +368,23 @@ public class Parser {
 
     private TreeNode exponent() {
         if (lookahead.getToken() == Tokens.TILIT) {
-            TreeNode t = new TreeNode(TreeNodes.NILIT, symbolTable.addSymbol(SymbolType.LITERAL, lookahead));
+            TreeNode t =
+                new TreeNode(TreeNodes.NILIT, symbolTable.addSymbol(SymbolType.LITERAL, lookahead));
             match(Tokens.TILIT);
             return t;
         } else if (lookahead.getToken() == Tokens.TFLIT) {
-            TreeNode t = new TreeNode(TreeNodes.NFLIT, symbolTable.addSymbol(SymbolType.LITERAL, lookahead));
+            TreeNode t =
+                new TreeNode(TreeNodes.NFLIT, symbolTable.addSymbol(SymbolType.LITERAL, lookahead));
             match(Tokens.TFLIT);
             return t;
         } else if (lookahead.getToken() == Tokens.TTRUE) {
-            TreeNode t = new TreeNode(TreeNodes.NTRUE, symbolTable.addSymbol(SymbolType.LITERAL, lookahead));
+            TreeNode t =
+                new TreeNode(TreeNodes.NTRUE, symbolTable.addSymbol(SymbolType.LITERAL, lookahead));
             match(Tokens.TTRUE);
             return t;
         } else if (lookahead.getToken() == Tokens.TFALS) {
-            TreeNode t = new TreeNode(TreeNodes.NFALS, symbolTable.addSymbol(SymbolType.LITERAL, lookahead));
+            TreeNode t =
+                new TreeNode(TreeNodes.NFALS, symbolTable.addSymbol(SymbolType.LITERAL, lookahead));
             match(Tokens.TFALS);
             return t;
         } else if (lookahead.getToken() == Tokens.TLPAR) {
@@ -391,10 +398,9 @@ public class Parser {
             if (lookahead.getToken() == Tokens.TLPAR) {
                 return fncall(token);
             }
-            // If the node is not a function call, it's either an ID or an array accessor. Either way start by passing the id
-            // token straight to the overridden function
+            // If the node is not a function call, it's either an ID or an array accessor. Either
+            // way start by passing the id token straight to the overridden function
             return var(token);
-
         }
         error("Not a number");
         return null;
@@ -434,7 +440,7 @@ public class Parser {
         if (lookahead.getToken() == Tokens.TNOTT) {
             match(Tokens.TNOTT);
             not = true;
-//            return new TreeNode(TreeNodes.NNOT, expr(), relop(), expr());
+            //            return new TreeNode(TreeNodes.NNOT, expr(), relop(), expr());
         }
         TreeNode exprNode = expr();
         TreeNode relopNode = relop();
@@ -487,7 +493,8 @@ public class Parser {
 
     private TreeNode fncall(Token nameIdenToken) {
         TreeNode t = new TreeNode(TreeNodes.NFCALL);
-        t.setNextChild(new TreeNode(TreeNodes.NSIMV, symbolTable.addSymbol(SymbolType.FUNCTION, nameIdenToken)));
+        t.setNextChild(new TreeNode(TreeNodes.NSIMV,
+            symbolTable.getSymbolIdFromReference(nameIdenToken.getTokenLiteral(), "global")));
         match(Tokens.TLPAR);
         if (lookahead.getToken() != Tokens.TRPAR) {
             t.setNextChild(elist());
@@ -522,7 +529,8 @@ public class Parser {
         if (lookahead.getToken() == Tokens.TLBRK) {
             TreeNode t = new TreeNode();
             match(Tokens.TLBRK);
-            t.setNextChild(new TreeNode(TreeNodes.NSIMV, symbolTable.addSymbol(SymbolType.VARIABLE, nameIdenToken)));
+            t.setNextChild(new TreeNode(
+                TreeNodes.NSIMV, symbolTable.addSymbol(SymbolType.VARIABLE, nameIdenToken)));
             t.setNextChild(expr());
             match(Tokens.TRBRK);
             // Access struct field
@@ -536,7 +544,8 @@ public class Parser {
                     t.setNextChild(new TreeNode(TreeNodes.NSIMV, fieldIdenToken));
                 }
             } else {
-                // If the if didn't run it is not accessing a struct field, but is instead the entire struct
+                // If the if didn't run it is not accessing a struct field, but is instead the
+                // entire struct
                 t.setNodeType(TreeNodes.NAELT);
             }
             // Either return with whole struct or individual field if the above if ran
@@ -579,13 +588,18 @@ public class Parser {
         // Assign t1
         if (lookahead.getToken() == Tokens.TTFOR || lookahead.getToken() == Tokens.TIFTH) {
             t = strstat();
-        } else if (lookahead.getToken() == Tokens.TREPT || lookahead.getToken() == Tokens.TIDEN || lookahead.getToken() == Tokens.TINPT || lookahead.getToken() == Tokens.TPRNT || lookahead.getToken() == Tokens.TPRLN || lookahead.getToken() == Tokens.TRETN) {
+        } else if (lookahead.getToken() == Tokens.TREPT || lookahead.getToken() == Tokens.TIDEN
+            || lookahead.getToken() == Tokens.TINPT || lookahead.getToken() == Tokens.TPRNT
+            || lookahead.getToken() == Tokens.TPRLN || lookahead.getToken() == Tokens.TRETN) {
             t = stat();
             match(Tokens.TSEMI);
         }
         if (t != null) {
             // Epsilon path
-            if (lookahead.getToken() != Tokens.TTFOR && lookahead.getToken() != Tokens.TIFTH && lookahead.getToken() != Tokens.TREPT && lookahead.getToken() != Tokens.TIDEN && lookahead.getToken() != Tokens.TINPT && lookahead.getToken() != Tokens.TPRNT && lookahead.getToken() != Tokens.TPRLN && lookahead.getToken() != Tokens.TRETN) {
+            if (lookahead.getToken() != Tokens.TTFOR && lookahead.getToken() != Tokens.TIFTH
+                && lookahead.getToken() != Tokens.TREPT && lookahead.getToken() != Tokens.TIDEN
+                && lookahead.getToken() != Tokens.TINPT && lookahead.getToken() != Tokens.TPRNT
+                && lookahead.getToken() != Tokens.TPRLN && lookahead.getToken() != Tokens.TRETN) {
                 return t;
             }
             return new TreeNode(TreeNodes.NSTATS, t, stats());
@@ -594,11 +608,11 @@ public class Parser {
         return null;
     }
 
-
     private TreeNode stat() {
         if (lookahead.getToken() == Tokens.TREPT) {
             return reptstat();
-        } else if (lookahead.getToken() == Tokens.TINPT || lookahead.getToken() == Tokens.TPRNT || lookahead.getToken() == Tokens.TPRLN) {
+        } else if (lookahead.getToken() == Tokens.TINPT || lookahead.getToken() == Tokens.TPRNT
+            || lookahead.getToken() == Tokens.TPRLN) {
             return iostat();
         } else if (lookahead.getToken() == Tokens.TRETN) {
             return returnstat();
@@ -617,7 +631,8 @@ public class Parser {
         match(Tokens.TREPT);
         match(Tokens.TLPAR);
         TreeNode asgnlistNode = asgnlist();
-        if (asgnlistNode != null) t.setNextChild(asgnlistNode);
+        if (asgnlistNode != null)
+            t.setNextChild(asgnlistNode);
         match(Tokens.TRPAR);
         t.setNextChild(stats());
         match(Tokens.TUNTL);
@@ -699,7 +714,8 @@ public class Parser {
         match(Tokens.TTFOR);
         match(Tokens.TLPAR);
         TreeNode asgnlistNode = asgnlist();
-        if (asgnlistNode != null) t.setNextChild(asgnlistNode);
+        if (asgnlistNode != null)
+            t.setNextChild(asgnlistNode);
         match(Tokens.TSEMI);
         t.setNextChild(bool());
         match(Tokens.TRPAR);
@@ -800,7 +816,6 @@ public class Parser {
 
     private TreeNode printitem() {
         if (lookahead.getToken() == Tokens.TSTRG) {
-
             int symbolTableReference = symbolTable.addSymbol(SymbolType.LITERAL, lookahead);
             match(Tokens.TSTRG);
             return new TreeNode(TreeNodes.NSTRG, symbolTableReference);
@@ -822,16 +837,21 @@ public class Parser {
     private TreeNode func() {
         TreeNode t = new TreeNode(TreeNodes.NFUND);
         match(Tokens.TFUNC);
-        Token token = lookahead;
-        match(Tokens.TIDEN);
-        t.setToken(token);
+        int symbolTableReference = 0;
+        if (lookahead.getToken() == Tokens.TIDEN) {
+            symbolTableReference = symbolTable.addSymbol(SymbolType.FUNCTION, lookahead);
+            match(Tokens.TIDEN);
+            t.setSymbolTableReference(symbolTableReference);
+        } else {
+            error("Expected Identifier");
+        }
         match(Tokens.TLPAR);
         TreeNode plistNode = plist();
-        if (plistNode != null) t.setNextChild(plistNode);
+        if (plistNode != null)
+            t.setNextChild(plistNode);
         match(Tokens.TRPAR);
         match(Tokens.TCOLN);
-        //TODO add rtype to symbol table
-        TreeNode rtype = rtype();
+        symbolTable.getSymbol(symbolTableReference).setVal(rtype());
         TreeNode funcbodyNode = funcbody();
         t.setNextChild(funcbodyNode.getLeft());
         t.setNextChild(funcbodyNode.getMid());
@@ -845,10 +865,10 @@ public class Parser {
         return null;
     }
 
-    private TreeNode rtype() {
+    private PrimitiveTypes rtype() {
         if (lookahead.getToken() == Tokens.TVOID) {
             match(Tokens.TVOID);
-            return null;
+            return PrimitiveTypes.VOID;
         }
         return stype();
     }
@@ -878,8 +898,9 @@ public class Parser {
             match(Tokens.TCNST);
             return new TreeNode(TreeNodes.NARRC, arrdecl());
         } else if (lookahead.getToken() == Tokens.TIDEN) {
-            //TODO CHECK SYMBOL TABLE HERE BECAUSE SDECL AND ARRDECL HAVE SAME SYNTAX BUT WE NEED TO KNOW WHICH
-            // ONE, THIS COULD WELL BE NARRP and ARRDECL
+            // TODO CHECK SYMBOL TABLE HERE BECAUSE SDECL AND ARRDECL HAVE SAME SYNTAX BUT WE NEED
+            // TO KNOW WHICH
+            //  ONE, THIS COULD WELL BE NARRP and ARRDECL
             return new TreeNode(TreeNodes.NSIMP, sdecl());
         }
         return null;
@@ -904,12 +925,13 @@ public class Parser {
     }
 
     private TreeNode decl() {
-        //TODO CHECK SYMBOL TABLE THIS COULD BE ARRDECL
+        // TODO CHECK SYMBOL TABLE THIS COULD BE ARRDECL
         return sdecl();
     }
 
     private String outputHelper(TreeNode node, boolean debug) {
-        if (node == null) return "";
+        if (node == null)
+            return "";
 
         String data = "";
         if (debug) {
@@ -931,7 +953,8 @@ public class Parser {
 
     @Override
     public String toString() {
-        boolean debug = System.getenv("DEBUG") != null && System.getenv("DEBUG").compareTo("true") == 0;
+        boolean debug =
+            System.getenv("DEBUG") != null && System.getenv("DEBUG").compareTo("true") == 0;
         String[] treeList = outputHelper(syntaxTree, debug).split("\s");
         String formattedTree = "";
         String line = "";

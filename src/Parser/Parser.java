@@ -272,15 +272,17 @@ public class Parser {
 
     private TreeNode sdecl(Token nameIdenToken) {
         TreeNode t = new TreeNode(TreeNodes.NTDECL);
-        t.setNextChild(new TreeNode(TreeNodes.NSIMV,nameIdenToken));
+        int symbolTableId = symbolTable.addSymbol(SymbolType.VARIABLE, nameIdenToken, currentScope);
+        t.setNextChild(new TreeNode(TreeNodes.NSIMV, symbolTableId));
         if (lookahead.getToken() == Tokens.TIDEN) {
             // structid
-            t.setNextChild(new TreeNode(TreeNodes.NSIMV, lookahead));
+            int typeReference = symbolTable.getSymbolIdFromReference(lookahead.getTokenLiteral(), currentScope);
+            symbolTable.getSymbol(symbolTableId).setForeignSymbolTableReference(typeReference);
+            t.setNextChild(new TreeNode(TreeNodes.NSIMV, typeReference));
             match(Tokens.TIDEN);
         } else {
             // stype
-            // TODO Add to symbol table
-            PrimitiveTypes type = stype();
+            symbolTable.getSymbol(symbolTableId).setVal(stype());
         }
         return t;
     }

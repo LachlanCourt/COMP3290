@@ -271,8 +271,10 @@ public class Parser {
     }
 
     private TreeNode sdecl(Token nameIdenToken) {
-        TreeNode t = new TreeNode(TreeNodes.NTDECL);
         int symbolTableId = symbolTable.addSymbol(SymbolType.VARIABLE, nameIdenToken, currentScope);
+        // Grab the symbol table ID for this node either from the NTDECL parent node or from the variable name
+        // referencing it
+        TreeNode t = new TreeNode(TreeNodes.NTDECL, symbolTableId);
         t.setNextChild(new TreeNode(TreeNodes.NSIMV, symbolTableId));
         if (lookahead.getToken() == Tokens.TIDEN) {
             // structid
@@ -353,6 +355,10 @@ public class Parser {
         int symbolTableReference =
                 symbolTable.addSymbol(SymbolType.VARIABLE, idenList.get(0), currentScope);
         t.setNextChild(new TreeNode(TreeNodes.NSIMV, symbolTableReference));
+
+        // Set symbol table reference so that it can be accessed either from the parent NARRD node or from the child
+        // variable that references it
+        t.setSymbolTableReference(symbolTableReference);
 
         int typeReference =
                 symbolTable.getSymbolIdFromReference(idenList.get(1).getTokenLiteral(), currentScope);
@@ -975,7 +981,11 @@ public class Parser {
     private TreeNode param() {
         if (lookahead.getToken() == Tokens.TCNST) {
             match(Tokens.TCNST);
-            return new TreeNode(TreeNodes.NARRC, arrdecl());
+            TreeNode t = new TreeNode(TreeNodes.NARRC, arrdecl());
+
+            // Add const to array
+            symbolTable.getSymbol(t.getLeft().getSymbolTableReference()).makeConstArray();
+            return t;
         } else if (lookahead.getToken() == Tokens.TIDEN) {
             Token nameIdenToken = parseIdentifierFollowedByColon().get(0);
             int symbolTableId = symbolTable.getSymbolIdFromReference(lookahead.getTokenLiteral(), currentScope);

@@ -68,4 +68,8 @@ public class Symbol<T extends Comparable> {
     public Integer getForeignSymbolTableReference() {
         return getForeignSymbolTableReference("default");
     }
+
+    public void makeConstArray() {
+        symbolType = SymbolType.CONSTANT_ARRAY;
+    }
 }

@@ -285,6 +285,7 @@ public class Parser {
         } else {
             // stype
             symbolTable.getSymbol(symbolTableId).setVal(stype());
+            t.setNodeType(TreeNodes.NSDECL);
         }
         return t;
     }
@@ -1024,8 +1025,21 @@ public class Parser {
     }
 
     private TreeNode decl() {
-        // TODO CHECK SYMBOL TABLE THIS COULD BE ARRDECL
-        return sdecl();
+        Token nameIdenToken = parseIdentifierFollowedByColon().get(0);
+        int symbolTableId = symbolTable.getSymbolIdFromReference(lookahead.getTokenLiteral(), currentScope);
+        if (symbolTableId == -1) {
+            // The type does not exist in the symbol table, so it must be a primitive type, or undefined. Parse as sdecl
+            return sdecl(nameIdenToken);
+        }
+        if (symbolTable.getSymbol(symbolTableId).getSymbolType() == SymbolType.STRUCT_TYPE) {
+            // Struct type, also parse as sdecl
+            return sdecl(nameIdenToken);
+        }
+        else if (symbolTable.getSymbol(symbolTableId).getSymbolType() == SymbolType.ARRAY_TYPE) {
+            // The symbol exists and is an array, parse as arrdecl
+            return arrdecl(nameIdenToken);
+        }
+        return null;
     }
 
     private String outputHelper(TreeNode node, boolean debug) {

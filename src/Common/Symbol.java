@@ -8,7 +8,6 @@
 package Common;
 
 import Common.SymbolTable.SymbolType;
-
 import java.util.HashMap;
 
 public class Symbol<T extends Comparable> {

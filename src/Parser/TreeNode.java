@@ -1,5 +1,7 @@
 package Parser;
 
+import Common.Symbol;
+import Common.SymbolTable;
 import Scanner.Token;
 
 public class TreeNode {
@@ -78,37 +80,22 @@ public class TreeNode {
     private TreeNode left;
     private TreeNode mid;
     private TreeNode right;
-    private Token token;
 
     int symbolTableReference;
+    SymbolTable symbolTable;
 
-    public TreeNode() {}
-
-    public TreeNode(TreeNodes type_, Token token_, TreeNode left_, TreeNode mid_, TreeNode right_) {
-        nodeType = type_;
-        token = token_;
-        left = left_;
-        mid = mid_;
-        right = right_;
-    }
-
-    public TreeNode(TreeNodes type_, Token token_) {
-        nodeType = type_;
-        token = token_;
-        left = null;
-        mid = null;
-        right = null;
-    }
+    public TreeNode() {symbolTable = SymbolTable.getSymbolTable();}
 
     public TreeNode(TreeNodes type_) {
+        this();
         nodeType = type_;
-        token = null;
         left = null;
         mid = null;
         right = null;
     }
 
     public TreeNode(TreeNodes type_, int symbolTableReference_) {
+        this();
         nodeType = type_;
         symbolTableReference = symbolTableReference_;
         left = null;
@@ -117,6 +104,7 @@ public class TreeNode {
     }
 
     public TreeNode(TreeNodes type_, int symbolTableReference_, TreeNode left_) {
+        this();
         nodeType = type_;
         symbolTableReference = symbolTableReference_;
         left = left_;
@@ -125,24 +113,24 @@ public class TreeNode {
     }
 
     public TreeNode(TreeNodes type_, TreeNode left_) {
+        this();
         nodeType = type_;
-        token = null;
         left = left_;
         mid = null;
         right = null;
     }
 
     public TreeNode(TreeNodes type_, TreeNode left_, TreeNode mid_) {
+        this();
         nodeType = type_;
-        token = null;
         left = left_;
         mid = mid_;
         right = null;
     }
 
     public TreeNode(TreeNodes type_, TreeNode left_, TreeNode mid_, TreeNode right_) {
+        this();
         nodeType = type_;
-        token = null;
         left = left_;
         mid = mid_;
         right = right_;
@@ -190,9 +178,6 @@ public class TreeNode {
         return nodeType;
     }
 
-    public void setToken(Token token_) {
-        token = token_;
-    }
 
     public void setSymbolTableReference(int reference) {
         symbolTableReference = reference;
@@ -215,9 +200,17 @@ public class TreeNode {
     }
 
     public String getTokenString() {
+
         switch (nodeType) {
-            case NSIMV, NSTRG, NILIT, NFLIT, NTRUE, NFALS -> {
-                return " " + token.getTokenLiteral();
+            case NSTRG, NILIT, NFLIT -> {
+                return " " + symbolTable.getSymbol(symbolTableReference).getVal();
+            }
+            case NPROG, NSIMV, NRTYPE, NATYPE, NSDECL, NTDECL -> {
+                Symbol symbol = symbolTable.getSymbol(symbolTableReference);
+                if (symbol == null) {
+                    return " null";
+                }
+                return " " + symbol.getRef();
             }
         }
         return "";

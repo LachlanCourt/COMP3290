@@ -15,6 +15,8 @@ public class SymbolTable {
     private HashMap<String, HashMap<Integer, Symbol>> table;
     int latestId;
 
+    private static SymbolTable self;
+
     public enum SymbolType {
         PROGRAM_IDEN,
         STRUCT_TYPE,
@@ -28,23 +30,19 @@ public class SymbolTable {
 
     public enum PrimitiveTypes { INTEGER, FLOAT, BOOLEAN, VOID, UNKNOWN }
 
-    public SymbolTable() {
+
+
+    private SymbolTable() {
         table = new HashMap<String, HashMap<Integer, Symbol>>();
         latestId = 1;
     }
 
-    //    public int addSymbol(String ref, String val) {
-    //        // Don't add the symbol if it already exists
-    //        if (table.containsKey(ref)) {
-    //            return table.get(ref).getId();
-    //        }
-    //        // Create a new symbol and increment the id ready for the next symbol
-    //        Symbol s = new Symbol(latestId, val);
-    //        latestId++;
-    //        // Add the symbol to the table and return the id
-    //        table.put(ref, s);
-    //        return s.getId();
-    //    }
+    public static SymbolTable getSymbolTable (){
+        if (self == null) {
+            self = new SymbolTable();
+        }
+        return self;
+    }
 
     public int addSymbol(SymbolType symbolType_, Token token_) {
         if (symbolType_ == SymbolType.LITERAL) {

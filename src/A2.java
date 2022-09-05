@@ -41,7 +41,7 @@ public class A2 {
     public void run(String[] args) {
         // Create instances of the necessary classes
         OutputController outputController = new OutputController();
-        SymbolTable symbolTable = new SymbolTable();
+        SymbolTable symbolTable = SymbolTable.getSymbolTable();
         Scanner s = new Scanner(outputController);
         Parser p = new Parser(s, symbolTable);
         CodeGenerator cg = new CodeGenerator(p);

@@ -124,8 +124,6 @@ public class Parser {
         return list;
     }
 
-
-
     private TreeNode program() {
         TreeNode t = new TreeNode(TreeNodes.NPROG);
         match(Tokens.TCD22);
@@ -272,13 +270,14 @@ public class Parser {
 
     private TreeNode sdecl(Token nameIdenToken) {
         int symbolTableId = symbolTable.addSymbol(SymbolType.VARIABLE, nameIdenToken, currentScope);
-        // Grab the symbol table ID for this node either from the NTDECL parent node or from the variable name
-        // referencing it
+        // Grab the symbol table ID for this node either from the NTDECL parent node or from the
+        // variable name referencing it
         TreeNode t = new TreeNode(TreeNodes.NTDECL, symbolTableId);
         t.setNextChild(new TreeNode(TreeNodes.NSIMV, symbolTableId));
         if (lookahead.getToken() == Tokens.TIDEN) {
             // structid
-            int typeReference = symbolTable.getSymbolIdFromReference(lookahead.getTokenLiteral(), currentScope);
+            int typeReference =
+                symbolTable.getSymbolIdFromReference(lookahead.getTokenLiteral(), currentScope);
             symbolTable.getSymbol(symbolTableId).setForeignSymbolTableReference(typeReference);
             t.setNextChild(new TreeNode(TreeNodes.NSIMV, typeReference));
             match(Tokens.TIDEN);
@@ -290,7 +289,6 @@ public class Parser {
         return t;
     }
 
-    // TODO This probably should return some kind of enum not a node, add type to symbol table
     private PrimitiveTypes stype() {
         switch (lookahead.getToken()) {
             case TINTG:
@@ -333,8 +331,8 @@ public class Parser {
     }
 
     /**
-     * Requires colon to have already been parsed. Used to look ahead at the next identifier and then call arrdecl once
-     * it is known that it is an array type
+     * Requires colon to have already been parsed. Used to look ahead at the next identifier and
+     * then call arrdecl once it is known that it is an array type
      * @param nameIdenToken
      * @return
      */
@@ -344,7 +342,7 @@ public class Parser {
         if (lookahead.getToken() == Tokens.TIDEN) {
             idenList.add(lookahead);
             match(Tokens.TIDEN);
-        }else{
+        } else {
             error("Expected Identifier");
         }
         return arrdecl(idenList);
@@ -354,15 +352,15 @@ public class Parser {
         TreeNode t = new TreeNode(TreeNodes.NARRD);
 
         int symbolTableReference =
-                symbolTable.addSymbol(SymbolType.VARIABLE, idenList.get(0), currentScope);
+            symbolTable.addSymbol(SymbolType.VARIABLE, idenList.get(0), currentScope);
         t.setNextChild(new TreeNode(TreeNodes.NSIMV, symbolTableReference));
 
-        // Set symbol table reference so that it can be accessed either from the parent NARRD node or from the child
-        // variable that references it
+        // Set symbol table reference so that it can be accessed either from the parent NARRD node
+        // or from the child variable that references it
         t.setSymbolTableReference(symbolTableReference);
 
         int typeReference =
-                symbolTable.getSymbolIdFromReference(idenList.get(1).getTokenLiteral(), currentScope);
+            symbolTable.getSymbolIdFromReference(idenList.get(1).getTokenLiteral(), currentScope);
         symbolTable.getSymbol(symbolTableReference).setForeignSymbolTableReference(typeReference);
         t.setNextChild(new TreeNode(TreeNodes.NSIMV, typeReference));
 
@@ -989,15 +987,18 @@ public class Parser {
             return t;
         } else if (lookahead.getToken() == Tokens.TIDEN) {
             Token nameIdenToken = parseIdentifierFollowedByColon().get(0);
-            int symbolTableId = symbolTable.getSymbolIdFromReference(lookahead.getTokenLiteral(), currentScope);
+            int symbolTableId =
+                symbolTable.getSymbolIdFromReference(lookahead.getTokenLiteral(), currentScope);
             if (symbolTableId == -1) {
-                // The type does not exist in the symbol table, so it must be a primitive type, or undefined. Parse as sdecl
+                // The type does not exist in the symbol table, so it must be a primitive type, or
+                // undefined. Parse as sdecl
                 return new TreeNode(TreeNodes.NSIMP, sdecl(nameIdenToken));
             }
             if (symbolTable.getSymbol(symbolTableId).getSymbolType() == SymbolType.STRUCT_TYPE) {
                 // The symbol exists and is a struct, can also be parsed as sdecl
                 return new TreeNode(TreeNodes.NSIMP, sdecl(nameIdenToken));
-            } else if (symbolTable.getSymbol(symbolTableId).getSymbolType() == SymbolType.ARRAY_TYPE) {
+            } else if (symbolTable.getSymbol(symbolTableId).getSymbolType()
+                == SymbolType.ARRAY_TYPE) {
                 // The symbol exists and is an array, parse as arrdecl
                 return new TreeNode(TreeNodes.NSIMP, arrdecl(nameIdenToken));
             }
@@ -1026,16 +1027,17 @@ public class Parser {
 
     private TreeNode decl() {
         Token nameIdenToken = parseIdentifierFollowedByColon().get(0);
-        int symbolTableId = symbolTable.getSymbolIdFromReference(lookahead.getTokenLiteral(), currentScope);
+        int symbolTableId =
+            symbolTable.getSymbolIdFromReference(lookahead.getTokenLiteral(), currentScope);
         if (symbolTableId == -1) {
-            // The type does not exist in the symbol table, so it must be a primitive type, or undefined. Parse as sdecl
+            // The type does not exist in the symbol table, so it must be a primitive type, or
+            // undefined. Parse as sdecl
             return sdecl(nameIdenToken);
         }
         if (symbolTable.getSymbol(symbolTableId).getSymbolType() == SymbolType.STRUCT_TYPE) {
             // Struct type, also parse as sdecl
             return sdecl(nameIdenToken);
-        }
-        else if (symbolTable.getSymbol(symbolTableId).getSymbolType() == SymbolType.ARRAY_TYPE) {
+        } else if (symbolTable.getSymbol(symbolTableId).getSymbolType() == SymbolType.ARRAY_TYPE) {
             // The symbol exists and is an array, parse as arrdecl
             return arrdecl(nameIdenToken);
         }

@@ -327,6 +327,24 @@ public class Parser {
         return arrdecl(idenList);
     }
 
+    /**
+     * Requires colon to have already been parsed. Used to look ahead at the next identifier and then call arrdecl once
+     * it is known that it is an array type
+     * @param nameIdenToken
+     * @return
+     */
+    private TreeNode arrdecl(Token nameIdenToken) {
+        ArrayList<Token> idenList = new ArrayList<Token>();
+        idenList.add(nameIdenToken);
+        if (lookahead.getToken() == Tokens.TIDEN) {
+            idenList.add(lookahead);
+            match(Tokens.TIDEN);
+        }else{
+            error("Expected Identifier");
+        }
+        return arrdecl(idenList);
+    }
+
     private TreeNode arrdecl(ArrayList<Token> idenList) {
         TreeNode t = new TreeNode(TreeNodes.NARRD);
 
@@ -957,10 +975,20 @@ public class Parser {
             match(Tokens.TCNST);
             return new TreeNode(TreeNodes.NARRC, arrdecl());
         } else if (lookahead.getToken() == Tokens.TIDEN) {
-            // TODO CHECK SYMBOL TABLE HERE BECAUSE SDECL AND ARRDECL HAVE SAME SYNTAX BUT WE NEED
-            // TO KNOW WHICH
-            //  ONE, THIS COULD WELL BE NARRP and ARRDECL
-            return new TreeNode(TreeNodes.NSIMP, sdecl());
+            Token nameIdenToken = parseIdentifierFollowedByColon().get(0);
+            int symbolTableId = symbolTable.getSymbolIdFromReference(lookahead.getTokenLiteral(), currentScope);
+            if (symbolTableId == -1) {
+                // The type does not exist in the symbol table, so it must be a primitive type, or undefined. Parse as sdecl
+                return new TreeNode(TreeNodes.NSIMP, sdecl(nameIdenToken));
+            }
+            if (symbolTable.getSymbol(symbolTableId).getSymbolType() == SymbolType.STRUCT_TYPE) {
+                // The symbol exists and is a struct, can also be parsed as sdecl
+                return new TreeNode(TreeNodes.NSIMP, sdecl(nameIdenToken));
+            } else if (symbolTable.getSymbol(symbolTableId).getSymbolType() == SymbolType.ARRAY_TYPE) {
+                // The symbol exists and is an array, parse as arrdecl
+                return new TreeNode(TreeNodes.NSIMP, arrdecl(nameIdenToken));
+            }
+            return null;
         }
         return null;
     }

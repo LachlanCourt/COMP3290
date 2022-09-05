@@ -29,7 +29,9 @@ someOtherArray : weewoo
 
 main
 i : bool,
-d : int
+d : int,
+g : float,
+h : int
 
 begin
 

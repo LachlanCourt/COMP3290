@@ -162,14 +162,11 @@ public class Token {
     private int col;
     private int symbolTableId;
 
-    public Token(Tokens tokenType_, String tokenLiteral_, Integer symbolTableId_, int row_, int col_) {
+    public Token(Tokens tokenType_, String tokenLiteral_, int row_, int col_) {
         row = row_;
         col = col_;
         tokenLiteral = tokenLiteral_;
         token = tokenType_;
-        if (symbolTableId_ != null) {
-            symbolTableId = symbolTableId_;
-        }
     }
 
     /**

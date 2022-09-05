@@ -47,16 +47,14 @@ public class Scanner {
     // buffer first before reading from the file again.
     private String fileReaderUndefinedTokenBuffer;
     private final Common.OutputController outputController;
-    private final Common.SymbolTable symbolTable;
     private final Common.Utils utils;
 
-    public Scanner(Common.OutputController outputController_, Common.SymbolTable symbolTable_) {
+    public Scanner(Common.OutputController outputController_) {
         scannerColumnPosition = 1;
         scannerRowPosition = 1;
         buffer = "";
         fileReaderUndefinedTokenBuffer = "";
         outputController = outputController_;
-        symbolTable = symbolTable_;
         utils = Common.Utils.getUtils();
     }
 
@@ -421,11 +419,7 @@ public class Scanner {
         // Create a new token by reading a candidate token string out of the buffer
         String tokenLiteral = getTokenStringFromBuffer();
         Tokens tokenType = getTokenTypeFromTokenLiteral(tokenLiteral);
-        Integer symbolTableId = null;
-        switch (tokenType) {
-            case TILIT, TFLIT, TSTRG, TIDEN -> symbolTableId = symbolTable.addSymbol(tokenLiteral, null);
-        }
-        Token token = new Token(tokenType, tokenLiteral, symbolTableId, currentRow, currentColumn);
+        Token token = new Token(tokenType, tokenLiteral, currentRow, currentColumn);
 
         // If the token is undefined we add an error to the error handler
         if (token.isUndf())

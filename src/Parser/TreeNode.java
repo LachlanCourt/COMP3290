@@ -84,7 +84,9 @@ public class TreeNode {
     int symbolTableReference;
     SymbolTable symbolTable;
 
-    public TreeNode() {symbolTable = SymbolTable.getSymbolTable();}
+    public TreeNode() {
+        symbolTable = SymbolTable.getSymbolTable();
+    }
 
     public TreeNode(TreeNodes type_) {
         this();
@@ -178,7 +180,6 @@ public class TreeNode {
         return nodeType;
     }
 
-
     public void setSymbolTableReference(int reference) {
         symbolTableReference = reference;
     }
@@ -200,7 +201,6 @@ public class TreeNode {
     }
 
     public String getTokenString() {
-
         switch (nodeType) {
             case NSTRG, NILIT, NFLIT -> {
                 return " " + symbolTable.getSymbol(symbolTableReference).getVal();

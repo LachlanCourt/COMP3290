@@ -567,7 +567,8 @@ public class Parser {
     }
 
     private TreeNode fncall(Token nameIdenToken) {
-        TreeNode t = new TreeNode(TreeNodes.NFCALL, symbolTable.getSymbolIdFromReference(nameIdenToken.getTokenLiteral(), "@global"));
+        TreeNode t = new TreeNode(TreeNodes.NFCALL,
+            symbolTable.getSymbolIdFromReference(nameIdenToken.getTokenLiteral(), "@global"));
         match(Tokens.TLPAR);
         if (lookahead.getToken() != Tokens.TRPAR) {
             t.setNextChild(elist());
@@ -599,8 +600,8 @@ public class Parser {
     }
 
     private TreeNode var(Token nameIdenToken) {
-        int symbolTableReference =   symbolTable.getSymbolIdFromReference(
-                nameIdenToken.getTokenLiteral(), currentScope);
+        int symbolTableReference =
+            symbolTable.getSymbolIdFromReference(nameIdenToken.getTokenLiteral(), currentScope);
         if (lookahead.getToken() == Tokens.TLBRK) {
             TreeNode t = new TreeNode();
             match(Tokens.TLBRK);
@@ -613,7 +614,8 @@ public class Parser {
                 t.setNodeType(TreeNodes.NARRV);
                 match(Tokens.TDOTT);
                 if (lookahead.getToken() == Tokens.TIDEN) {
-                    int fieldTypeReference = symbolTable.getSymbolIdFromReference(lookahead.getTokenLiteral(), currentScope);
+                    int fieldTypeReference = symbolTable.getSymbolIdFromReference(
+                        lookahead.getTokenLiteral(), currentScope);
                     match(Tokens.TIDEN);
                     t.setNextChild(new TreeNode(TreeNodes.NSIMV, fieldTypeReference));
                 }
@@ -757,7 +759,8 @@ public class Parser {
     }
 
     private TreeNode callstat(Token nameIdenToken) {
-        TreeNode t = new TreeNode(TreeNodes.NCALL, symbolTable.getSymbolIdFromReference(nameIdenToken.getTokenLiteral(), currentScope));
+        TreeNode t = new TreeNode(TreeNodes.NCALL,
+            symbolTable.getSymbolIdFromReference(nameIdenToken.getTokenLiteral(), currentScope));
         match(Tokens.TLPAR);
         if (lookahead.getToken() != Tokens.TRPAR) {
             t.setNextChild(elist());

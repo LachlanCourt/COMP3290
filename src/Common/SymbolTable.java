@@ -30,14 +30,12 @@ public class SymbolTable {
 
     public enum PrimitiveTypes { INTEGER, FLOAT, BOOLEAN, VOID, UNKNOWN }
 
-
-
     private SymbolTable() {
         table = new HashMap<String, HashMap<Integer, Symbol>>();
         latestId = 1;
     }
 
-    public static SymbolTable getSymbolTable (){
+    public static SymbolTable getSymbolTable() {
         if (self == null) {
             self = new SymbolTable();
         }

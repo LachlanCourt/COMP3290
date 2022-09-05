@@ -286,7 +286,7 @@ public class Parser {
         TreeNode t = new TreeNode(TreeNodes.NARRD);
         int symbolTableReference = 0;
         if (lookahead.getToken() == Tokens.TIDEN) {
-            symbolTableReference = symbolTable.addSymbol(SymbolType.VARIABLE, lookahead);
+            symbolTableReference = symbolTable.addSymbol(SymbolType.VARIABLE, lookahead, currentScope);
             t.setNextChild(new TreeNode(TreeNodes.NSIMV, symbolTableReference));
             match(Tokens.TIDEN);
         } else {
@@ -581,7 +581,7 @@ public class Parser {
         match(Tokens.TTEND);
         match(Tokens.TCD22);
         if (lookahead.getToken() == Tokens.TIDEN) {
-            int symbolTableReference = symbolTable.addSymbol(SymbolType.PROGRAM_IDEN, lookahead);
+            int symbolTableReference =symbolTable.getSymbolIdFromReference(lookahead.getTokenLiteral(), currentScope);
             match(Tokens.TIDEN);
             t.setNextChild(new TreeNode(TreeNodes.NSIMV, symbolTableReference));
         } else {
@@ -857,6 +857,7 @@ public class Parser {
         int symbolTableReference = 0;
         if (lookahead.getToken() == Tokens.TIDEN) {
             symbolTableReference = symbolTable.addSymbol(SymbolType.FUNCTION, lookahead);
+            currentScope = lookahead.getTokenLiteral();
             match(Tokens.TIDEN);
             t.setSymbolTableReference(symbolTableReference);
         } else {
@@ -872,6 +873,7 @@ public class Parser {
         TreeNode funcbodyNode = funcbody();
         t.setNextChild(funcbodyNode.getLeft());
         t.setNextChild(funcbodyNode.getMid());
+        currentScope = "global";
         return t;
     }
 

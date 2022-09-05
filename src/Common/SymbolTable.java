@@ -8,6 +8,7 @@
 package Common;
 
 import Scanner.Token;
+
 import java.util.HashMap;
 import java.util.Map;
 
@@ -26,7 +27,8 @@ public class SymbolTable {
         LITERAL
     }
 
-    public enum PrimitiveTypes { INTEGER, FLOAT, BOOLEAN, VOID, UNKNOWN }
+    public enum PrimitiveTypes {INTEGER, FLOAT, BOOLEAN, VOID, UNKNOWN}
+
     public SymbolTable() {
         table = new HashMap<String, HashMap<Integer, Symbol>>();
         latestId = 1;
@@ -108,11 +110,18 @@ public class SymbolTable {
                 }
             }
         }
+        for (Map.Entry<Integer, Symbol> entry : table.get("global").entrySet()) {
+            if (reference.compareTo(entry.getValue().getRef()) == 0) {
+                return entry.getKey();
+            }
+        }
+
         return -1;
     }
 
     /**
      * Debug to string method of the table
+     *
      * @return stringified version of the symbol table
      */
     @Override
@@ -122,10 +131,10 @@ public class SymbolTable {
             out += "\n" + scopeEntry.getKey() + "\n";
             for (Map.Entry<Integer, Symbol> entry : table.get(scopeEntry.getKey()).entrySet()) {
                 out += entry.getKey() + ", " + entry.getValue().getRef() + ", "
-                    + entry.getValue().getVal() + ", "
-                    + entry.getValue().getForeignSymbolTableReference() +
+                        + entry.getValue().getVal() + ", "
+                        + entry.getValue().getForeignSymbolTableReference() +
 
-                    ", " + entry.getValue().getSymbolType() + "\n";
+                        ", " + entry.getValue().getSymbolType() + "\n";
             }
         }
         return out;

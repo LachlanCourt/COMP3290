@@ -48,9 +48,9 @@ public class SymbolTable {
 
     public int addSymbol(SymbolType symbolType_, Token token_) {
         if (symbolType_ == SymbolType.LITERAL) {
-            return addSymbol(symbolType_, token_, "literals");
+            return addSymbol(symbolType_, token_, "@literals");
         }
-        return addSymbol(symbolType_, token_, "global");
+        return addSymbol(symbolType_, token_, "@global");
     }
 
     public int addSymbol(SymbolType symbolType, Token token, String scope) {
@@ -109,7 +109,7 @@ public class SymbolTable {
                 }
             }
         }
-        for (Map.Entry<Integer, Symbol> entry : table.get("global").entrySet()) {
+        for (Map.Entry<Integer, Symbol> entry : table.get("@global").entrySet()) {
             if (reference.compareTo(entry.getValue().getRef()) == 0) {
                 return entry.getKey();
             }

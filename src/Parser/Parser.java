@@ -44,7 +44,7 @@ public class Parser {
      */
     public void initialise() {
         tokenStream = scanner.getTokenStream();
-        currentScope = "global";
+        currentScope = "@global";
     }
 
     public Token getToken() {
@@ -574,7 +574,7 @@ public class Parser {
     private TreeNode fncall(Token nameIdenToken) {
         TreeNode t = new TreeNode(TreeNodes.NFCALL);
         t.setNextChild(new TreeNode(TreeNodes.NSIMV,
-            symbolTable.getSymbolIdFromReference(nameIdenToken.getTokenLiteral(), "global")));
+            symbolTable.getSymbolIdFromReference(nameIdenToken.getTokenLiteral(), "@global")));
         match(Tokens.TLPAR);
         if (lookahead.getToken() != Tokens.TRPAR) {
             t.setNextChild(elist());
@@ -938,7 +938,7 @@ public class Parser {
         TreeNode funcbodyNode = funcbody();
         t.setNextChild(funcbodyNode.getLeft());
         t.setNextChild(funcbodyNode.getMid());
-        currentScope = "global";
+        currentScope = "@global";
         return t;
     }
 

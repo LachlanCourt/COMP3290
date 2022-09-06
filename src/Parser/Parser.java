@@ -482,15 +482,19 @@ public class Parser {
     }
 
     private TreeNode bool() {
-        TreeNode t = new TreeNode(TreeNodes.NBOOL);
+        TreeNode t = new TreeNode();
         t.setNextChild(rel());
         boolr(t);
+        if (t.getNodeType() == null) {
+            return t.getLeft();
+        }
         return t;
     }
 
     private TreeNode boolr(TreeNode t) {
         t.setNextChild(logop());
         if (t.getMid() != null) {
+            t.setNodeType(TreeNodes.NBOOL);
             t.setNextChild(rel());
         }
         return t;
@@ -643,7 +647,7 @@ public class Parser {
             int symbolTableId =
                 symbolTable.getSymbolIdFromReference(lookahead.getTokenLiteral(), currentScope);
             match(Tokens.TIDEN);
-            t.setNextChild(new TreeNode(TreeNodes.NSIMV, symbolTableId));
+            t.setSymbolTableId(symbolTableId);
         } else {
             error("Missing identifier");
         }

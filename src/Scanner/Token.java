@@ -92,68 +92,126 @@ public class Token {
         public static Tokens getToken(String initialiser) {
             Tokens t;
             switch (initialiser) {
-                case "cd22" -> t = TCD22;
-                case "constants" -> t = TCONS;
-                case "types" -> t = TTYPS;
-                case "def" -> t = TTDEF;
-                case "arrays" -> t = TARRS;
-                case "main" -> t = TMAIN;
-                case "begin" -> t = TBEGN;
-                case "end" -> t = TTEND;
-                case "array" -> t = TARAY;
-                case "of" -> t = TTTOF;
-                case "func" -> t = TFUNC;
-                case "void" -> t = TVOID;
-                case "const" -> t = TCNST;
-                case "int" -> t = TINTG;
-                case "float" -> t = TFLOT;
-                case "bool" -> t = TBOOL;
-                case "for" -> t = TTFOR;
-                case "repeat" -> t = TREPT;
-                case "until" -> t = TUNTL;
-                case "if" -> t = TIFTH;
-                case "else" -> t = TELSE;
-                case "elif" -> t = TELIF;
-                case "input" -> t = TINPT;
-                case "print" -> t = TPRNT;
-                case "printline" -> t = TPRLN;
-                case "return" -> t = TRETN;
-                case "not" -> t = TNOTT;
-                case "and" -> t = TTAND;
-                case "or" -> t = TTTOR;
-                case "xor" -> t = TTXOR;
-                case "true" -> t = TTRUE;
-                case "false" -> t = TFALS;
-                case "," -> t = TCOMA;
-                case "[" -> t = TLBRK;
-                case "]" -> t = TRBRK;
-                case "(" -> t = TLPAR;
-                case ")" -> t = TRPAR;
-                case "=" -> t = TEQUL;
-                case "+" -> t = TPLUS;
-                case "-" -> t = TMINS;
-                case "*" -> t = TSTAR;
-                case "/" -> t = TDIVD;
-                case "%" -> t = TPERC;
-                case "^" -> t = TCART;
-                case "<" -> t = TLESS;
-                case ">" -> t = TGRTR;
-                case ":" -> t = TCOLN;
-                case ";" -> t = TSEMI;
-                case "." -> t = TDOTT;
-                case "!=" -> t = TNEQL;
-                case "==" -> t = TEQEQ;
-                case "<=" -> t = TLEQL;
-                case ">=" -> t = TGEQL;
-                case "+=" -> t = TPLEQ;
-                case "-=" -> t = TMNEQ;
-                case "/=" -> t = TDVEQ;
-                case "*=" -> t = TSTEQ;
-                default -> t = TUNDF;
+                case "cd22":
+                    return TCD22;
+                case "constants":
+                    return TCONS;
+                case "types":
+                    return TTYPS;
+                case "def":
+                    return TTDEF;
+                case "arrays":
+                    return TARRS;
+                case "main":
+                    return TMAIN;
+                case "begin":
+                    return TBEGN;
+                case "end":
+                    return TTEND;
+                case "array":
+                    return TARAY;
+                case "of":
+                    return TTTOF;
+                case "func":
+                    return TFUNC;
+                case "void":
+                    return TVOID;
+                case "const":
+                    return TCNST;
+                case "int":
+                    return TINTG;
+                case "float":
+                    return TFLOT;
+                case "bool":
+                    return TBOOL;
+                case "for":
+                    return TTFOR;
+                case "repeat":
+                    return TREPT;
+                case "until":
+                    return TUNTL;
+                case "if":
+                    return TIFTH;
+                case "else":
+                    return TELSE;
+                case "elif":
+                    return TELIF;
+                case "input":
+                    return TINPT;
+                case "print":
+                    return TPRNT;
+                case "printline":
+                    return TPRLN;
+                case "return":
+                    return TRETN;
+                case "not":
+                    return TNOTT;
+                case "and":
+                    return TTAND;
+                case "or":
+                    return TTTOR;
+                case "xor":
+                    return TTXOR;
+                case "true":
+                    return TTRUE;
+                case "false":
+                    return TFALS;
+                case ",":
+                    return TCOMA;
+                case "[":
+                    return TLBRK;
+                case "]":
+                    return TRBRK;
+                case "(":
+                    return TLPAR;
+                case ")":
+                    return TRPAR;
+                case "=":
+                    return TEQUL;
+                case "+":
+                    return TPLUS;
+                case "-":
+                    return TMINS;
+                case "*":
+                    return TSTAR;
+                case "/":
+                    return TDIVD;
+                case "%":
+                    return TPERC;
+                case "^":
+                    return TCART;
+                case "<":
+                    return TLESS;
+                case ">":
+                    return TGRTR;
+                case ":":
+                    return TCOLN;
+                case ";":
+                    return TSEMI;
+                case ".":
+                    return TDOTT;
+                case "!=":
+                    return TNEQL;
+                case "==":
+                    return TEQEQ;
+                case "<=":
+                    return TLEQL;
+                case ">=":
+                    return TGEQL;
+                case "+=":
+                    return TPLEQ;
+                case "-=":
+                    return TMNEQ;
+                case "/=":
+                    return TDVEQ;
+                case "*=":
+                    return TSTEQ;
+                default:
+                    return TUNDF;
             }
-            return t;
         }
-    };
+    }
+    ;
 
     private final String tokenLiteral;
 
@@ -170,8 +228,9 @@ public class Token {
     }
 
     /**
-     * The EOF token is a special kind that requires no other data. A boolean is passed in to prevent accidentally
-     * creating one with the implicit default constructor. It's value does not matter.
+     * The EOF token is a special kind that requires no other data. A boolean is passed in to
+     * prevent accidentally creating one with the implicit default constructor. It's value does not
+     * matter.
      * @param eof an arbitrary variable to differentiate from the default constructor
      */
     public Token(boolean eof) {
@@ -214,12 +273,14 @@ public class Token {
             StringBuilder out = new StringBuilder(token.getValue());
 
             switch (token) {
-                case TILIT, TFLIT, TSTRG, TIDEN -> {
-                    // As per specification, literal values should be padded as a multiple of 6 with at least one
-                    // trailing space
+                case TILIT:
+                case TFLIT:
+                case TSTRG:
+                case TIDEN:
+                    // As per specification, literal values should be padded as a multiple of 6 with
+                    // at least one trailing space
                     int size = (tokenLiteral.length() / 6) * 6 + 6;
                     out.append(tokenLiteral + " ".repeat(size - tokenLiteral.length()));
-                }
             }
 
             return out.toString();
@@ -233,5 +294,4 @@ public class Token {
             return out.toString() + " " + tokenLiteral;
         }
     }
-
 }

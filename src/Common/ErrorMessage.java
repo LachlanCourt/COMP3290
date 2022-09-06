@@ -60,29 +60,37 @@ public class ErrorMessage {
         String errorText;
         // Output a helpful error message for each error type
         switch (type) {
-            case UNDEFINED_TOKEN -> errorText = "Undefined token: " + data;
-            case WARNING_CD22_SEMANTIC_CASING -> {
+            case UNDEFINED_TOKEN:
+                errorText = "Undefined token: " + data;
+                break;
+            case WARNING_CD22_SEMANTIC_CASING:
                 errorText = "CD22 should be capitalised";
                 isWarning = true;
-            }
-            case INTEGER_OUT_OF_RANGE -> errorText = "Integer Out of Range " + data;
-            case FLOAT_OUT_OF_RANGE -> errorText = "Float Out of Range " + data;
-            default -> errorText = "";
+                break;
+            case INTEGER_OUT_OF_RANGE:
+                errorText = "Integer Out of Range " + data;
+                break;
+            case FLOAT_OUT_OF_RANGE:
+                errorText = "Float Out of Range " + data;
+                break;
+            default:
+                errorText = "";
         }
 
-        errorMessage = (isWarning ? "Warning" : "Error") + " on line " + row + " at column " + col + ": " + errorText;
-        }
+        errorMessage = (isWarning ? "Warning" : "Error") + " on line " + row + " at column " + col
+            + ": " + errorText;
+    }
 
-        @Override
-        public String toString() {
-            return errorMessage;
-        }
+    @Override
+    public String toString() {
+        return errorMessage;
+    }
 
-        public String toString(boolean showColouredText) {
-            if (showColouredText) {
-                return (isWarning ? YELLOW : RED) + toString() + RESET;
-            } else {
-                return toString();
-            }
+    public String toString(boolean showColouredText) {
+        if (showColouredText) {
+            return (isWarning ? YELLOW : RED) + toString() + RESET;
+        } else {
+            return toString();
         }
     }
+}

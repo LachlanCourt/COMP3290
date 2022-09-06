@@ -252,79 +252,97 @@ public class Scanner {
 
             // Context switching
             switch (contextState) {
-                case UNDEFINED -> {
+                case UNDEFINED:
                     // In the undefined state, any valid character will immediately switch context
-                    if (utils.matches(character, MatchTypes.LETTER)) contextState = ContextStates.LETTER;
+                    if (utils.matches(character, MatchTypes.LETTER))
+                        contextState = ContextStates.LETTER;
 
-                    if (utils.matches(character, MatchTypes.NUMBER)) contextState = ContextStates.NUMBER;
+                    if (utils.matches(character, MatchTypes.NUMBER))
+                        contextState = ContextStates.NUMBER;
 
-                    if (utils.matches(character, MatchTypes.PUNCTUATION)) contextState = ContextStates.PUNCTUATION;
+                    if (utils.matches(character, MatchTypes.PUNCTUATION))
+                        contextState = ContextStates.PUNCTUATION;
 
-                    // Anything that doesn't match one of these will remain as an undefined token until the end of the
-                    // buffer as the readFileIntoBufferUntilWhitespace function has already stopped reading into the
-                    // buffer at the next valid character so we can assume the entire buffer is undefined
-                }
-                case LETTER -> {
-                    // A punctuation symbol when reading chars will break a token as it can only be made up of letters
-                    // and numbers
+                    // Anything that doesn't match one of these will remain as an undefined token
+                    // until the end of the buffer as the readFileIntoBufferUntilWhitespace function
+                    // has already stopped reading into the buffer at the next valid character so we
+                    // can assume the entire buffer is undefined
+                    break;
+
+                case LETTER:
+                    // A punctuation symbol when reading chars will break a token as it can only be
+                    // made up of letters and numbers
                     if (utils.matches(character, MatchTypes.PUNCTUATION)) {
                         tokenStringFound = true;
                     } else {
-                        // Check for undefined tokens. Punctuation has already been checked so just need to match
-                        // numbers and letters
-                        if (!(utils.matches(character, MatchTypes.NUMBER, MatchTypes.LETTER))) tokenStringFound = true;
+                        // Check for undefined tokens. Punctuation has already been checked so just
+                        // need to match numbers and letters
+                        if (!(utils.matches(character, MatchTypes.NUMBER, MatchTypes.LETTER)))
+                            tokenStringFound = true;
                     }
-
-                }
-                case PUNCTUATION -> {
+                    break;
+                case PUNCTUATION:
                     // Punctuation tokens can only be made up exclusively of punctuation
-                    if (!utils.matches(character, MatchTypes.PUNCTUATION)) tokenStringFound = true;
-                    // If the first two punctuation symbols do not combine to make a double operator, parse the first
-                    // symbol as its own token and save the second for the next pass
-                    if (index == 1 && !utils.matches(buffer.substring(0, 2), MatchTypes.DOUBLE_OPERATOR)) {
+                    if (!utils.matches(character, MatchTypes.PUNCTUATION))
+                        tokenStringFound = true;
+                    // If the first two punctuation symbols do not combine to make a double
+                    // operator, parse the first symbol as its own token and save the second for the
+                    // next pass
+                    if (index == 1
+                        && !utils.matches(buffer.substring(0, 2), MatchTypes.DOUBLE_OPERATOR)) {
                         tokenStringFound = true;
                     }
                     // If i has successfully gotten to this point we have found a double operator
-                    if (index > 1) tokenStringFound = true;
-                }
-                case NUMBER -> {
+                    if (index > 1)
+                        tokenStringFound = true;
+                    break;
+                case NUMBER:
                     // Numbers could be floats, so we need to check if the punctuation is a decimal
                     if (utils.matches(character, MatchTypes.PUNCTUATION)) {
-                        // If we have not seen a decimal point yet, a decimal is valid. If the punctuation is anything
-                        // else or if we have already seen a decimal point, then it is no longer valid
-                        if (character.compareTo(".") == 0 && decimalState == DecimalStates.INITIAL) {
+                        // If we have not seen a decimal point yet, a decimal is valid. If the
+                        // punctuation is anything else or if we have already seen a decimal point,
+                        // then it is no longer valid
+                        if (character.compareTo(".") == 0
+                            && decimalState == DecimalStates.INITIAL) {
                             decimalState = DecimalStates.FOUND_DECIMAL;
                         } else {
                             tokenStringFound = true;
                         }
                     }
-                    // Numbers cannot contain letters or undefined tokens so break to a token if such has been found
-                    else if (utils.matches(character, MatchTypes.LETTER, MatchTypes.UNDEFINED)) tokenStringFound = true;
+                    // Numbers cannot contain letters or undefined tokens so break to a token if
+                    // such has been found
+                    else if (utils.matches(character, MatchTypes.LETTER, MatchTypes.UNDEFINED))
+                        tokenStringFound = true;
 
-                        // If we have previously found a decimal and now we have seen another number, we have found a float
-                    else if (decimalState == DecimalStates.FOUND_DECIMAL && utils.matches(character, MatchTypes.NUMBER)) {
+                    // If we have previously found a decimal and now we have seen another number, we
+                    // have found a float
+                    else if (decimalState == DecimalStates.FOUND_DECIMAL
+                        && utils.matches(character, MatchTypes.NUMBER)) {
                         decimalState = DecimalStates.FOUND_FOLLOWING_NUMBER;
                     }
-                }
+                    break;
             }
-            if (tokenStringFound) break;
+            if (tokenStringFound)
+                break;
         }
 
-        // If we have reached the end of the buffer and have not found a token string yet, return the entire buffer
+        // If we have reached the end of the buffer and have not found a token string yet, return
+        // the entire buffer
         if (!tokenStringFound) {
             tokenStringCandidate = buffer;
             buffer = "";
             return tokenStringCandidate;
         }
 
-        // If a number was followed by a decimal but then didn't have a number after that, it should treat it
-        // instead as an integer token followed by a dot token. To achieve this, step back an extra character to
-        // leave the dot in the buffer
+        // If a number was followed by a decimal but then didn't have a number after that, it should
+        // treat it instead as an integer token followed by a dot token. To achieve this, step back
+        // an extra character to leave the dot in the buffer
         if (decimalState == DecimalStates.FOUND_DECIMAL) {
             index--;
         }
 
-        // Remove the found token candidate from the buffer, leaving any remaining characters in the buffer
+        // Remove the found token candidate from the buffer, leaving any remaining characters in the
+        // buffer
         tokenStringCandidate = buffer.substring(0, index);
         buffer = buffer.substring(index);
         // Update the current column to match where the start of the buffer is now
@@ -333,21 +351,27 @@ public class Scanner {
     }
 
     /**
-     * Takes a string that has been determined to be one and only one token, and assigns the correct type to it
+     * Takes a string that has been determined to be one and only one token, and assigns the correct
+     * type to it
      * @param tokenLiteral a string to be matched into one and only one token
      * @return the token type that the string matches
      */
     private Tokens getTokenTypeFromTokenLiteral(String tokenLiteral) {
         // Keywords and operators are handled by a factory pattern in the token enum
-        if (utils.matches(tokenLiteral.toLowerCase(), MatchTypes.KEYWORD, MatchTypes.STANDALONE_OPERATOR, MatchTypes.DOUBLE_OPERATOR)) {
+        if (utils.matches(tokenLiteral.toLowerCase(), MatchTypes.KEYWORD,
+                MatchTypes.STANDALONE_OPERATOR, MatchTypes.DOUBLE_OPERATOR)) {
             // Add a warning for CD22 if it is not capitalised
-            if (tokenLiteral.toLowerCase().compareTo("cd22") == 0 && tokenLiteral.compareTo("CD22") != 0)
-                outputController.addWarning(currentRow, currentColumn, Errors.WARNING_CD22_SEMANTIC_CASING);
+            if (tokenLiteral.toLowerCase().compareTo("cd22") == 0
+                && tokenLiteral.compareTo("CD22") != 0)
+                outputController.addWarning(
+                    currentRow, currentColumn, Errors.WARNING_CD22_SEMANTIC_CASING);
             return Tokens.getToken(tokenLiteral.toLowerCase());
         }
 
-        // A string should start and end with " and be at least two characters long (A single " is not a string)
-        if (tokenLiteral.startsWith("\"") && tokenLiteral.endsWith("\"") && tokenLiteral.length() > 1) {
+        // A string should start and end with " and be at least two characters long (A single " is
+        // not a string)
+        if (tokenLiteral.startsWith("\"") && tokenLiteral.endsWith("\"")
+            && tokenLiteral.length() > 1) {
             return Tokens.TSTRG;
         }
 
@@ -365,23 +389,24 @@ public class Scanner {
                     if (fraction > Math.pow(2, 52)) {
                         throw new NumberFormatException();
                     }
-                }
-                catch (NumberFormatException e) {
+                } catch (NumberFormatException e) {
                     // If the float is too large, add and error and do not parse it as a valid token
-                    outputController.addError(currentRow, currentColumn, Errors.FLOAT_OUT_OF_RANGE, tokenLiteral);
+                    outputController.addError(
+                        currentRow, currentColumn, Errors.FLOAT_OUT_OF_RANGE, tokenLiteral);
                     return Tokens.NUM_PARSE_ERROR;
                 }
                 return Tokens.TFLIT;
             }
             // If the string does not contain a decimal point, it must be an integer
-            // Make use of the java builtin method to convert a string to a 64 bit long to ensure it is not too large
+            // Make use of the java builtin method to convert a string to a 64 bit long to ensure it
+            // is not too large
             try {
                 Long.parseLong(tokenLiteral);
-            }
-            catch (NumberFormatException e) {
-                // If the candidate string represents a number that is greater than 64 characters in length, add an
-                // error and do not parse it as a valid token
-                outputController.addError(currentRow, currentColumn, Errors.INTEGER_OUT_OF_RANGE, tokenLiteral);
+            } catch (NumberFormatException e) {
+                // If the candidate string represents a number that is greater than 64 characters in
+                // length, add an error and do not parse it as a valid token
+                outputController.addError(
+                    currentRow, currentColumn, Errors.INTEGER_OUT_OF_RANGE, tokenLiteral);
                 return Tokens.NUM_PARSE_ERROR;
             }
             // Integer literal
@@ -393,8 +418,8 @@ public class Scanner {
             return Tokens.TIDEN;
         }
 
-        // If the string has not matched anything at this point, it is likely a string of invalid characters and should
-        // not be parsed as a valid token
+        // If the string has not matched anything at this point, it is likely a string of invalid
+        // characters and should not be parsed as a valid token
         return Tokens.TUNDF;
     }
 
@@ -407,9 +432,9 @@ public class Scanner {
         if (buffer.length() == 0) {
             readFileIntoBufferUntilWhitespace();
         }
-        // If the buffer is empty and the scanner is at the end of the file, there is no more code to scan so return
-        // an end of file token. If the buffer still has something in it, we need to still interpret it even if the
-        // scanner is at the end of file
+        // If the buffer is empty and the scanner is at the end of the file, there is no more code
+        // to scan so return an end of file token. If the buffer still has something in it, we need
+        // to still interpret it even if the scanner is at the end of file
         if (buffer.length() == 0 && eof()) {
             outputController.flushListing();
             fileScanner.close();
@@ -423,7 +448,8 @@ public class Scanner {
 
         // If the token is undefined we add an error to the error handler
         if (token.isUndf())
-            outputController.addError(currentRow, currentColumn, Errors.UNDEFINED_TOKEN, token.getTokenLiteral());
+            outputController.addError(
+                currentRow, currentColumn, Errors.UNDEFINED_TOKEN, token.getTokenLiteral());
 
         return token;
     }
@@ -432,7 +458,7 @@ public class Scanner {
         ArrayList<Token> tokenStream = new ArrayList<Token>();
 
         Token t = null;
-        while (t==null || !t.isEof()) {
+        while (t == null || !t.isEof()) {
             t = getToken();
             tokenStream.add(t);
         }

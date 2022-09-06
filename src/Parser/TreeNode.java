@@ -201,16 +201,22 @@ public class TreeNode {
 
     public String getTokenString() {
         switch (nodeType) {
-            case NSTRG, NILIT, NFLIT -> {
+            case NSTRG:
+            case NILIT:
+            case NFLIT:
                 return " " + symbolTable.getSymbol(symbolTableId).getVal();
-            }
-            case NPROG, NSIMV, NRTYPE, NATYPE, NSDECL, NTDECL -> {
+
+            case NPROG:
+            case NSIMV:
+            case NRTYPE:
+            case NATYPE:
+            case NSDECL:
+            case NTDECL:
                 Symbol symbol = symbolTable.getSymbol(symbolTableId);
                 if (symbol == null) {
                     return " null";
                 }
                 return " " + symbol.getRef();
-            }
         }
         return "";
     }

@@ -68,21 +68,29 @@ public class Utils {
      * @return true if the candidate matches the specified type and false if not
      */
     public boolean matches(String candidate, MatchTypes matcher) {
-        boolean matchFound = false;
-
         switch (matcher) {
-            case LETTER -> matchFound = letters.contains(candidate);
-            case NUMBER -> matchFound = numbers.contains(candidate);
-            case KEYWORD -> matchFound = keywords.contains(candidate);
-            case PUNCTUATION -> matchFound = validPunctuation.contains(candidate);
-            case DOUBLE_OPERATOR -> matchFound = validDoubleOperators.contains(candidate);
-            case STANDALONE_OPERATOR -> matchFound = validStandaloneOperators.contains(candidate);
-            case IDENTIFIER -> matchFound = matchesIdentifier(candidate);
-            case WHITESPACE -> matchFound = candidate.compareTo("\n") == 0 || candidate.compareTo(" ") == 0 || candidate.charAt(0) == 9;
-            case UNDEFINED ->
-                    matchFound = !(matches(candidate, MatchTypes.LETTER, MatchTypes.NUMBER, MatchTypes.PUNCTUATION, MatchTypes.WHITESPACE));
+            case LETTER:
+                return letters.contains(candidate);
+            case NUMBER:
+                return numbers.contains(candidate);
+            case KEYWORD:
+                return keywords.contains(candidate);
+            case PUNCTUATION:
+                return validPunctuation.contains(candidate);
+            case DOUBLE_OPERATOR:
+                return validDoubleOperators.contains(candidate);
+            case STANDALONE_OPERATOR:
+                return validStandaloneOperators.contains(candidate);
+            case IDENTIFIER:
+                return matchesIdentifier(candidate);
+            case WHITESPACE:
+                return candidate.compareTo("\n") == 0 || candidate.compareTo(" ") == 0
+                    || candidate.charAt(0) == 9;
+            case UNDEFINED:
+                return !(matches(candidate, MatchTypes.LETTER, MatchTypes.NUMBER,
+                    MatchTypes.PUNCTUATION, MatchTypes.WHITESPACE));
         }
-        return matchFound;
+        return false;
     }
 
     // Overloaded matches methods to simplify calls with multiple optional matches
@@ -90,25 +98,29 @@ public class Utils {
         return matches(candidate, matcher1) || matches(candidate, matcher2);
     }
 
-    public boolean matches(String candidate, MatchTypes matcher1, MatchTypes matcher2, MatchTypes matcher3) {
+    public boolean matches(
+        String candidate, MatchTypes matcher1, MatchTypes matcher2, MatchTypes matcher3) {
         return matches(candidate, matcher1, matcher2) || matches(candidate, matcher3);
     }
 
-    public boolean matches(String candidate, MatchTypes matcher1, MatchTypes matcher2, MatchTypes matcher3, MatchTypes matcher4) {
+    public boolean matches(String candidate, MatchTypes matcher1, MatchTypes matcher2,
+        MatchTypes matcher3, MatchTypes matcher4) {
         return matches(candidate, matcher1, matcher2) || matches(candidate, matcher3, matcher4);
     }
 
     /**
      * Matches strings that start with a letter and only contain strings and letters
-     * @param candidate a candidate string to be determined whether it matches the form of an identifier
+     * @param candidate a candidate string to be determined whether it matches the form of an
+     *     identifier
      * @return boolean value representing whether it matches
      */
     public boolean matchesIdentifier(String candidate) {
-        if (!letters.contains(String.valueOf(candidate.charAt(0)))) return false;
+        if (!letters.contains(String.valueOf(candidate.charAt(0))))
+            return false;
         for (String c : candidate.split("")) {
-                    if (!letters.contains(c) && !numbers.contains(c))
-                        return false;
-                }
-                return true;
+            if (!letters.contains(c) && !numbers.contains(c))
+                return false;
         }
+        return true;
     }
+}

@@ -17,7 +17,7 @@ import Parser.TreeNode.TreeNodes;
 import Scanner.Scanner;
 import Scanner.Token;
 import Scanner.Token.Tokens;
-import java.lang.reflect.Array;
+
 import java.util.ArrayList;
 
 public class Parser {
@@ -128,7 +128,7 @@ public class Parser {
         TreeNode t = new TreeNode(TreeNodes.NPROG);
         match(Tokens.TCD22);
         if (lookahead.getToken() == Tokens.TIDEN) {
-            t.setSymbolTableReference(
+            t.setSymbolTableId(
                 symbolTable.addSymbol(SymbolTable.SymbolType.PROGRAM_IDEN, lookahead));
             match(Tokens.TIDEN);
         } else {
@@ -173,18 +173,18 @@ public class Parser {
 
     private TreeNode init() {
         TreeNode t = new TreeNode(TreeNodes.NINIT);
-        int symbolTableReference = 0;
+        int symbolTableId = 0;
         if (lookahead.getToken() == Tokens.TIDEN) {
-            symbolTableReference = symbolTable.addSymbol(SymbolType.CONSTANT, lookahead);
-            t.setSymbolTableReference(symbolTableReference);
+            symbolTableId = symbolTable.addSymbol(SymbolType.CONSTANT, lookahead);
+            t.setSymbolTableId(symbolTableId);
             match(Tokens.TIDEN);
         } else {
             error("Missing identifier");
         }
         match(Tokens.TEQUL);
         TreeNode exprNode = expr();
-        symbolTable.getSymbol(symbolTableReference)
-            .setForeignSymbolTableReference(exprNode.getSymbolTableReference());
+        symbolTable.getSymbol(symbolTableId)
+            .setForeignSymbolTableId(exprNode.getSymbolTableId());
         t.setNextChild(exprNode);
         return t;
     }
@@ -220,7 +220,7 @@ public class Parser {
         if (lookahead.getToken() == Tokens.TARAY) {
             // Array
             int symbolTableId = symbolTable.addSymbol(SymbolType.ARRAY_TYPE, typeNameToken);
-            t.setSymbolTableReference(symbolTableId);
+            t.setSymbolTableId(symbolTableId);
 
             match(Tokens.TARAY);
             match(Tokens.TLBRK);
@@ -240,13 +240,13 @@ public class Parser {
 
             Symbol newSymbol =
                 symbolTable.getSymbol(symbolTable.addSymbol(SymbolType.ARRAY_TYPE, typeNameToken));
-            newSymbol.setForeignSymbolTableReference(typeReference);
-            newSymbol.setForeignSymbolTableReference("size", exprNode.getSymbolTableReference());
+            newSymbol.setForeignSymbolTableId(typeReference);
+            newSymbol.setForeignSymbolTableId("size", exprNode.getSymbolTableId());
 
         } else if (lookahead.getToken() == Tokens.TIDEN) {
             // Struct
             int symbolTableId = symbolTable.addSymbol(SymbolType.STRUCT_TYPE, typeNameToken);
-            t.setSymbolTableReference(symbolTableId);
+            t.setSymbolTableId(symbolTableId);
 
             t.setNextChild(fields());
             t.setNodeType(TreeNodes.NRTYPE);
@@ -279,7 +279,7 @@ public class Parser {
             // structid
             int typeReference =
                 symbolTable.getSymbolIdFromReference(lookahead.getTokenLiteral(), currentScope);
-            symbolTable.getSymbol(symbolTableId).setForeignSymbolTableReference(typeReference);
+            symbolTable.getSymbol(symbolTableId).setForeignSymbolTableId(typeReference);
             match(Tokens.TIDEN);
         } else {
             // stype
@@ -351,13 +351,13 @@ public class Parser {
     private TreeNode arrdecl(ArrayList<Token> idenList) {
         TreeNode t = new TreeNode(TreeNodes.NARRD);
 
-        int symbolTableReference =
+        int symbolTableId =
             symbolTable.addSymbol(SymbolType.VARIABLE, idenList.get(0), currentScope);
-        t.setSymbolTableReference(symbolTableReference);
+        t.setSymbolTableId(symbolTableId);
 
-        int typeReference =
+        int typeId =
             symbolTable.getSymbolIdFromReference(idenList.get(1).getTokenLiteral(), currentScope);
-        symbolTable.getSymbol(symbolTableReference).setForeignSymbolTableReference(typeReference);
+        symbolTable.getSymbol(symbolTableId).setForeignSymbolTableId(typeId);
 
         return t;
     }
@@ -600,12 +600,12 @@ public class Parser {
     }
 
     private TreeNode var(Token nameIdenToken) {
-        int symbolTableReference =
+        int symbolTableId =
             symbolTable.getSymbolIdFromReference(nameIdenToken.getTokenLiteral(), currentScope);
         if (lookahead.getToken() == Tokens.TLBRK) {
             TreeNode t = new TreeNode();
             match(Tokens.TLBRK);
-            t.setSymbolTableReference(symbolTableReference);
+            t.setSymbolTableId(symbolTableId);
             t.setNextChild(expr());
             match(Tokens.TRBRK);
             // Access struct field
@@ -628,7 +628,7 @@ public class Parser {
             return t;
         }
         // Simple variable
-        return new TreeNode(TreeNodes.NSIMV, symbolTableReference);
+        return new TreeNode(TreeNodes.NSIMV, symbolTableId);
     }
 
     private TreeNode mainbody() {
@@ -640,10 +640,10 @@ public class Parser {
         match(Tokens.TTEND);
         match(Tokens.TCD22);
         if (lookahead.getToken() == Tokens.TIDEN) {
-            int symbolTableReference =
+            int symbolTableId =
                 symbolTable.getSymbolIdFromReference(lookahead.getTokenLiteral(), currentScope);
             match(Tokens.TIDEN);
-            t.setNextChild(new TreeNode(TreeNodes.NSIMV, symbolTableReference));
+            t.setNextChild(new TreeNode(TreeNodes.NSIMV, symbolTableId));
         } else {
             error("Missing identifier");
         }
@@ -782,7 +782,7 @@ public class Parser {
     private TreeNode asgnstat(Token nameIdenToken) {
         TreeNode varNode = var(nameIdenToken);
         TreeNode t = asgnop();
-        t.setSymbolTableReference(varNode.getSymbolTableReference());
+        t.setSymbolTableId(varNode.getSymbolTableId());
         t.setNextChild(varNode);
         t.setNextChild(bool());
         return t;
@@ -895,9 +895,9 @@ public class Parser {
 
     private TreeNode printitem() {
         if (lookahead.getToken() == Tokens.TSTRG) {
-            int symbolTableReference = symbolTable.addSymbol(SymbolType.LITERAL, lookahead);
+            int symbolTableId = symbolTable.addSymbol(SymbolType.LITERAL, lookahead);
             match(Tokens.TSTRG);
-            return new TreeNode(TreeNodes.NSTRG, symbolTableReference);
+            return new TreeNode(TreeNodes.NSTRG, symbolTableId);
         }
         return expr();
     }
@@ -916,12 +916,12 @@ public class Parser {
     private TreeNode func() {
         TreeNode t = new TreeNode(TreeNodes.NFUND);
         match(Tokens.TFUNC);
-        int symbolTableReference = 0;
+        int symbolTableId = 0;
         if (lookahead.getToken() == Tokens.TIDEN) {
-            symbolTableReference = symbolTable.addSymbol(SymbolType.FUNCTION, lookahead);
+            symbolTableId = symbolTable.addSymbol(SymbolType.FUNCTION, lookahead);
             currentScope = lookahead.getTokenLiteral();
             match(Tokens.TIDEN);
-            t.setSymbolTableReference(symbolTableReference);
+            t.setSymbolTableId(symbolTableId);
         } else {
             error("Expected Identifier");
         }
@@ -931,7 +931,7 @@ public class Parser {
             t.setNextChild(plistNode);
         match(Tokens.TRPAR);
         match(Tokens.TCOLN);
-        symbolTable.getSymbol(symbolTableReference).setVal(rtype());
+        symbolTable.getSymbol(symbolTableId).setVal(rtype());
         TreeNode funcbodyNode = funcbody();
         t.setNextChild(funcbodyNode.getLeft());
         t.setNextChild(funcbodyNode.getMid());
@@ -980,7 +980,7 @@ public class Parser {
             TreeNode t = new TreeNode(TreeNodes.NARRC, arrdecl());
 
             // Add const to array
-            symbolTable.getSymbol(t.getLeft().getSymbolTableReference()).makeConstArray();
+            symbolTable.getSymbol(t.getLeft().getSymbolTableId()).makeConstArray();
             return t;
         } else if (lookahead.getToken() == Tokens.TIDEN) {
             Token nameIdenToken = parseIdentifierFollowedByColon().get(0);

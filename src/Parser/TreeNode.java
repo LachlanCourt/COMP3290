@@ -2,7 +2,6 @@ package Parser;
 
 import Common.Symbol;
 import Common.SymbolTable;
-import Scanner.Token;
 
 public class TreeNode {
     enum TreeNodes {
@@ -81,7 +80,7 @@ public class TreeNode {
     private TreeNode mid;
     private TreeNode right;
 
-    int symbolTableReference;
+    int symbolTableId;
     SymbolTable symbolTable;
 
     public TreeNode() {
@@ -99,7 +98,7 @@ public class TreeNode {
     public TreeNode(TreeNodes type_, int symbolTableReference_) {
         this();
         nodeType = type_;
-        symbolTableReference = symbolTableReference_;
+        symbolTableId = symbolTableReference_;
         left = null;
         mid = null;
         right = null;
@@ -108,7 +107,7 @@ public class TreeNode {
     public TreeNode(TreeNodes type_, int symbolTableReference_, TreeNode left_) {
         this();
         nodeType = type_;
-        symbolTableReference = symbolTableReference_;
+        symbolTableId = symbolTableReference_;
         left = left_;
         mid = null;
         right = null;
@@ -180,12 +179,12 @@ public class TreeNode {
         return nodeType;
     }
 
-    public void setSymbolTableReference(int reference) {
-        symbolTableReference = reference;
+    public void setSymbolTableId(int reference) {
+        symbolTableId = reference;
     }
 
-    public int getSymbolTableReference() {
-        return symbolTableReference;
+    public int getSymbolTableId() {
+        return symbolTableId;
     }
 
     @Override
@@ -203,10 +202,10 @@ public class TreeNode {
     public String getTokenString() {
         switch (nodeType) {
             case NSTRG, NILIT, NFLIT -> {
-                return " " + symbolTable.getSymbol(symbolTableReference).getVal();
+                return " " + symbolTable.getSymbol(symbolTableId).getVal();
             }
             case NPROG, NSIMV, NRTYPE, NATYPE, NSDECL, NTDECL -> {
-                Symbol symbol = symbolTable.getSymbol(symbolTableReference);
+                Symbol symbol = symbolTable.getSymbol(symbolTableId);
                 if (symbol == null) {
                     return " null";
                 }

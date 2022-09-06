@@ -81,11 +81,6 @@ public class SymbolTable {
         return -1;
     }
 
-    // Getters for the value given either ref or id
-    //    public String getSymbolValue(String ref) {
-    //        return table.get(ref).getVal();
-    //    }
-
     public Symbol getSymbol(int id) {
         for (Map.Entry<String, HashMap<Integer, Symbol>> scopeEntry : table.entrySet()) {
             for (Map.Entry<Integer, Symbol> entry : table.get(scopeEntry.getKey()).entrySet()) {
@@ -127,7 +122,7 @@ public class SymbolTable {
             for (Map.Entry<Integer, Symbol> entry : table.get(scopeEntry.getKey()).entrySet()) {
                 out += entry.getKey() + ", " + entry.getValue().getRef() + ", "
                     + entry.getValue().getVal() + ", "
-                    + entry.getValue().getForeignSymbolTableReference() +
+                    + entry.getValue().getForeignSymbolTableId() +
 
                     ", " + entry.getValue().getSymbolType() + "\n";
             }

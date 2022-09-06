@@ -18,10 +18,10 @@ public class Symbol<T extends Comparable> {
 
     private SymbolType symbolType;
 
-    private HashMap<String, Integer> foreignSymbolTableReferences;
+    private HashMap<String, Integer> foreignSymbolTableIds;
 
     private Symbol() {
-        foreignSymbolTableReferences = new HashMap<String, Integer>();
+        foreignSymbolTableIds = new HashMap<String, Integer>();
     }
 
     public Symbol(SymbolType symbolType_, String ref_, T val_) {
@@ -53,20 +53,20 @@ public class Symbol<T extends Comparable> {
         val = val_;
     }
 
-    public void setForeignSymbolTableReference(String label, int reference_) {
-        foreignSymbolTableReferences.put(label, reference_);
+    public void setForeignSymbolTableId(String label, int reference_) {
+        foreignSymbolTableIds.put(label, reference_);
     }
 
-    public void setForeignSymbolTableReference(int reference_) {
-        foreignSymbolTableReferences.put("default", reference_);
+    public void setForeignSymbolTableId(int reference_) {
+        foreignSymbolTableIds.put("default", reference_);
     }
 
-    public Integer getForeignSymbolTableReference(String label) {
-        return foreignSymbolTableReferences.get(label);
+    public Integer getForeignSymbolTableId(String label) {
+        return foreignSymbolTableIds.get(label);
     }
 
-    public Integer getForeignSymbolTableReference() {
-        return getForeignSymbolTableReference("default");
+    public Integer getForeignSymbolTableId() {
+        return getForeignSymbolTableId("default");
     }
 
     public void makeConstArray() {

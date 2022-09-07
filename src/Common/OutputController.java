@@ -25,7 +25,7 @@ public class OutputController {
      */
     public void reportErrors() {
         if (errorHandler.hasErrors()) {
-            System.err.println("Errors exist within the compiling process:\n");
+            System.err.println("Errors exist within the compilation process:\n");
             for (ErrorMessage error : errorHandler.getErrors()) {
                 System.err.println(error.toString(true));
             }
@@ -37,7 +37,7 @@ public class OutputController {
      */
     public void reportWarnings() {
         if (errorHandler.hasWarnings()) {
-            System.err.println("\nWarnings exist within the compiling process:\n");
+            System.err.println("\nWarnings exist within the compilation process:\n");
             for (ErrorMessage warning : errorHandler.getWarnings()) {
                 System.err.println(warning.toString(true));
             }
@@ -52,8 +52,9 @@ public class OutputController {
         reportWarnings();
         listing.addErrorsToListing(errorHandler.getErrors());
         listing.addErrorsToListing(errorHandler.getWarnings());
-        if (hasErrors())
-            System.exit(1);
+        //TODO Uncomment
+//        if (hasErrors())
+//            System.exit(1);
     }
 
     /**

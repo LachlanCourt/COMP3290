@@ -212,6 +212,8 @@ public class TreeNode {
             case NATYPE:
             case NSDECL:
             case NTDECL:
+            case NINIT:
+            case NARRD:
                 Symbol symbol = symbolTable.getSymbol(symbolTableId);
                 if (symbol == null) {
                     return " null";

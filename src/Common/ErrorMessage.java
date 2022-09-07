@@ -18,7 +18,9 @@ public class ErrorMessage {
         NOT_AT_EOF,
         NOT_A_NUMBER,
         NO_STATEMENTS,
+        INVALID_TYPE,
         EXPECTED_ASSIGNMENT_OPERATOR,
+        CUSTOM_ERROR,
         WARNING_CD22_SEMANTIC_CASING,
     }
 
@@ -93,6 +95,12 @@ public class ErrorMessage {
                 break;
             case EXPECTED_ASSIGNMENT_OPERATOR:
                 errorText = "Expected Assignment Operator";
+                break;
+            case INVALID_TYPE:
+                errorText = "Invalid type";
+                break;
+            case CUSTOM_ERROR:
+                errorText = data;
                 break;
             default:
                 errorText = "";

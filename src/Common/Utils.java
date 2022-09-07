@@ -11,6 +11,8 @@ package Common;
 import java.util.ArrayList;
 import java.util.Arrays;
 
+import Scanner.Token.Tokens;
+
 public class Utils {
     private static Utils self;
     // Definition Lists for custom matching
@@ -122,5 +124,30 @@ public class Utils {
                 return false;
         }
         return true;
+    }
+
+    public ArrayList<Tokens> getTokenList(Tokens first) {
+        return new ArrayList<Tokens>(Arrays.asList(first));
+    }
+    public ArrayList<Tokens> getTokenList(Tokens first, Tokens second) {
+        return new ArrayList<Tokens>(Arrays.asList(first, second));
+    }
+    public ArrayList<Tokens> getTokenList(Tokens first, Tokens second, Tokens third) {
+        return new ArrayList<Tokens>(Arrays.asList(first, second, third));
+    }
+    public ArrayList<Tokens> getTokenList(Tokens first, Tokens second, Tokens third, Tokens fourth) {
+        return new ArrayList<Tokens>(Arrays.asList(first, second, third ,fourth));
+    }
+    public ArrayList<Tokens> getTokenList(Tokens first, Tokens second, Tokens third, Tokens fourth, Tokens fifth) {
+        return new ArrayList<Tokens>(Arrays.asList(first, second, third ,fourth, fifth ));
+    }
+    public ArrayList<Tokens> getTokenList(Tokens first, Tokens second, Tokens third, Tokens fourth, Tokens fifth, Tokens sixth) {
+        return new ArrayList<Tokens>(Arrays.asList(first, second, third ,fourth, fifth ,sixth ));
+    }
+    public ArrayList<Tokens> getTokenList(Tokens first, Tokens second, Tokens third, Tokens fourth, Tokens fifth, Tokens sixth, Tokens seventh) {
+        return new ArrayList<Tokens>(Arrays.asList(first, second, third ,fourth, fifth ,sixth ,seventh));
+    }
+    public ArrayList<Tokens> getTokenList(Tokens first, Tokens second, Tokens third, Tokens fourth, Tokens fifth, Tokens sixth, Tokens seventh, Tokens eighth) {
+        return new ArrayList<Tokens>(Arrays.asList(first, second, third ,fourth, fifth ,sixth ,seventh, eighth));
     }
 }

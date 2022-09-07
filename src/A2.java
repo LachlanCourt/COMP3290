@@ -40,20 +40,21 @@ public class A2 {
 
     public void run(String[] args) {
         // Create instances of the necessary classes
-        OutputController outputController = new OutputController();
-        SymbolTable symbolTable = SymbolTable.getSymbolTable();
-        Scanner s = new Scanner(outputController);
-        Parser p = new Parser(s, symbolTable);
+        OutputController oc = new OutputController();
+        SymbolTable st = SymbolTable.getSymbolTable();
+        Scanner s = new Scanner(oc);
+        Parser p = new Parser(s, st, oc);
         CodeGenerator cg = new CodeGenerator(p);
 
         // Initialise the scanner passing the filename of the source code
         s.init(args[0]);
 
         // Initialise the parser which gets the token stream from the scanner. As undefined tokens
-        // should not be parsed, check for errors before continuing
+        // should not be parsed, check for errors before continuing, which will terminate if any are
+        // found
         p.initialise();
-        if (outputController.hasErrors())
-            outputController.reportErrorsAndWarnings();
+        if (oc.hasErrors())
+            oc.reportErrorsAndWarnings();
 
         // Initialise the code generator
         cg.initialise();
@@ -62,11 +63,11 @@ public class A2 {
         cg.run();
 
         // Report any errors and warnings found so far in the compilation
-        outputController.reportErrorsAndWarnings();
+        oc.reportErrorsAndWarnings();
 
         // Output the symbol table when debugging
         if (System.getenv("DEBUG") != null && System.getenv("DEBUG").compareTo("true") == 0) {
-            System.out.println("\nSYMBOL TABLE\n" + symbolTable);
+            System.out.println("\nSYMBOL TABLE\n" + st);
         }
     }
 }

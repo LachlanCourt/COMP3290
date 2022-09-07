@@ -1,5 +1,6 @@
 package CodeGenerator;
 
+import Common.CD22ParserException;
 import Parser.Parser;
 
 public class CodeGenerator {

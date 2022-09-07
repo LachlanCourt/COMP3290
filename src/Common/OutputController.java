@@ -61,11 +61,16 @@ public class OutputController {
      * @param currentRow row of the token
      * @param currentColumn column of the token
      * @param error the error type
-     * @param tokenLiteral the token that caused the error
+     * @param data the token that caused the error
      */
     public void addError(
-        int currentRow, int currentColumn, ErrorMessage.Errors error, String tokenLiteral) {
-        errorHandler.addError(currentRow, currentColumn, error, tokenLiteral);
+        int currentRow, int currentColumn, ErrorMessage.Errors error, String data) {
+        errorHandler.addError(currentRow, currentColumn, error, data);
+    }
+
+    public void addError(
+            int currentRow, int currentColumn, ErrorMessage.Errors error) {
+        errorHandler.addError(currentRow, currentColumn, error);
     }
 
     /**

@@ -13,6 +13,12 @@ public class ErrorMessage {
         UNDEFINED_TOKEN,
         INTEGER_OUT_OF_RANGE,
         FLOAT_OUT_OF_RANGE,
+        EXPECTED_IDENTIFIER,
+        PROGRAM_IDEN_MISSING,
+        NOT_AT_EOF,
+        NOT_A_NUMBER,
+        NO_STATEMENTS,
+        EXPECTED_ASSIGNMENT_OPERATOR,
         WARNING_CD22_SEMANTIC_CASING,
     }
 
@@ -72,6 +78,21 @@ public class ErrorMessage {
                 break;
             case FLOAT_OUT_OF_RANGE:
                 errorText = "Float Out of Range " + data;
+                break;
+            case EXPECTED_IDENTIFIER:
+                errorText = "Expected Identifier";
+                break;
+            case PROGRAM_IDEN_MISSING:
+                errorText = "Program Identifier Missing";
+                break;
+            case NOT_A_NUMBER:
+                errorText = "Expected number or identifier";
+                break;
+            case NO_STATEMENTS:
+                errorText = "At least one statement is required";
+                break;
+            case EXPECTED_ASSIGNMENT_OPERATOR:
+                errorText = "Expected Assignment Operator";
                 break;
             default:
                 errorText = "";

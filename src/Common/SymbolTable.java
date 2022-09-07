@@ -121,8 +121,8 @@ public class SymbolTable {
             out += "\n" + scopeEntry.getKey() + "\n";
             for (Map.Entry<Integer, Symbol> entry : table.get(scopeEntry.getKey()).entrySet()) {
                 out += entry.getKey() + ", " + entry.getValue().getRef() + ", "
-                    + entry.getValue().getVal() + ", "
-                    + entry.getValue().getForeignSymbolTableId() +
+                    + entry.getValue().getVal() + ", " + entry.getValue().getForeignSymbolTableId()
+                    +
 
                     ", " + entry.getValue().getSymbolType() + "\n";
             }

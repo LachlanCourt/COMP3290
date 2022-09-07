@@ -9,15 +9,15 @@
  *******************************************************************************/
 package Parser;
 
-import Common.Symbol;
-import Common.SymbolTable;
+import Common.*;
+import Common.ErrorMessage.Errors;
 import Common.SymbolTable.PrimitiveTypes;
 import Common.SymbolTable.SymbolType;
 import Parser.TreeNode.TreeNodes;
 import Scanner.Scanner;
 import Scanner.Token;
 import Scanner.Token.Tokens;
-import java.lang.reflect.Array;
+import java.io.EOFException;
 import java.util.ArrayList;
 
 public class Parser {
@@ -33,10 +33,15 @@ public class Parser {
 
     private String currentScope;
 
-    public Parser(Scanner s_, SymbolTable symbolTable_) {
+    private OutputController outputController;
+    private final Utils utils;
+
+    public Parser(Scanner s_, SymbolTable symbolTable_, OutputController outputController_) {
         scanner = s_;
         symbolTable = symbolTable_;
         tokenStreamIndex = 0;
+        outputController = outputController_;
+        utils = Utils.getUtils();
     }
 
     /**
@@ -55,25 +60,32 @@ public class Parser {
         }
     }
 
-    private void error(String message, Token token) {
-        System.err.println("ERROR");
-        System.err.println(message);
-        System.exit(1);
+    private void error(String message) throws CD22ParserException {
+        outputController.addError(
+            previousLookahead.getRow(), previousLookahead.getCol(), Errors.CUSTOM_ERROR, message);
+        throw new CD22ParserException();
     }
 
-    private void error(String message) {
-        System.err.println("ERROR");
-        System.err.println(message);
-        System.exit(1);
+    private void error(Errors error) throws CD22ParserException {
+        outputController.addError(previousLookahead.getRow(), previousLookahead.getCol(), error);
+        throw new CD22ParserException();
     }
 
-    private void match(Tokens token) {
+    private void errorWithoutException(Errors error) {
+        outputController.addError(previousLookahead.getRow(), previousLookahead.getCol(), error);
+    }
+
+    private void errorWithoutException(String message) {
+        outputController.addError(
+            previousLookahead.getRow(), previousLookahead.getCol(), Errors.CUSTOM_ERROR, message);
+    }
+
+    private void match(Tokens token) throws CD22ParserException {
         if (token == lookahead.getToken()) {
             previousLookahead = lookahead;
             lookahead = getToken();
         } else
-            error("Failed to match " + token + " around " + previousLookahead.getRow() + ":"
-                + previousLookahead.getCol());
+            error("Expected keyword or operator \"" + token + "\"");
     }
 
     /**
@@ -81,76 +93,156 @@ public class Parser {
      */
     public void run() {
         lookahead = getToken();
-        syntaxTree = program();
-        if (!lookahead.isEof()) {
-            error("Not at eof");
+        try {
+            syntaxTree = program();
+        } catch (CD22ParserException e) {
+            // Vibe
+            int i = 2;
+        } catch (CD22EofException e) {
+            // Vibe
+            int i = 3;
+        }
+        if (!lookahead.isEof() && !outputController.hasErrors()) {
+            errorWithoutException(Errors.NOT_AT_EOF);
         }
     }
 
-    public ArrayList<Token> parseIdentifierFollowedByColon() {
+    // ----------------- ERROR RECOVERY ------------------
+    public void panic(ArrayList<Tokens> synchronisingTokens) throws CD22EofException {
+        while (lookahead.getToken() != Tokens.TTEOF) {
+            if (synchronisingTokens.contains(lookahead.getToken())) {
+                return;
+            }
+            lookahead = getToken();
+        }
+        throw new CD22EofException();
+    }
+
+    private void gracefullyMatchColon() throws CD22ParserException {
+        if (lookahead.getToken() == Tokens.TCOLN) {
+            match(Tokens.TCOLN);
+            return;
+        }
+        if (lookahead.getToken() == Tokens.TSEMI) {
+            match(Tokens.TSEMI);
+            errorWithoutException("Found \";\" instead of \":\"");
+            return;
+        } else if (lookahead.getToken() == Tokens.TCOMA) {
+            match(Tokens.TCOMA);
+            errorWithoutException("Found \",\" instead of \":\"");
+            return;
+        }
+        errorWithoutException("Expected \":\"");
+    }
+
+    private void gracefullyMatchSemicolon() throws CD22ParserException {
+        if (lookahead.getToken() == Tokens.TSEMI) {
+            match(Tokens.TSEMI);
+            return;
+        }
+        if (lookahead.getToken() == Tokens.TCOLN) {
+            match(Tokens.TCOLN);
+            errorWithoutException("Found \":\" instead of \";\"");
+            return;
+        } else if (lookahead.getToken() == Tokens.TCOMA) {
+            match(Tokens.TCOMA);
+            errorWithoutException("Found \",\" instead of \";\"");
+            return;
+        }
+        errorWithoutException("Expected \";\"");
+    }
+
+    public ArrayList<Token> parseIdentifierFollowedByColon() throws CD22ParserException {
         ArrayList<Token> list = new ArrayList<Token>();
         if (lookahead.getToken() == Tokens.TIDEN) {
             list.add(lookahead);
             match(Tokens.TIDEN);
         } else {
-            error("Expected Identifier");
+            error(Errors.EXPECTED_IDENTIFIER);
         }
-        match(Tokens.TCOLN);
+        gracefullyMatchColon();
         return list;
     }
 
-    public ArrayList<Token> parseColonSeparatedIdentifiers() {
+    public ArrayList<Token> parseColonSeparatedIdentifiers() throws CD22ParserException {
         ArrayList<Token> list = new ArrayList<Token>();
         list.add(parseIdentifierFollowedByColon().get(0));
         if (lookahead.getToken() == Tokens.TIDEN) {
             list.add(lookahead);
             match(Tokens.TIDEN);
         } else {
-            error("Expected Identifier");
+            error(Errors.EXPECTED_IDENTIFIER);
         }
         return list;
     }
 
-    public ArrayList<Token> parseColonSeparatedIdentifiers(Token first) {
+    public ArrayList<Token> parseColonSeparatedIdentifiers(Token first) throws CD22ParserException {
         ArrayList<Token> list = new ArrayList<Token>();
         list.add(first);
-        match(Tokens.TCOLN);
+        gracefullyMatchColon();
         if (lookahead.getToken() == Tokens.TIDEN) {
             list.add(lookahead);
             match(Tokens.TIDEN);
         } else {
-            error("Expected Identifier");
+            error(Errors.EXPECTED_IDENTIFIER);
         }
         return list;
     }
 
-    private TreeNode program() {
+    private TreeNode program() throws CD22ParserException, CD22EofException {
         TreeNode t = new TreeNode(TreeNodes.NPROG);
         match(Tokens.TCD22);
         if (lookahead.getToken() == Tokens.TIDEN) {
-            t.setSymbolTableReference(
+            t.setSymbolTableId(
                 symbolTable.addSymbol(SymbolTable.SymbolType.PROGRAM_IDEN, lookahead));
             match(Tokens.TIDEN);
         } else {
-            error("Program name is missing");
+            error(Errors.PROGRAM_IDEN_MISSING);
         }
         t.setNextChild(globals());
         t.setNextChild(funcs());
         t.setNextChild(mainbody());
-        match(Tokens.TTEOF);
+        if (!lookahead.isEof()) {
+            error(Errors.NOT_AT_EOF);
+            throw new CD22EofException();
+        }
         return t;
     }
 
-    private TreeNode globals() {
+    private TreeNode globals() throws CD22ParserException, CD22EofException {
         TreeNode t = new TreeNode(TreeNodes.NGLOB);
         t.setNextChild(consts());
+
+        if (lookahead.getToken() != Tokens.TTYPS && lookahead.getToken() != Tokens.TARRS
+            && lookahead.getToken() != Tokens.TFUNC && lookahead.getToken() != Tokens.TMAIN) {
+            errorWithoutException("Unexpected token " + lookahead);
+            // Prevent silent errors if the "Types" keyword is missing but types are declared - as
+            // all these fields are optional, without this check error recovery will skip all the
+            // way to main and miss all arrays and functions
+            panic(utils.getTokenList(Tokens.TTYPS, Tokens.TARRS, Tokens.TFUNC, Tokens.TMAIN));
+        }
+
         t.setNextChild(types());
+
+        if (lookahead.getToken() != Tokens.TARRS && lookahead.getToken() != Tokens.TFUNC
+            && lookahead.getToken() != Tokens.TMAIN) {
+            errorWithoutException("Unexpected token " + lookahead);
+            // Prevent silent errors
+            panic(utils.getTokenList(Tokens.TARRS, Tokens.TFUNC, Tokens.TMAIN));
+        }
+
         t.setNextChild(arrays());
+
+        if (lookahead.getToken() != Tokens.TFUNC && lookahead.getToken() != Tokens.TMAIN) {
+            errorWithoutException("Unexpected token " + lookahead);
+            // Prevent silent errors
+            panic(utils.getTokenList(Tokens.TFUNC, Tokens.TMAIN));
+        }
 
         return t;
     }
 
-    private TreeNode consts() {
+    private TreeNode consts() throws CD22ParserException, CD22EofException {
         if (lookahead.getToken() == Tokens.TCONS) {
             match(Tokens.TCONS);
             return initlist();
@@ -158,8 +250,17 @@ public class Parser {
         return null;
     }
 
-    private TreeNode initlist() {
-        TreeNode t1 = init(), t2 = null;
+    private TreeNode initlist() throws CD22ParserException, CD22EofException {
+        TreeNode t1 = null, t2 = null;
+
+        try {
+            t1 = init();
+        } catch (CD22ParserException e) {
+            // Resynchronise to either a comma, globals keyword, func, or main keywords
+            panic(utils.getTokenList(
+                Tokens.TCOMA, Tokens.TTYPS, Tokens.TARRS, Tokens.TFUNC, Tokens.TMAIN));
+        }
+
         if (lookahead.getToken() == Tokens.TTYPS || lookahead.getToken() == Tokens.TARRS
             || lookahead.getToken() == Tokens.TFUNC || lookahead.getToken() == Tokens.TMAIN) {
             return t1;
@@ -171,25 +272,24 @@ public class Parser {
         return new TreeNode(TreeNodes.NILIST, t1, t2);
     }
 
-    private TreeNode init() {
+    private TreeNode init() throws CD22ParserException {
         TreeNode t = new TreeNode(TreeNodes.NINIT);
-        int symbolTableReference = 0;
+        int symbolTableId = 0;
         if (lookahead.getToken() == Tokens.TIDEN) {
-            symbolTableReference = symbolTable.addSymbol(SymbolType.CONSTANT, lookahead);
-            t.setSymbolTableReference(symbolTableReference);
+            symbolTableId = symbolTable.addSymbol(SymbolType.CONSTANT, lookahead);
+            t.setSymbolTableId(symbolTableId);
             match(Tokens.TIDEN);
         } else {
-            error("Missing identifier");
+            error(Errors.EXPECTED_IDENTIFIER);
         }
         match(Tokens.TEQUL);
         TreeNode exprNode = expr();
-        symbolTable.getSymbol(symbolTableReference)
-            .setForeignSymbolTableReference(exprNode.getSymbolTableReference());
+        symbolTable.getSymbol(symbolTableId).setForeignSymbolTableId(exprNode.getSymbolTableId());
         t.setNextChild(exprNode);
         return t;
     }
 
-    private TreeNode types() {
+    private TreeNode types() throws CD22ParserException, CD22EofException {
         if (lookahead.getToken() == Tokens.TTYPS) {
             match(Tokens.TTYPS);
             return typelist();
@@ -197,30 +297,41 @@ public class Parser {
         return null;
     }
 
-    private TreeNode typelist() {
-        TreeNode t1 = type(), t2 = null;
+    private TreeNode typelist() throws CD22ParserException, CD22EofException {
+        TreeNode t1 = null, t2 = null;
+
+        try {
+            t1 = type();
+        } catch (CD22ParserException e) {
+            panic(utils.getTokenList(Tokens.TTEND, Tokens.TARRS, Tokens.TFUNC, Tokens.TMAIN));
+            if (lookahead.getToken() == Tokens.TTEND) {
+                match(Tokens.TTEND);
+            }
+        }
+
         if (lookahead.getToken() == Tokens.TARRS || lookahead.getToken() == Tokens.TFUNC
             || lookahead.getToken() == Tokens.TMAIN) {
             return t1;
         }
         t2 = typelist();
+
         return new TreeNode(TreeNodes.NTYPEL, t1, t2);
     }
 
-    private TreeNode type() {
+    private TreeNode type() throws CD22ParserException, CD22EofException {
         TreeNode t = new TreeNode();
         Token typeNameToken = null;
         if (lookahead.getToken() == Tokens.TIDEN) {
             typeNameToken = lookahead;
             match(Tokens.TIDEN);
         } else {
-            error("Missing identifier");
+            error(Errors.EXPECTED_IDENTIFIER);
         }
         match(Tokens.TTDEF);
         if (lookahead.getToken() == Tokens.TARAY) {
             // Array
             int symbolTableId = symbolTable.addSymbol(SymbolType.ARRAY_TYPE, typeNameToken);
-            t.setSymbolTableReference(symbolTableId);
+            t.setSymbolTableId(symbolTableId);
 
             match(Tokens.TARAY);
             match(Tokens.TLBRK);
@@ -234,29 +345,40 @@ public class Parser {
                     symbolTable.getSymbolIdFromReference(lookahead.getTokenLiteral(), currentScope);
                 match(Tokens.TIDEN);
             } else {
-                error("Missing identifier");
+                error(Errors.EXPECTED_IDENTIFIER);
             }
             t.setNodeType(TreeNodes.NATYPE);
 
             Symbol newSymbol =
                 symbolTable.getSymbol(symbolTable.addSymbol(SymbolType.ARRAY_TYPE, typeNameToken));
-            newSymbol.setForeignSymbolTableReference(typeReference);
-            newSymbol.setForeignSymbolTableReference("size", exprNode.getSymbolTableReference());
+            newSymbol.setForeignSymbolTableId(typeReference);
+            newSymbol.setForeignSymbolTableId("size", exprNode.getSymbolTableId());
 
         } else if (lookahead.getToken() == Tokens.TIDEN) {
             // Struct
             int symbolTableId = symbolTable.addSymbol(SymbolType.STRUCT_TYPE, typeNameToken);
-            t.setSymbolTableReference(symbolTableId);
+            t.setSymbolTableId(symbolTableId);
 
             t.setNextChild(fields());
             t.setNodeType(TreeNodes.NRTYPE);
+        } else {
+            // This edge case handles if we enter panic mode error recovery whilst within a struct
+            // or array definition
+            return null;
         }
         match(Tokens.TTEND);
         return t;
     }
 
-    private TreeNode fields() {
-        TreeNode t1 = sdecl(), t2 = null;
+    private TreeNode fields() throws CD22ParserException, CD22EofException {
+        TreeNode t1 = null, t2 = null;
+
+        try {
+            t1 = sdecl();
+        } catch (CD22ParserException e) {
+            panic(utils.getTokenList(Tokens.TCOMA, Tokens.TTEND));
+        }
+
         if (lookahead.getToken() == Tokens.TTEND) {
             return t1;
         } else if (lookahead.getToken() == Tokens.TCOMA) {
@@ -266,11 +388,11 @@ public class Parser {
         return new TreeNode(TreeNodes.NFLIST, t1, t2);
     }
 
-    private TreeNode sdecl() {
+    private TreeNode sdecl() throws CD22ParserException {
         return sdecl(parseIdentifierFollowedByColon().get(0));
     }
 
-    private TreeNode sdecl(Token nameIdenToken) {
+    private TreeNode sdecl(Token nameIdenToken) throws CD22ParserException {
         int symbolTableId = symbolTable.addSymbol(SymbolType.VARIABLE, nameIdenToken, currentScope);
         // Grab the symbol table ID for this node either from the NTDECL parent node or from the
         // variable name referencing it
@@ -279,7 +401,7 @@ public class Parser {
             // structid
             int typeReference =
                 symbolTable.getSymbolIdFromReference(lookahead.getTokenLiteral(), currentScope);
-            symbolTable.getSymbol(symbolTableId).setForeignSymbolTableReference(typeReference);
+            symbolTable.getSymbol(symbolTableId).setForeignSymbolTableId(typeReference);
             match(Tokens.TIDEN);
         } else {
             // stype
@@ -289,7 +411,7 @@ public class Parser {
         return t;
     }
 
-    private PrimitiveTypes stype() {
+    private PrimitiveTypes stype() throws CD22ParserException {
         switch (lookahead.getToken()) {
             case TINTG:
                 match(Tokens.TINTG);
@@ -301,11 +423,12 @@ public class Parser {
                 match(Tokens.TBOOL);
                 return PrimitiveTypes.BOOLEAN;
             default:
+                error(Errors.INVALID_TYPE);
                 return PrimitiveTypes.UNKNOWN;
         }
     }
 
-    private TreeNode arrays() {
+    private TreeNode arrays() throws CD22ParserException, CD22EofException {
         if (lookahead.getToken() == Tokens.TARRS) {
             match(Tokens.TARRS);
             return arrdecls();
@@ -313,8 +436,15 @@ public class Parser {
         return null;
     }
 
-    private TreeNode arrdecls() {
-        TreeNode t1 = arrdecl(), t2 = null;
+    private TreeNode arrdecls() throws CD22ParserException, CD22EofException {
+        TreeNode t1 = null, t2 = null;
+
+        try {
+            t1 = arrdecl();
+        } catch (CD22ParserException e) {
+            panic(utils.getTokenList(Tokens.TCOMA, Tokens.TFUNC, Tokens.TMAIN));
+        }
+
         if (lookahead.getToken() == Tokens.TFUNC || lookahead.getToken() == Tokens.TMAIN) {
             return t1;
         }
@@ -325,7 +455,7 @@ public class Parser {
         return new TreeNode(TreeNodes.NALIST, t1, t2);
     }
 
-    private TreeNode arrdecl() {
+    private TreeNode arrdecl() throws CD22ParserException {
         ArrayList<Token> idenList = parseColonSeparatedIdentifiers();
         return arrdecl(idenList);
     }
@@ -336,33 +466,33 @@ public class Parser {
      * @param nameIdenToken
      * @return
      */
-    private TreeNode arrdecl(Token nameIdenToken) {
+    private TreeNode arrdecl(Token nameIdenToken) throws CD22ParserException {
         ArrayList<Token> idenList = new ArrayList<Token>();
         idenList.add(nameIdenToken);
         if (lookahead.getToken() == Tokens.TIDEN) {
             idenList.add(lookahead);
             match(Tokens.TIDEN);
         } else {
-            error("Expected Identifier");
+            error(Errors.EXPECTED_IDENTIFIER);
         }
         return arrdecl(idenList);
     }
 
-    private TreeNode arrdecl(ArrayList<Token> idenList) {
+    private TreeNode arrdecl(ArrayList<Token> idenList) throws CD22ParserException {
         TreeNode t = new TreeNode(TreeNodes.NARRD);
 
-        int symbolTableReference =
+        int symbolTableId =
             symbolTable.addSymbol(SymbolType.VARIABLE, idenList.get(0), currentScope);
-        t.setSymbolTableReference(symbolTableReference);
+        t.setSymbolTableId(symbolTableId);
 
-        int typeReference =
+        int typeId =
             symbolTable.getSymbolIdFromReference(idenList.get(1).getTokenLiteral(), currentScope);
-        symbolTable.getSymbol(symbolTableReference).setForeignSymbolTableReference(typeReference);
+        symbolTable.getSymbol(symbolTableId).setForeignSymbolTableId(typeId);
 
         return t;
     }
 
-    private TreeNode expr() {
+    private TreeNode expr() throws CD22ParserException {
         TreeNode t = new TreeNode();
         t.setNextChild(term());
         // Sets node type, if it is not epsilon
@@ -375,7 +505,7 @@ public class Parser {
         return t;
     }
 
-    private TreeNode exprr(TreeNode t) {
+    private TreeNode exprr(TreeNode t) throws CD22ParserException {
         if (lookahead.getToken() == Tokens.TPLUS) {
             match(Tokens.TPLUS);
             t.setNodeType(TreeNodes.NADD);
@@ -388,7 +518,7 @@ public class Parser {
         return t;
     }
 
-    private TreeNode term() {
+    private TreeNode term() throws CD22ParserException {
         TreeNode t = new TreeNode();
         t.setNextChild(fact());
         // Sets node type, if it is not epsilon
@@ -401,7 +531,7 @@ public class Parser {
         return t;
     }
 
-    private TreeNode termr(TreeNode t) {
+    private TreeNode termr(TreeNode t) throws CD22ParserException {
         if (lookahead.getToken() == Tokens.TSTAR) {
             match(Tokens.TSTAR);
             t.setNodeType(TreeNodes.NMUL);
@@ -419,7 +549,7 @@ public class Parser {
         return t;
     }
 
-    private TreeNode fact() {
+    private TreeNode fact() throws CD22ParserException {
         TreeNode t = new TreeNode();
         t.setNextChild(exponent());
         // Sets node type, if it is not epsilon
@@ -432,7 +562,7 @@ public class Parser {
         return t;
     }
 
-    private TreeNode factr(TreeNode t) {
+    private TreeNode factr(TreeNode t) throws CD22ParserException {
         if (lookahead.getToken() == Tokens.TCART) {
             match(Tokens.TCART);
             t.setNodeType(TreeNodes.NPOW);
@@ -441,7 +571,7 @@ public class Parser {
         return t;
     }
 
-    private TreeNode exponent() {
+    private TreeNode exponent() throws CD22ParserException {
         if (lookahead.getToken() == Tokens.TILIT) {
             TreeNode t =
                 new TreeNode(TreeNodes.NILIT, symbolTable.addSymbol(SymbolType.LITERAL, lookahead));
@@ -477,26 +607,30 @@ public class Parser {
             // way start by passing the id token straight to the overridden function
             return var(token);
         }
-        error("Not a number");
+        error(Errors.NOT_A_NUMBER);
         return null;
     }
 
-    private TreeNode bool() {
-        TreeNode t = new TreeNode(TreeNodes.NBOOL);
+    private TreeNode bool() throws CD22ParserException {
+        TreeNode t = new TreeNode();
         t.setNextChild(rel());
         boolr(t);
+        if (t.getNodeType() == null) {
+            return t.getLeft();
+        }
         return t;
     }
 
-    private TreeNode boolr(TreeNode t) {
+    private TreeNode boolr(TreeNode t) throws CD22ParserException {
         t.setNextChild(logop());
         if (t.getMid() != null) {
+            t.setNodeType(TreeNodes.NBOOL);
             t.setNextChild(rel());
         }
         return t;
     }
 
-    private TreeNode logop() {
+    private TreeNode logop() throws CD22ParserException {
         if (lookahead.getToken() == Tokens.TTAND) {
             match(Tokens.TTAND);
             return new TreeNode(TreeNodes.NAND);
@@ -510,12 +644,11 @@ public class Parser {
         return null;
     }
 
-    private TreeNode rel() {
+    private TreeNode rel() throws CD22ParserException {
         boolean not = false;
         if (lookahead.getToken() == Tokens.TNOTT) {
             match(Tokens.TNOTT);
             not = true;
-            //            return new TreeNode(TreeNodes.NNOT, expr(), relop(), expr());
         }
         TreeNode exprNode = expr();
         TreeNode relopNode = relop();
@@ -533,7 +666,7 @@ public class Parser {
         return relopNode;
     }
 
-    private TreeNode relop() {
+    private TreeNode relop() throws CD22ParserException {
         if (lookahead.getToken() == Tokens.TEQEQ) {
             match(Tokens.TEQEQ);
             return new TreeNode(TreeNodes.NEQL);
@@ -556,17 +689,17 @@ public class Parser {
         return null;
     }
 
-    private TreeNode fncall() {
+    private TreeNode fncall() throws CD22ParserException {
         if (lookahead.getToken() == Tokens.TIDEN) {
             Token token = lookahead;
             match(Tokens.TIDEN);
             return fncall(token);
         }
-        error("Expected identifier");
+        error(Errors.EXPECTED_IDENTIFIER);
         return null;
     }
 
-    private TreeNode fncall(Token nameIdenToken) {
+    private TreeNode fncall(Token nameIdenToken) throws CD22ParserException {
         TreeNode t = new TreeNode(TreeNodes.NFCALL,
             symbolTable.getSymbolIdFromReference(nameIdenToken.getTokenLiteral(), "@global"));
         match(Tokens.TLPAR);
@@ -577,7 +710,7 @@ public class Parser {
         return t;
     }
 
-    private TreeNode elist() {
+    private TreeNode elist() throws CD22ParserException {
         TreeNode t1 = bool(), t2 = null;
         if (lookahead.getToken() == Tokens.TRPAR) {
             return t1;
@@ -589,23 +722,23 @@ public class Parser {
         return new TreeNode(TreeNodes.NEXPL, t1, t2);
     }
 
-    private TreeNode var() {
+    private TreeNode var() throws CD22ParserException {
         if (lookahead.getToken() == Tokens.TIDEN) {
             Token token = lookahead;
             match(Tokens.TIDEN);
             return var(token);
         }
-        error("Expected identifier");
+        error(Errors.EXPECTED_IDENTIFIER);
         return null;
     }
 
-    private TreeNode var(Token nameIdenToken) {
-        int symbolTableReference =
+    private TreeNode var(Token nameIdenToken) throws CD22ParserException {
+        int symbolTableId =
             symbolTable.getSymbolIdFromReference(nameIdenToken.getTokenLiteral(), currentScope);
         if (lookahead.getToken() == Tokens.TLBRK) {
             TreeNode t = new TreeNode();
             match(Tokens.TLBRK);
-            t.setSymbolTableReference(symbolTableReference);
+            t.setSymbolTableId(symbolTableId);
             t.setNextChild(expr());
             match(Tokens.TRBRK);
             // Access struct field
@@ -628,10 +761,10 @@ public class Parser {
             return t;
         }
         // Simple variable
-        return new TreeNode(TreeNodes.NSIMV, symbolTableReference);
+        return new TreeNode(TreeNodes.NSIMV, symbolTableId);
     }
 
-    private TreeNode mainbody() {
+    private TreeNode mainbody() throws CD22ParserException, CD22EofException {
         TreeNode t = new TreeNode(TreeNodes.NMAIN);
         match(Tokens.TMAIN);
         t.setNextChild(slist());
@@ -640,17 +773,17 @@ public class Parser {
         match(Tokens.TTEND);
         match(Tokens.TCD22);
         if (lookahead.getToken() == Tokens.TIDEN) {
-            int symbolTableReference =
+            int symbolTableId =
                 symbolTable.getSymbolIdFromReference(lookahead.getTokenLiteral(), currentScope);
             match(Tokens.TIDEN);
-            t.setNextChild(new TreeNode(TreeNodes.NSIMV, symbolTableReference));
+            t.setSymbolTableId(symbolTableId);
         } else {
-            error("Missing identifier");
+            error(Errors.EXPECTED_IDENTIFIER);
         }
         return t;
     }
 
-    private TreeNode slist() {
+    private TreeNode slist() throws CD22ParserException {
         TreeNode t1 = sdecl(), t2 = null;
         if (lookahead.getToken() == Tokens.TBEGN) {
             return t1;
@@ -660,7 +793,7 @@ public class Parser {
         return new TreeNode(TreeNodes.NSDLST, t1, t2);
     }
 
-    private TreeNode stats() {
+    private TreeNode stats() throws CD22ParserException, CD22EofException {
         TreeNode t = null;
         // Assign t1
         if (lookahead.getToken() == Tokens.TTFOR || lookahead.getToken() == Tokens.TIFTH) {
@@ -668,8 +801,17 @@ public class Parser {
         } else if (lookahead.getToken() == Tokens.TREPT || lookahead.getToken() == Tokens.TIDEN
             || lookahead.getToken() == Tokens.TINPT || lookahead.getToken() == Tokens.TPRNT
             || lookahead.getToken() == Tokens.TPRLN || lookahead.getToken() == Tokens.TRETN) {
-            t = stat();
-            match(Tokens.TSEMI);
+            try {
+                t = stat();
+                gracefullyMatchSemicolon();
+            } catch (CD22ParserException e) {
+                panic(utils.getTokenList(Tokens.TSEMI, Tokens.TTFOR, Tokens.TIFTH, Tokens.TREPT,
+                    Tokens.TINPT, Tokens.TPRNT, Tokens.TPRLN, Tokens.TRETN));
+                if (lookahead.getToken() == Tokens.TSEMI) {
+                    gracefullyMatchSemicolon();
+                }
+                return stats();
+            }
         }
         if (t != null) {
             // Epsilon path
@@ -681,11 +823,11 @@ public class Parser {
             }
             return new TreeNode(TreeNodes.NSTATS, t, stats());
         }
-        error("At least one statement is required");
+        error(Errors.NO_STATEMENTS);
         return null;
     }
 
-    private TreeNode stat() {
+    private TreeNode stat() throws CD22ParserException, CD22EofException {
         if (lookahead.getToken() == Tokens.TREPT) {
             return reptstat();
         } else if (lookahead.getToken() == Tokens.TINPT || lookahead.getToken() == Tokens.TPRNT
@@ -703,7 +845,7 @@ public class Parser {
         }
     }
 
-    private TreeNode reptstat() {
+    private TreeNode reptstat() throws CD22ParserException, CD22EofException {
         TreeNode t = new TreeNode(TreeNodes.NREPT);
         match(Tokens.TREPT);
         match(Tokens.TLPAR);
@@ -717,7 +859,7 @@ public class Parser {
         return t;
     }
 
-    private TreeNode iostat() {
+    private TreeNode iostat() throws CD22ParserException {
         if (lookahead.getToken() == Tokens.TINPT) {
             match(Tokens.TINPT);
             return new TreeNode(TreeNodes.NINPUT, vlist());
@@ -730,7 +872,7 @@ public class Parser {
         }
     }
 
-    private TreeNode returnstat() {
+    private TreeNode returnstat() throws CD22ParserException {
         TreeNode t = new TreeNode(TreeNodes.NRETN);
         match(Tokens.TRETN);
         if (lookahead.getToken() == Tokens.TVOID) {
@@ -741,24 +883,24 @@ public class Parser {
         return t;
     }
 
-    private TreeNode strstat() {
+    private TreeNode strstat() throws CD22ParserException, CD22EofException {
         if (lookahead.getToken() == Tokens.TTFOR) {
             return forstat();
         }
         return ifstat();
     }
 
-    private TreeNode callstat() {
+    private TreeNode callstat() throws CD22ParserException {
         if (lookahead.getToken() == Tokens.TIDEN) {
             Token token = lookahead;
             match(Tokens.TIDEN);
             return callstat(token);
         }
-        error("Expected identifier");
+        error(Errors.EXPECTED_IDENTIFIER);
         return null;
     }
 
-    private TreeNode callstat(Token nameIdenToken) {
+    private TreeNode callstat(Token nameIdenToken) throws CD22ParserException {
         TreeNode t = new TreeNode(TreeNodes.NCALL,
             symbolTable.getSymbolIdFromReference(nameIdenToken.getTokenLiteral(), currentScope));
         match(Tokens.TLPAR);
@@ -769,33 +911,33 @@ public class Parser {
         return t;
     }
 
-    private TreeNode asgnstat() {
+    private TreeNode asgnstat() throws CD22ParserException {
         if (lookahead.getToken() == Tokens.TIDEN) {
             Token token = lookahead;
             match(Tokens.TIDEN);
             return asgnstat(token);
         }
-        error("Expected identifier");
+        error(Errors.EXPECTED_IDENTIFIER);
         return null;
     }
 
-    private TreeNode asgnstat(Token nameIdenToken) {
+    private TreeNode asgnstat(Token nameIdenToken) throws CD22ParserException {
         TreeNode varNode = var(nameIdenToken);
         TreeNode t = asgnop();
-        t.setSymbolTableReference(varNode.getSymbolTableReference());
+        t.setSymbolTableId(varNode.getSymbolTableId());
         t.setNextChild(varNode);
         t.setNextChild(bool());
         return t;
     }
 
-    private TreeNode forstat() {
+    private TreeNode forstat() throws CD22ParserException, CD22EofException {
         TreeNode t = new TreeNode(TreeNodes.NFORL);
         match(Tokens.TTFOR);
         match(Tokens.TLPAR);
         TreeNode asgnlistNode = asgnlist();
         if (asgnlistNode != null)
             t.setNextChild(asgnlistNode);
-        match(Tokens.TSEMI);
+        gracefullyMatchSemicolon();
         t.setNextChild(bool());
         match(Tokens.TRPAR);
         t.setNextChild(stats());
@@ -803,7 +945,7 @@ public class Parser {
         return t;
     }
 
-    private TreeNode ifstat() {
+    private TreeNode ifstat() throws CD22ParserException, CD22EofException {
         TreeNode t = new TreeNode();
         match(Tokens.TIFTH);
         match(Tokens.TLPAR);
@@ -832,14 +974,14 @@ public class Parser {
         return t;
     }
 
-    private TreeNode asgnlist() {
+    private TreeNode asgnlist() throws CD22ParserException {
         if (lookahead.getToken() == Tokens.TIDEN) {
             return alist();
         }
         return null;
     }
 
-    private TreeNode alist() {
+    private TreeNode alist() throws CD22ParserException {
         TreeNode t1 = asgnstat(), t2;
         if (lookahead.getToken() != Tokens.TCOMA) {
             return t1;
@@ -850,7 +992,7 @@ public class Parser {
         return new TreeNode(TreeNodes.NASGNS, t1, t2);
     }
 
-    private TreeNode asgnop() {
+    private TreeNode asgnop() throws CD22ParserException {
         if (lookahead.getToken() == Tokens.TEQUL) {
             match(Tokens.TEQUL);
             return new TreeNode(TreeNodes.NASGN);
@@ -867,11 +1009,11 @@ public class Parser {
             match(Tokens.TDVEQ);
             return new TreeNode(TreeNodes.NDVEQ);
         }
-        error("Expected assignment operator");
+        error(Errors.EXPECTED_ASSIGNMENT_OPERATOR);
         return null;
     }
 
-    private TreeNode vlist() {
+    private TreeNode vlist() throws CD22ParserException {
         TreeNode t1 = var(), t2;
         if (lookahead.getToken() != Tokens.TCOMA) {
             return t1;
@@ -882,7 +1024,7 @@ public class Parser {
         return new TreeNode(TreeNodes.NVLIST, t1, t2);
     }
 
-    private TreeNode prlist() {
+    private TreeNode prlist() throws CD22ParserException {
         TreeNode t1 = printitem(), t2;
         if (lookahead.getToken() != Tokens.TCOMA) {
             return t1;
@@ -893,45 +1035,59 @@ public class Parser {
         return new TreeNode(TreeNodes.NPRLST, t1, t2);
     }
 
-    private TreeNode printitem() {
+    private TreeNode printitem() throws CD22ParserException {
         if (lookahead.getToken() == Tokens.TSTRG) {
-            int symbolTableReference = symbolTable.addSymbol(SymbolType.LITERAL, lookahead);
+            int symbolTableId = symbolTable.addSymbol(SymbolType.LITERAL, lookahead);
             match(Tokens.TSTRG);
-            return new TreeNode(TreeNodes.NSTRG, symbolTableReference);
+            return new TreeNode(TreeNodes.NSTRG, symbolTableId);
         }
         return expr();
     }
 
-    private TreeNode funcs() {
+    private TreeNode funcs() throws CD22ParserException, CD22EofException {
         if (lookahead.getToken() != Tokens.TFUNC) {
             return null;
         }
-        TreeNode t = new TreeNode(TreeNodes.NFUNCS, func());
+        TreeNode t = new TreeNode(TreeNodes.NFUNCS);
+
+        try {
+            t.setNextChild(func());
+        } catch (CD22ParserException e) {
+            // Something went wrong in the function we were just parsing. If the next token is
+            // another function we can carry on parsing that from here, but if it is the main
+            // function we should throw back up to there
+            panic(utils.getTokenList(Tokens.TFUNC, Tokens.TMAIN));
+            if (lookahead.getToken() == Tokens.TMAIN) {
+                // Hot potato
+                throw new CD22ParserException();
+            }
+        }
+
         if (lookahead.getToken() == Tokens.TFUNC) {
             t.setNextChild(funcs());
         }
         return t;
     }
 
-    private TreeNode func() {
+    private TreeNode func() throws CD22ParserException, CD22EofException {
         TreeNode t = new TreeNode(TreeNodes.NFUND);
         match(Tokens.TFUNC);
-        int symbolTableReference = 0;
+        int symbolTableId = 0;
         if (lookahead.getToken() == Tokens.TIDEN) {
-            symbolTableReference = symbolTable.addSymbol(SymbolType.FUNCTION, lookahead);
+            symbolTableId = symbolTable.addSymbol(SymbolType.FUNCTION, lookahead);
             currentScope = lookahead.getTokenLiteral();
             match(Tokens.TIDEN);
-            t.setSymbolTableReference(symbolTableReference);
+            t.setSymbolTableId(symbolTableId);
         } else {
-            error("Expected Identifier");
+            error(Errors.EXPECTED_IDENTIFIER);
         }
         match(Tokens.TLPAR);
         TreeNode plistNode = plist();
         if (plistNode != null)
             t.setNextChild(plistNode);
         match(Tokens.TRPAR);
-        match(Tokens.TCOLN);
-        symbolTable.getSymbol(symbolTableReference).setVal(rtype());
+        gracefullyMatchColon();
+        symbolTable.getSymbol(symbolTableId).setVal(rtype());
         TreeNode funcbodyNode = funcbody();
         t.setNextChild(funcbodyNode.getLeft());
         t.setNextChild(funcbodyNode.getMid());
@@ -939,14 +1095,14 @@ public class Parser {
         return t;
     }
 
-    private TreeNode plist() {
+    private TreeNode plist() throws CD22ParserException, CD22EofException {
         if (lookahead.getToken() == Tokens.TIDEN || lookahead.getToken() == Tokens.TCNST) {
             return params();
         }
         return null;
     }
 
-    private PrimitiveTypes rtype() {
+    private PrimitiveTypes rtype() throws CD22ParserException {
         if (lookahead.getToken() == Tokens.TVOID) {
             match(Tokens.TVOID);
             return PrimitiveTypes.VOID;
@@ -954,7 +1110,7 @@ public class Parser {
         return stype();
     }
 
-    private TreeNode funcbody() {
+    private TreeNode funcbody() throws CD22ParserException, CD22EofException {
         TreeNode t = new TreeNode();
         t.setNextChild(locals());
         match(Tokens.TBEGN);
@@ -963,8 +1119,15 @@ public class Parser {
         return t;
     }
 
-    private TreeNode params() {
-        TreeNode t1 = param(), t2;
+    private TreeNode params() throws CD22ParserException, CD22EofException {
+        TreeNode t1 = null, t2;
+
+        try {
+            t1 = param();
+        } catch (CD22ParserException e) {
+            panic(utils.getTokenList(Tokens.TCOMA, Tokens.TRPAR));
+        }
+
         if (lookahead.getToken() != Tokens.TCOMA) {
             return t1;
         } else {
@@ -974,13 +1137,13 @@ public class Parser {
         return new TreeNode(TreeNodes.NPLIST, t1, t2);
     }
 
-    private TreeNode param() {
+    private TreeNode param() throws CD22ParserException {
         if (lookahead.getToken() == Tokens.TCNST) {
             match(Tokens.TCNST);
             TreeNode t = new TreeNode(TreeNodes.NARRC, arrdecl());
 
             // Add const to array
-            symbolTable.getSymbol(t.getLeft().getSymbolTableReference()).makeConstArray();
+            symbolTable.getSymbol(t.getLeft().getSymbolTableId()).makeConstArray();
             return t;
         } else if (lookahead.getToken() == Tokens.TIDEN) {
             Token nameIdenToken = parseIdentifierFollowedByColon().get(0);
@@ -1004,15 +1167,26 @@ public class Parser {
         return null;
     }
 
-    private TreeNode locals() {
+    private TreeNode locals() throws CD22ParserException, CD22EofException {
         if (lookahead.getToken() == Tokens.TIDEN) {
             return dlist();
         }
         return null;
     }
 
-    private TreeNode dlist() {
-        TreeNode t1 = decl(), t2;
+    private TreeNode dlist() throws CD22ParserException, CD22EofException {
+        TreeNode t1 = null, t2;
+
+        try {
+            t1 = decl();
+        } catch (CD22ParserException e) {
+            panic(utils.getTokenList(Tokens.TCOMA, Tokens.TBEGN, Tokens.TFUNC, Tokens.TMAIN));
+            if (lookahead.getToken() == Tokens.TFUNC || lookahead.getToken() == Tokens.TMAIN) {
+                // Hot potato
+                throw new CD22ParserException();
+            }
+        }
+
         if (lookahead.getToken() != Tokens.TCOMA) {
             return t1;
         } else {
@@ -1022,7 +1196,7 @@ public class Parser {
         return new TreeNode(TreeNodes.NDLIST, t1, t2);
     }
 
-    private TreeNode decl() {
+    private TreeNode decl() throws CD22ParserException {
         Token nameIdenToken = parseIdentifierFollowedByColon().get(0);
         int symbolTableId =
             symbolTable.getSymbolIdFromReference(lookahead.getTokenLiteral(), currentScope);

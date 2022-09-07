@@ -973,7 +973,20 @@ public class Parser {
         if (lookahead.getToken() != Tokens.TFUNC) {
             return null;
         }
-        TreeNode t = new TreeNode(TreeNodes.NFUNCS, func());
+        TreeNode t = new TreeNode(TreeNodes.NFUNCS);
+
+        try {
+            t.setNextChild(func());
+        } catch (CD22ParserException e) {
+            // Something went wrong in the function we were just parsing. If the next token is another function we can
+            // carry on parsing that from here, but if it is the main function we should throw back up to there
+            panic(utils.getTokenList(Tokens.TFUNC, Tokens.TMAIN));
+            if (lookahead.getToken() == Tokens.TMAIN) {
+                // Hot potato
+                throw new CD22ParserException();
+            }
+        }
+
         if (lookahead.getToken() == Tokens.TFUNC) {
             t.setNextChild(funcs());
         }
@@ -1006,7 +1019,7 @@ public class Parser {
         return t;
     }
 
-    private TreeNode plist() throws CD22ParserException{
+    private TreeNode plist() throws CD22ParserException, CD22EofException{
         if (lookahead.getToken() == Tokens.TIDEN || lookahead.getToken() == Tokens.TCNST) {
             return params();
         }
@@ -1030,8 +1043,15 @@ public class Parser {
         return t;
     }
 
-    private TreeNode params() throws CD22ParserException{
-        TreeNode t1 = param(), t2;
+    private TreeNode params() throws CD22ParserException, CD22EofException{
+        TreeNode t1 = null, t2;
+
+        try {
+            t1 = param();
+        } catch (CD22ParserException e) {
+            panic(utils.getTokenList(Tokens.TCOMA, Tokens.TRPAR));
+        }
+
         if (lookahead.getToken() != Tokens.TCOMA) {
             return t1;
         } else {
@@ -1085,6 +1105,10 @@ public class Parser {
             t1 = decl();
         } catch (CD22ParserException e) {
             panic(utils.getTokenList(Tokens.TCOMA, Tokens.TBEGN, Tokens.TFUNC, Tokens.TMAIN));
+            if (lookahead.getToken() == Tokens.TFUNC || lookahead.getToken() == Tokens.TMAIN) {
+                // Hot potato
+                throw new CD22ParserException();
+            }
         }
 
         if (lookahead.getToken() != Tokens.TCOMA) {

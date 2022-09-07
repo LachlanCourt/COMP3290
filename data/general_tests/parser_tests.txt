@@ -34,9 +34,10 @@ arrays
     someThirdArray  arrayType
 
 /-- This function loops through the constant array and returns the smallest value
-func findSmallest(const someParameterArray : arrayType) : int
-    smallest : int
-begin
+func findSmallest(const someParameterArray : arrayType, i : int) : int
+    smallest : ^,
+    something : float
+
     /-- Assume the smallest is the first element to have a baseline
     smallest = someParameterArray[0].x;
     for (i = 0; i < arraySize)

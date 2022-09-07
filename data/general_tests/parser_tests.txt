@@ -69,7 +69,7 @@ begin
     end
 end
 
-func someFunctionWithNoStats() : int
+func someFunctionWithNoStats() ; int
 begin
 end
 

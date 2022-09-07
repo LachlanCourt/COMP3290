@@ -108,6 +108,7 @@ public class Parser {
         }
     }
 
+    // ----------------- ERROR RECOVERY ------------------
     public void panic(ArrayList<Tokens> synchronisingTokens) throws CD22EofException {
         while (lookahead.getToken() != Tokens.TTEOF) {
             if (synchronisingTokens.contains(lookahead.getToken())) {
@@ -118,6 +119,40 @@ public class Parser {
         throw new CD22EofException();
     }
 
+    private void gracefullyMatchColon() throws CD22ParserException {
+        if (lookahead.getToken() == Tokens.TCOLN) {
+            match(Tokens.TCOLN);
+            return;
+        }
+        if (lookahead.getToken() == Tokens.TSEMI) {
+            match(Tokens.TSEMI);
+            errorWithoutException("Found \";\" instead of \":\"");
+            return;
+        } else if (lookahead.getToken() == Tokens.TCOMA) {
+            match(Tokens.TCOMA);
+            errorWithoutException("Found \",\" instead of \":\"");
+            return;
+        }
+        errorWithoutException("Expected \":\"");
+    }
+
+    private void gracefullyMatchSemicolon() throws CD22ParserException {
+        if (lookahead.getToken() == Tokens.TSEMI) {
+            match(Tokens.TSEMI);
+            return;
+        }
+        if (lookahead.getToken() == Tokens.TCOLN) {
+            match(Tokens.TCOLN);
+            errorWithoutException("Found \":\" instead of \";\"");
+            return;
+        } else if (lookahead.getToken() == Tokens.TCOMA) {
+            match(Tokens.TCOMA);
+            errorWithoutException("Found \",\" instead of \";\"");
+            return;
+        }
+        errorWithoutException("Expected \";\"");
+    }
+
     public ArrayList<Token> parseIdentifierFollowedByColon() throws CD22ParserException {
         ArrayList<Token> list = new ArrayList<Token>();
         if (lookahead.getToken() == Tokens.TIDEN) {
@@ -126,7 +161,7 @@ public class Parser {
         } else {
             error(Errors.EXPECTED_IDENTIFIER);
         }
-        match(Tokens.TCOLN);
+        gracefullyMatchColon();
         return list;
     }
 
@@ -145,7 +180,7 @@ public class Parser {
     public ArrayList<Token> parseColonSeparatedIdentifiers(Token first) throws CD22ParserException{
         ArrayList<Token> list = new ArrayList<Token>();
         list.add(first);
-        match(Tokens.TCOLN);
+        gracefullyMatchColon();
         if (lookahead.getToken() == Tokens.TIDEN) {
             list.add(lookahead);
             match(Tokens.TIDEN);
@@ -762,11 +797,11 @@ public class Parser {
 
             try {
                 t = stat();
-                match(Tokens.TSEMI);
+                gracefullyMatchSemicolon();
             } catch (CD22ParserException e) {
                 panic(utils.getTokenList(Tokens.TSEMI, Tokens.TTFOR, Tokens.TIFTH, Tokens.TREPT, Tokens.TINPT, Tokens.TPRNT, Tokens.TPRLN, Tokens.TRETN));
                 if (lookahead.getToken() == Tokens.TSEMI) {
-                    match(Tokens.TSEMI);
+                    gracefullyMatchSemicolon();
                 }
                 return stats();
             }
@@ -895,7 +930,7 @@ public class Parser {
         TreeNode asgnlistNode = asgnlist();
         if (asgnlistNode != null)
             t.setNextChild(asgnlistNode);
-        match(Tokens.TSEMI);
+        gracefullyMatchSemicolon();
         t.setNextChild(bool());
         match(Tokens.TRPAR);
         t.setNextChild(stats());
@@ -1043,7 +1078,7 @@ public class Parser {
         if (plistNode != null)
             t.setNextChild(plistNode);
         match(Tokens.TRPAR);
-        match(Tokens.TCOLN);
+        gracefullyMatchColon();
         symbolTable.getSymbol(symbolTableId).setVal(rtype());
         TreeNode funcbodyNode = funcbody();
         t.setNextChild(funcbodyNode.getLeft());

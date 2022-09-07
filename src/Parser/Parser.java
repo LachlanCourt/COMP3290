@@ -202,7 +202,10 @@ public class Parser {
         t.setNextChild(globals());
         t.setNextChild(funcs());
         t.setNextChild(mainbody());
-        match(Tokens.TTEOF);
+        if (!lookahead.isEof()) {
+            error(Errors.NOT_AT_EOF);
+            throw new CD22EofException();
+        }
         return t;
     }
 

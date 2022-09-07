@@ -102,6 +102,9 @@ public class ErrorMessage {
             case CUSTOM_ERROR:
                 errorText = data;
                 break;
+            case NOT_AT_EOF:
+                errorText = "Unexpected content at end of program";
+                break;
             default:
                 errorText = "";
         }

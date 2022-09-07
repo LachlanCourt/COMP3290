@@ -94,7 +94,7 @@ public class ErrorMessage {
                 errorText = "At least one statement is required";
                 break;
             case EXPECTED_ASSIGNMENT_OPERATOR:
-                errorText = "Expected Assignment Operator";
+                errorText = "Expected assignment operator";
                 break;
             case INVALID_TYPE:
                 errorText = "Invalid type";

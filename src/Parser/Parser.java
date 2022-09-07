@@ -582,7 +582,6 @@ public class Parser {
         if (lookahead.getToken() == Tokens.TNOTT) {
             match(Tokens.TNOTT);
             not = true;
-            //            return new TreeNode(TreeNodes.NNOT, expr(), relop(), expr());
         }
         TreeNode exprNode = expr();
         TreeNode relopNode = relop();
@@ -698,7 +697,7 @@ public class Parser {
         return new TreeNode(TreeNodes.NSIMV, symbolTableId);
     }
 
-    private TreeNode mainbody() throws CD22ParserException{
+    private TreeNode mainbody() throws CD22ParserException, CD22EofException{
         TreeNode t = new TreeNode(TreeNodes.NMAIN);
         match(Tokens.TMAIN);
         t.setNextChild(slist());
@@ -727,7 +726,7 @@ public class Parser {
         return new TreeNode(TreeNodes.NSDLST, t1, t2);
     }
 
-    private TreeNode stats()throws CD22ParserException {
+    private TreeNode stats()throws CD22ParserException, CD22EofException {
         TreeNode t = null;
         // Assign t1
         if (lookahead.getToken() == Tokens.TTFOR || lookahead.getToken() == Tokens.TIFTH) {
@@ -735,8 +734,17 @@ public class Parser {
         } else if (lookahead.getToken() == Tokens.TREPT || lookahead.getToken() == Tokens.TIDEN
             || lookahead.getToken() == Tokens.TINPT || lookahead.getToken() == Tokens.TPRNT
             || lookahead.getToken() == Tokens.TPRLN || lookahead.getToken() == Tokens.TRETN) {
-            t = stat();
-            match(Tokens.TSEMI);
+
+            try {
+                t = stat();
+                match(Tokens.TSEMI);
+            } catch (CD22ParserException e) {
+                panic(utils.getTokenList(Tokens.TSEMI, Tokens.TTFOR, Tokens.TIFTH, Tokens.TREPT, Tokens.TINPT, Tokens.TPRNT, Tokens.TPRLN, Tokens.TRETN));
+                if (lookahead.getToken() == Tokens.TSEMI) {
+                    match(Tokens.TSEMI);
+                }
+                return stats();
+            }
         }
         if (t != null) {
             // Epsilon path
@@ -752,7 +760,7 @@ public class Parser {
         return null;
     }
 
-    private TreeNode stat()throws CD22ParserException {
+    private TreeNode stat()throws CD22ParserException, CD22EofException {
         if (lookahead.getToken() == Tokens.TREPT) {
             return reptstat();
         } else if (lookahead.getToken() == Tokens.TINPT || lookahead.getToken() == Tokens.TPRNT
@@ -770,7 +778,7 @@ public class Parser {
         }
     }
 
-    private TreeNode reptstat()throws CD22ParserException {
+    private TreeNode reptstat()throws CD22ParserException, CD22EofException {
         TreeNode t = new TreeNode(TreeNodes.NREPT);
         match(Tokens.TREPT);
         match(Tokens.TLPAR);
@@ -808,7 +816,7 @@ public class Parser {
         return t;
     }
 
-    private TreeNode strstat() throws CD22ParserException{
+    private TreeNode strstat() throws CD22ParserException, CD22EofException{
         if (lookahead.getToken() == Tokens.TTFOR) {
             return forstat();
         }
@@ -855,7 +863,7 @@ public class Parser {
         return t;
     }
 
-    private TreeNode forstat()throws CD22ParserException {
+    private TreeNode forstat()throws CD22ParserException, CD22EofException {
         TreeNode t = new TreeNode(TreeNodes.NFORL);
         match(Tokens.TTFOR);
         match(Tokens.TLPAR);
@@ -870,7 +878,7 @@ public class Parser {
         return t;
     }
 
-    private TreeNode ifstat()throws CD22ParserException {
+    private TreeNode ifstat()throws CD22ParserException , CD22EofException{
         TreeNode t = new TreeNode();
         match(Tokens.TIFTH);
         match(Tokens.TLPAR);

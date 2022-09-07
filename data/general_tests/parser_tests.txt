@@ -62,6 +62,10 @@ begin
     end
 end
 
+func someFunctionWithNoStats() : int
+begin
+end
+
 /-- This function receives two input integers and outputs their value to stdout
 func showOutput(smallest : int, largest: int) : void
 begin
@@ -73,6 +77,7 @@ end
 
 main
     i : int,
+    j : int,
     smallest : int,
     largest : int
 begin
@@ -82,7 +87,13 @@ begin
         i += 1;
     end
 
-    smallest = findSmallest(someArray);
+    repeat (j = 0)
+        j + 1;
+        smallest = 7;
+        smallest (
+    until k < 5;
+
+    smallest / findSmallest(someArray);
     largest = findLargest(someArray);
     showOutput(smallest, largest);
 

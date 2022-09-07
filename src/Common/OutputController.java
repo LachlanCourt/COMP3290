@@ -68,8 +68,7 @@ public class OutputController {
         errorHandler.addError(currentRow, currentColumn, error, data);
     }
 
-    public void addError(
-            int currentRow, int currentColumn, ErrorMessage.Errors error) {
+    public void addError(int currentRow, int currentColumn, ErrorMessage.Errors error) {
         errorHandler.addError(currentRow, currentColumn, error);
     }
 

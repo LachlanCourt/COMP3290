@@ -10,7 +10,7 @@ constants
     h = 15,
     hithere = 12
 
-types
+
 
     arrayStruct def
         x : int,
@@ -32,6 +32,13 @@ arrays
     someArray  arrayType,
     someOtherArray : someOtherArrayType,
     someThirdArray  arrayType
+
+iForgotToLabelThisFunc() : int
+    i : int,
+    j : boolean
+begin
+    return i;
+end
 
 /-- This function loops through the constant array and returns the smallest value
 func findSmallest(const someParameterArray : arrayType, i : int) : int

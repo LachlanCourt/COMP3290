@@ -75,6 +75,10 @@ public class Parser {
         outputController.addError(previousLookahead.getRow(), previousLookahead.getCol(), error);
     }
 
+    private void errorWithoutException(String message)  {
+        outputController.addError(previousLookahead.getRow(), previousLookahead.getCol(), Errors.CUSTOM_ERROR, message);
+    }
+
     private void match(Tokens token) throws CD22ParserException {
         if (token == lookahead.getToken()) {
             previousLookahead = lookahead;
@@ -171,8 +175,29 @@ public class Parser {
     private TreeNode globals() throws CD22ParserException, CD22EofException {
         TreeNode t = new TreeNode(TreeNodes.NGLOB);
         t.setNextChild(consts());
+
+        if (lookahead.getToken() != Tokens.TTYPS && lookahead.getToken() != Tokens.TARRS && lookahead.getToken() != Tokens.TFUNC && lookahead.getToken() != Tokens.TMAIN) {
+            errorWithoutException("Unexpected token " + lookahead);
+            // Prevent silent errors if the "Types" keyword is missing but types are declared - as all these fields are
+            // optional, without this check error recovery will skip all the way to main and miss all arrays and functions
+            panic(utils.getTokenList(Tokens.TTYPS, Tokens.TARRS, Tokens.TFUNC, Tokens.TMAIN));
+        }
+
         t.setNextChild(types());
+
+        if (lookahead.getToken() != Tokens.TARRS && lookahead.getToken() != Tokens.TFUNC && lookahead.getToken() != Tokens.TMAIN) {
+            errorWithoutException("Unexpected token " + lookahead);
+            // Prevent silent errors
+            panic(utils.getTokenList(Tokens.TARRS, Tokens.TFUNC, Tokens.TMAIN));
+        }
+
         t.setNextChild(arrays());
+
+        if (lookahead.getToken() != Tokens.TFUNC && lookahead.getToken() != Tokens.TMAIN) {
+            errorWithoutException("Unexpected token " + lookahead);
+            // Prevent silent errors
+            panic(utils.getTokenList(Tokens.TFUNC, Tokens.TMAIN));
+        }
 
         return t;
     }

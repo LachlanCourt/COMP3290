@@ -1,7 +1,7 @@
 CD22 ProgramName
 main
-    i : bool;
+    i : bool
 
 begin
-
+    i = true;
 end CD22 ProgramName

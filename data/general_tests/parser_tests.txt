@@ -65,7 +65,8 @@ end
 
 /-- This function loops through the mutable array and returns the largest value
 func findLargest(someParameterArray : b) : int
-    largest : int
+    largest : int,
+    j : int
 begin
     /-- Assume the smallest is the first element to have a baseline
     largest = someParameterArray[0].x;

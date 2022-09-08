@@ -139,6 +139,9 @@ public class Utils {
     }
 
     public String getInitialiserFromToken(Tokens token) {
+        // The value in the map is lowercase so have an explicit check for CD22
+        if (token == Tokens.TCD22) return "CD22";
+        // Loop through the token map to find the token which matches the argument, and return the associated string
         for (Map.Entry<String, Tokens> entry: tokenMap.entrySet()) {
             if (entry.getValue() == token) return entry.getKey();
         }

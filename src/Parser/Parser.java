@@ -103,6 +103,8 @@ public class Parser {
      */
     public void run() {
         lookahead = getToken();
+        // Prevent null pointer exceptions if the program is missing the CD22 keyword
+        previousLookahead = lookahead;
         try {
             syntaxTree = program();
         } catch (CD22ParserException e) {
@@ -201,14 +203,22 @@ public class Parser {
 
     private TreeNode program() throws CD22ParserException, CD22EofException {
         TreeNode t = new TreeNode(TreeNodes.NPROG);
-        match(Tokens.TCD22);
-        if (lookahead.getToken() == Tokens.TIDEN) {
-            t.setSymbolTableId(
-                symbolTable.addSymbol(SymbolTable.SymbolType.PROGRAM_IDEN, lookahead));
-            match(Tokens.TIDEN);
-        } else {
-            error(Errors.PROGRAM_IDEN_MISSING);
+
+        try {
+            // These are really just semantics so if they are not there we should in theory still be able to parse the
+            // rest of the program
+            match(Tokens.TCD22);
+            if (lookahead.getToken() == Tokens.TIDEN) {
+                t.setSymbolTableId(
+                        symbolTable.addSymbol(SymbolTable.SymbolType.PROGRAM_IDEN, lookahead));
+                match(Tokens.TIDEN);
+            } else {
+                error(Errors.PROGRAM_IDEN_MISSING);
+            }
+        } catch (CD22ParserException e) {
+            panic(utils.getTokenList(Tokens.TCONS, Tokens.TARRS, Tokens.TTYPS, Tokens.TFUNC, Tokens.TMAIN));
         }
+
         t.setNextChild(globals());
         t.setNextChild(funcs());
         t.setNextChild(mainbody());
@@ -847,7 +857,18 @@ public class Parser {
         TreeNode t = null;
         // Assign t1
         if (lookahead.getToken() == Tokens.TTFOR || lookahead.getToken() == Tokens.TIFTH) {
+            try {
             t = strstat();
+            } catch (CD22ParserException e) {
+                // Without knowing where the for or if statements end, we can only resynchronise on an "END". If we
+                // resynchronised on the same tokens as stats, we would resynch inside the for/if block but execution
+                // would not be inside the forstat or ifstat functions. In this case the end of what would be an if or
+                // for stat becomes the end of the main function and we break out of stats altogether. Trust that the
+                // developer remembered the end keyword and resync here only.
+                panic(utils.getTokenList(Tokens.TTEND));
+                match(Tokens.TTEND);
+                return stats();
+            }
         } else if (lookahead.getToken() == Tokens.TREPT || lookahead.getToken() == Tokens.TIDEN
             || lookahead.getToken() == Tokens.TINPT || lookahead.getToken() == Tokens.TPRNT
             || lookahead.getToken() == Tokens.TPRLN || lookahead.getToken() == Tokens.TRETN) {

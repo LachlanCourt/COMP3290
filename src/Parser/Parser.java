@@ -782,12 +782,12 @@ public class Parser {
         return new TreeNode(TreeNodes.NSIMV, symbolTableId);
     }
 
-    public TreeNode matchStructVar(TreeNode t, int symbolTableId) throws CD22ParserException {
-        t.setSymbolTableId(symbolTableId);
+    public TreeNode matchStructVar(TreeNode t, int variableNameId) throws CD22ParserException {
+        t.setSymbolTableId(variableNameId);
         match(Tokens.TDOTT);
         if (lookahead.getToken() == Tokens.TIDEN) {
-            // Get type of symbolTableId, either an array or a struct
-            int varTypeId = symbolTable.getSymbol(symbolTableId).getForeignSymbolTableId();
+            // Get type of variableNameId, either an array or a struct
+            int varTypeId = symbolTable.getSymbol(variableNameId).getForeignSymbolTableId();
             // Get type of the struct, assume first that it is a struct but if it is an array pull the type off the
             // array's default foreign ID
             int structTypeId = varTypeId;
@@ -795,8 +795,8 @@ public class Parser {
                 // Arrays require an extra lookup
                 structTypeId = symbolTable.getSymbol(varTypeId).getForeignSymbolTableId();
             }
-            // Using the struct name as symbol table scope, check if a field exists within the of the struct and add an
-            // error if it does not
+            // Using the struct name as symbol table scope, check if the identified field exists within the the struct
+            // and add an error if it does not
             int fieldId = symbolTable.getSymbolIdFromReference(
                     lookahead.getTokenLiteral(), symbolTable.getSymbol(structTypeId).getRef(), false);
             if (fieldId == -1) errorWithoutException(Errors.UNDEFINED_VARIABLE, lookahead.getTokenLiteral());

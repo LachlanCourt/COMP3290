@@ -26,7 +26,8 @@ public class SymbolTable {
         CONSTANT,
         VARIABLE,
         FUNCTION,
-        LITERAL
+        LITERAL,
+        UNKNOWN
     }
 
     public enum PrimitiveTypes {INTEGER, FLOAT, BOOLEAN, VOID, UNKNOWN}
@@ -34,6 +35,13 @@ public class SymbolTable {
     private SymbolTable() {
         table = new HashMap<String, HashMap<Integer, Symbol>>();
         latestId = 1;
+
+        // The result of an invalid call to getSymbol returns -1. This ensures that there is always an object returned
+        // that can have symbol functions called on it. This is still an error state, although it will help prevent
+        // unexpected program crashes without constant verification of the return value
+        table.put("@error", new HashMap<Integer, Symbol>());
+        table.get("@error").put(-1, new Symbol(SymbolType.UNKNOWN, ""));
+
     }
 
     public static SymbolTable getSymbolTable() {

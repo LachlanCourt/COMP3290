@@ -64,7 +64,7 @@ func findSmallest(const someParameterArray : arrayType, i : int) : int
 end
 
 /-- This function loops through the mutable array and returns the largest value
-func findLargest(someParameterArray : arrayType) : int
+func findLargest(someParameterArray : b) : int
     largest : int
 begin
     /-- Assume the smallest is the first element to have a baseline

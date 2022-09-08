@@ -795,8 +795,8 @@ public class Parser {
                 // Arrays require an extra lookup
                 structTypeId = symbolTable.getSymbol(varTypeId).getForeignSymbolTableId();
             }
-            // Using the struct name as symbol table scope, check if the identified field exists within the the struct
-            // and add an error if it does not
+            // Using the struct name as symbol table scope, check if the identified field exists within the struct and
+            // add an error if it does not
             int fieldId = symbolTable.getSymbolIdFromReference(
                     lookahead.getTokenLiteral(), symbolTable.getSymbol(structTypeId).getRef(), false);
             if (fieldId == -1) errorWithoutException(Errors.UNDEFINED_VARIABLE, lookahead.getTokenLiteral());

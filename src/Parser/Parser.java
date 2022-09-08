@@ -72,7 +72,8 @@ public class Parser {
     }
 
     private void error(Errors error, String message) throws CD22ParserException {
-        outputController.addError(previousLookahead.getRow(), previousLookahead.getCol(), error, message);
+        outputController.addError(
+            previousLookahead.getRow(), previousLookahead.getCol(), error, message);
         throw new CD22ParserException();
     }
 
@@ -87,7 +88,7 @@ public class Parser {
 
     private void errorWithoutException(Errors error, String message) {
         outputController.addError(
-                previousLookahead.getRow(), previousLookahead.getCol(), error, message);
+            previousLookahead.getRow(), previousLookahead.getCol(), error, message);
     }
 
     private void match(Tokens token) throws CD22ParserException {
@@ -205,18 +206,19 @@ public class Parser {
         TreeNode t = new TreeNode(TreeNodes.NPROG);
 
         try {
-            // These are really just semantics so if they are not there we should in theory still be able to parse the
-            // rest of the program
+            // These are really just semantics so if they are not there we should in theory still be
+            // able to parse the rest of the program
             match(Tokens.TCD22);
             if (lookahead.getToken() == Tokens.TIDEN) {
                 t.setSymbolTableId(
-                        symbolTable.addSymbol(SymbolTable.SymbolType.PROGRAM_IDEN, lookahead));
+                    symbolTable.addSymbol(SymbolTable.SymbolType.PROGRAM_IDEN, lookahead));
                 match(Tokens.TIDEN);
             } else {
                 error(Errors.PROGRAM_IDEN_MISSING);
             }
         } catch (CD22ParserException e) {
-            panic(utils.getTokenList(Tokens.TCONS, Tokens.TARRS, Tokens.TTYPS, Tokens.TFUNC, Tokens.TMAIN));
+            panic(utils.getTokenList(
+                Tokens.TCONS, Tokens.TARRS, Tokens.TTYPS, Tokens.TFUNC, Tokens.TMAIN));
         }
 
         t.setNextChild(globals());
@@ -363,7 +365,8 @@ public class Parser {
             if (lookahead.getToken() == Tokens.TIDEN) {
                 typeId =
                     symbolTable.getSymbolIdFromReference(lookahead.getTokenLiteral(), currentScope);
-                if (typeId == -1) errorWithoutException(Errors.UNDEFINED_TYPE);
+                if (typeId == -1)
+                    errorWithoutException(Errors.UNDEFINED_TYPE);
                 match(Tokens.TIDEN);
             } else {
                 error(Errors.EXPECTED_IDENTIFIER);
@@ -384,8 +387,9 @@ public class Parser {
             currentScope = "@global";
             t.setNodeType(TreeNodes.NRTYPE);
         } else {
-            // This edge case handles if we enter panic mode error recovery whilst within a struct or array
-            // definition. Is slightly different from other lists as types are not separated by commas or semicolons
+            // This edge case handles if we enter panic mode error recovery whilst within a struct
+            // or array definition. Is slightly different from other lists as types are not
+            // separated by commas or semicolons
             return null;
         }
         match(Tokens.TTEND);
@@ -422,7 +426,8 @@ public class Parser {
         return sdecl(nameIdenToken, true);
     }
 
-    private TreeNode sdecl(Token nameIdenToken, boolean allowStructTypes) throws CD22ParserException {
+    private TreeNode sdecl(Token nameIdenToken, boolean allowStructTypes)
+        throws CD22ParserException {
         int symbolTableId = symbolTable.addSymbol(SymbolType.VARIABLE, nameIdenToken, currentScope);
         // Grab the symbol table ID for this node either from the NTDECL parent node or from the
         // variable name referencing it
@@ -431,7 +436,8 @@ public class Parser {
             // structid
             int typeId =
                 symbolTable.getSymbolIdFromReference(lookahead.getTokenLiteral(), currentScope);
-            if (typeId == -1) errorWithoutException(Errors.UNDEFINED_TYPE);
+            if (typeId == -1)
+                errorWithoutException(Errors.UNDEFINED_TYPE);
             symbolTable.getSymbol(symbolTableId).setForeignSymbolTableId(typeId);
             match(Tokens.TIDEN);
         } else {
@@ -518,7 +524,8 @@ public class Parser {
 
         int typeId =
             symbolTable.getSymbolIdFromReference(idenList.get(1).getTokenLiteral(), currentScope);
-        if (typeId == -1) errorWithoutException(Errors.UNDEFINED_TYPE);
+        if (typeId == -1)
+            errorWithoutException(Errors.UNDEFINED_TYPE);
         symbolTable.getSymbol(symbolTableId).setForeignSymbolTableId(typeId);
 
         return t;
@@ -767,7 +774,8 @@ public class Parser {
     private TreeNode var(Token nameIdenToken) throws CD22ParserException {
         int symbolTableId =
             symbolTable.getSymbolIdFromReference(nameIdenToken.getTokenLiteral(), currentScope);
-        if (symbolTableId == -1) error(Errors.UNDEFINED_VARIABLE, nameIdenToken.getTokenLiteral());
+        if (symbolTableId == -1)
+            error(Errors.UNDEFINED_VARIABLE, nameIdenToken.getTokenLiteral());
         if (lookahead.getToken() == Tokens.TLBRK) {
             TreeNode t = new TreeNode();
             t.setSymbolTableId(symbolTableId);
@@ -787,12 +795,11 @@ public class Parser {
             }
             // Either return with whole struct or individual field if the above if ran
             return t;
-        }
-        else if (lookahead.getToken() == Tokens.TDOTT) {
+        } else if (lookahead.getToken() == Tokens.TDOTT) {
             TreeNode t = matchStructVar(new TreeNode(), symbolTableId);
             // Change the node type as we know now struct variable
             t.setNodeType(TreeNodes.NSTRV);
-           return t;
+            return t;
         }
         // Simple variable
         return new TreeNode(TreeNodes.NSIMV, symbolTableId);
@@ -804,18 +811,19 @@ public class Parser {
         if (lookahead.getToken() == Tokens.TIDEN) {
             // Get type of variableNameId, either an array or a struct
             int varTypeId = symbolTable.getSymbol(variableNameId).getForeignSymbolTableId();
-            // Get type of the struct, assume first that it is a struct but if it is an array pull the type off the
-            // array's default foreign ID
+            // Get type of the struct, assume first that it is a struct but if it is an array pull
+            // the type off the array's default foreign ID
             int structTypeId = varTypeId;
             if (symbolTable.getSymbol(varTypeId).getSymbolType() == SymbolType.ARRAY_TYPE) {
                 // Arrays require an extra lookup
                 structTypeId = symbolTable.getSymbol(varTypeId).getForeignSymbolTableId();
             }
-            // Using the struct name as symbol table scope, check if the identified field exists within the struct and
-            // add an error if it does not
+            // Using the struct name as symbol table scope, check if the identified field exists
+            // within the struct and add an error if it does not
             int fieldId = symbolTable.getSymbolIdFromReference(
-                    lookahead.getTokenLiteral(), symbolTable.getSymbol(structTypeId).getRef(), false);
-            if (fieldId == -1) errorWithoutException(Errors.UNDEFINED_VARIABLE, lookahead.getTokenLiteral());
+                lookahead.getTokenLiteral(), symbolTable.getSymbol(structTypeId).getRef(), false);
+            if (fieldId == -1)
+                errorWithoutException(Errors.UNDEFINED_VARIABLE, lookahead.getTokenLiteral());
             match(Tokens.TIDEN);
             t.setNextChild(new TreeNode(TreeNodes.NSIMV, fieldId));
         } else {
@@ -858,12 +866,13 @@ public class Parser {
         // Assign t1
         if (lookahead.getToken() == Tokens.TTFOR || lookahead.getToken() == Tokens.TIFTH) {
             try {
-            t = strstat();
+                t = strstat();
             } catch (CD22ParserException e) {
-                // Without knowing where the for or if statements end, we can only resynchronise on an "END". If we
-                // resynchronised on the same tokens as stats, we would resynch inside the for/if block but execution
-                // would not be inside the forstat or ifstat functions. In this case the end of what would be an if or
-                // for stat becomes the end of the main function and we break out of stats altogether. Trust that the
+                // Without knowing where the for or if statements end, we can only resynchronise on
+                // an "END". If we resynchronised on the same tokens as stats, we would resynch
+                // inside the for/if block but execution would not be inside the forstat or ifstat
+                // functions. In this case the end of what would be an if or for stat becomes the
+                // end of the main function and we break out of stats altogether. Trust that the
                 // developer remembered the end keyword and resync here only.
                 panic(utils.getTokenList(Tokens.TTEND));
                 match(Tokens.TTEND);
@@ -1228,8 +1237,7 @@ public class Parser {
             if (symbolTable.getSymbol(typeId).getSymbolType() == SymbolType.STRUCT_TYPE) {
                 // The symbol exists and is a struct, can also be parsed as sdecl
                 return new TreeNode(TreeNodes.NSIMP, sdecl(nameIdenToken));
-            } else if (symbolTable.getSymbol(typeId).getSymbolType()
-                == SymbolType.ARRAY_TYPE) {
+            } else if (symbolTable.getSymbol(typeId).getSymbolType() == SymbolType.ARRAY_TYPE) {
                 // The symbol exists and is an array, parse as arrdecl
                 return new TreeNode(TreeNodes.NSIMP, arrdecl(nameIdenToken));
             }

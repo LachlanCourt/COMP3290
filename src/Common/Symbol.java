@@ -62,7 +62,8 @@ public class Symbol<T extends Comparable> {
     }
 
     public Integer getForeignSymbolTableId(String label) {
-        if (foreignSymbolTableIds.containsKey(label)) return foreignSymbolTableIds.get(label);
+        if (foreignSymbolTableIds.containsKey(label))
+            return foreignSymbolTableIds.get(label);
         return -1;
     }
 

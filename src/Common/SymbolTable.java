@@ -8,7 +8,6 @@
 package Common;
 
 import Scanner.Token;
-
 import java.util.HashMap;
 import java.util.Map;
 
@@ -30,18 +29,18 @@ public class SymbolTable {
         UNKNOWN
     }
 
-    public enum PrimitiveTypes {INTEGER, FLOAT, BOOLEAN, VOID, UNKNOWN}
+    public enum PrimitiveTypes { INTEGER, FLOAT, BOOLEAN, VOID, UNKNOWN }
 
     private SymbolTable() {
         table = new HashMap<String, HashMap<Integer, Symbol>>();
         latestId = 1;
 
-        // The result of an invalid call to getSymbol returns -1. This ensures that there is always an object returned
-        // that can have symbol functions called on it. This is still an error state, although it will help prevent
-        // unexpected program crashes without constant verification of the return value
+        // The result of an invalid call to getSymbol returns -1. This ensures that there is always
+        // an object returned that can have symbol functions called on it. This is still an error
+        // state, although it will help prevent unexpected program crashes without constant
+        // verification of the return value
         table.put("@error", new HashMap<Integer, Symbol>());
         table.get("@error").put(-1, new Symbol(SymbolType.UNKNOWN, ""));
-
     }
 
     public static SymbolTable getSymbolTable() {
@@ -137,10 +136,10 @@ public class SymbolTable {
             out += "\n" + scopeEntry.getKey() + "\n";
             for (Map.Entry<Integer, Symbol> entry : table.get(scopeEntry.getKey()).entrySet()) {
                 out += entry.getKey() + ", " + entry.getValue().getRef() + ", "
-                        + entry.getValue().getVal() + ", " + entry.getValue().getForeignSymbolTableId()
-                        +
+                    + entry.getValue().getVal() + ", " + entry.getValue().getForeignSymbolTableId()
+                    +
 
-                        ", " + entry.getValue().getSymbolType() + "\n";
+                    ", " + entry.getValue().getSymbolType() + "\n";
             }
         }
         return out;

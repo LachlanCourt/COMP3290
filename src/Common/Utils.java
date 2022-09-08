@@ -77,12 +77,12 @@ public class Utils {
         tokenMap.put("main", Tokens.TMAIN);
         tokenMap.put("begin", Tokens.TBEGN);
         tokenMap.put("end", Tokens.TTEND);
-        tokenMap.put("array",Tokens. TARAY);
-        tokenMap.put("of",Tokens. TTTOF);
+        tokenMap.put("array", Tokens.TARAY);
+        tokenMap.put("of", Tokens.TTTOF);
         tokenMap.put("func", Tokens.TFUNC);
-        tokenMap.put("void",Tokens. TVOID);
+        tokenMap.put("void", Tokens.TVOID);
         tokenMap.put("const", Tokens.TCNST);
-        tokenMap.put("int",Tokens. TINTG);
+        tokenMap.put("int", Tokens.TINTG);
         tokenMap.put("float", Tokens.TFLOT);
         tokenMap.put("bool", Tokens.TBOOL);
         tokenMap.put("for", Tokens.TTFOR);
@@ -134,16 +134,20 @@ public class Utils {
     }
 
     public Tokens getTokenFromInitialiser(String initialiser) {
-        if (tokenMap.containsKey(initialiser)) return tokenMap.get(initialiser);
+        if (tokenMap.containsKey(initialiser))
+            return tokenMap.get(initialiser);
         return Tokens.TUNDF;
     }
 
     public String getInitialiserFromToken(Tokens token) {
         // The value in the map is lowercase so have an explicit check for CD22
-        if (token == Tokens.TCD22) return "CD22";
-        // Loop through the token map to find the token which matches the argument, and return the associated string
-        for (Map.Entry<String, Tokens> entry: tokenMap.entrySet()) {
-            if (entry.getValue() == token) return entry.getKey();
+        if (token == Tokens.TCD22)
+            return "CD22";
+        // Loop through the token map to find the token which matches the argument, and return the
+        // associated string
+        for (Map.Entry<String, Tokens> entry : tokenMap.entrySet()) {
+            if (entry.getValue() == token)
+                return entry.getKey();
         }
         return null;
     }

@@ -208,7 +208,7 @@ public class TreeNode {
 
             case NPROG:
             case NSIMV:
-                case NSTRV:
+            case NSTRV:
             case NRTYPE:
             case NATYPE:
             case NSDECL:

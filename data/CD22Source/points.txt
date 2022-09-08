@@ -27,7 +27,7 @@ arrays
 func calcDistance(a : pointType, b : pointType) : float
 begin
     /-- Perform the distance formula for 3d cartesian coordinates and return the result
-    return ((a.x - b.x) ^ 2 + (a.y - b.y) ^ 2 + (a.z - b.z)) ^ 0.5;
+    return (((a.x - b.x) ^ 2 + (a.y - b.y) ^ 2) + (a.z - b.z) ^ 2) ^ 0.5;
 end
 
 func readIntoArray() : void
@@ -50,7 +50,7 @@ begin
     /-- Loop through and calculate for every element of the array
     for (i = 0; i < NUMBEROFVALUES)
         if (calcDistance(pointsList[index], pointsList[i]) > furthestDistance)
-            furthestDistance = calcDistance(pointsList[index], pointsList[i];
+            furthestDistance = calcDistance(pointsList[index], pointsList[i]);
             furthestDistanceIndex = i;
         end
         i += 1;

@@ -72,7 +72,7 @@ public class TreeNode {
         NARRP,
         NARRC,
         NDLIST,
-
+        NSTRV,
     }
 
     private TreeNodes nodeType;
@@ -208,6 +208,7 @@ public class TreeNode {
 
             case NPROG:
             case NSIMV:
+                case NSTRV:
             case NRTYPE:
             case NATYPE:
             case NSDECL:

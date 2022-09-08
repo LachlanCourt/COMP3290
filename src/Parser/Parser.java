@@ -737,21 +737,16 @@ public class Parser {
             symbolTable.getSymbolIdFromReference(nameIdenToken.getTokenLiteral(), currentScope);
         if (lookahead.getToken() == Tokens.TLBRK) {
             TreeNode t = new TreeNode();
-            match(Tokens.TLBRK);
             t.setSymbolTableId(symbolTableId);
+            match(Tokens.TLBRK);
             t.setNextChild(expr());
             match(Tokens.TRBRK);
             // Access struct field
             if (lookahead.getToken() == Tokens.TDOTT) {
+                matchStructVar(t, symbolTableId);
                 // Change the node type as we know now that it is a field or a struct
                 t.setNodeType(TreeNodes.NARRV);
-                match(Tokens.TDOTT);
-                if (lookahead.getToken() == Tokens.TIDEN) {
-                    int fieldTypeReference = symbolTable.getSymbolIdFromReference(
-                        lookahead.getTokenLiteral(), currentScope);
-                    match(Tokens.TIDEN);
-                    t.setNextChild(new TreeNode(TreeNodes.NSIMV, fieldTypeReference));
-                }
+
             } else {
                 // If the if didn't run it is not accessing a struct field, but is instead the
                 // entire struct
@@ -760,8 +755,28 @@ public class Parser {
             // Either return with whole struct or individual field if the above if ran
             return t;
         }
+        else if (lookahead.getToken() == Tokens.TDOTT) {
+            TreeNode t = matchStructVar(new TreeNode(), symbolTableId);
+            // Change the node type as we know now struct variable
+            t.setNodeType(TreeNodes.NSTRV);
+           return t;
+        }
         // Simple variable
         return new TreeNode(TreeNodes.NSIMV, symbolTableId);
+    }
+
+    public TreeNode matchStructVar(TreeNode t, int symbolTableId) throws CD22ParserException {
+        t.setSymbolTableId(symbolTableId);
+        match(Tokens.TDOTT);
+        if (lookahead.getToken() == Tokens.TIDEN) {
+            int fieldReference = symbolTable.getSymbolIdFromReference(
+                    lookahead.getTokenLiteral(), currentScope);
+            match(Tokens.TIDEN);
+            t.setNextChild(new TreeNode(TreeNodes.NSIMV, fieldReference));
+        } else {
+            error(Errors.EXPECTED_IDENTIFIER);
+        }
+        return t;
     }
 
     private TreeNode mainbody() throws CD22ParserException, CD22EofException {

@@ -80,6 +80,11 @@ public class Parser {
             previousLookahead.getRow(), previousLookahead.getCol(), Errors.CUSTOM_ERROR, message);
     }
 
+    private void errorWithoutException(Errors error, String message) {
+        outputController.addError(
+                previousLookahead.getRow(), previousLookahead.getCol(), error, message);
+    }
+
     private void match(Tokens token) throws CD22ParserException {
         if (token == lookahead.getToken()) {
             previousLookahead = lookahead;
@@ -339,10 +344,11 @@ public class Parser {
             t.setNextChild(exprNode);
             match(Tokens.TRBRK);
             match(Tokens.TTTOF);
-            int typeReference = 0;
+            int typeId = 0;
             if (lookahead.getToken() == Tokens.TIDEN) {
-                typeReference =
+                typeId =
                     symbolTable.getSymbolIdFromReference(lookahead.getTokenLiteral(), currentScope);
+                if (typeId == -1) errorWithoutException(Errors.UNDEFINED_TYPE);
                 match(Tokens.TIDEN);
             } else {
                 error(Errors.EXPECTED_IDENTIFIER);
@@ -351,15 +357,16 @@ public class Parser {
 
             Symbol newSymbol =
                 symbolTable.getSymbol(symbolTable.addSymbol(SymbolType.ARRAY_TYPE, typeNameToken));
-            newSymbol.setForeignSymbolTableId(typeReference);
+            newSymbol.setForeignSymbolTableId(typeId);
             newSymbol.setForeignSymbolTableId("size", exprNode.getSymbolTableId());
 
         } else if (lookahead.getToken() == Tokens.TIDEN) {
             // Struct
             int symbolTableId = symbolTable.addSymbol(SymbolType.STRUCT_TYPE, typeNameToken);
             t.setSymbolTableId(symbolTableId);
-
+            currentScope = typeNameToken.getTokenLiteral();
             t.setNextChild(fields());
+            currentScope = "@global";
             t.setNodeType(TreeNodes.NRTYPE);
         } else {
             // This edge case handles if we enter panic mode error recovery whilst within a struct or array
@@ -407,9 +414,10 @@ public class Parser {
         TreeNode t = new TreeNode(TreeNodes.NTDECL, symbolTableId);
         if (lookahead.getToken() == Tokens.TIDEN && allowStructTypes) {
             // structid
-            int typeReference =
+            int typeId =
                 symbolTable.getSymbolIdFromReference(lookahead.getTokenLiteral(), currentScope);
-            symbolTable.getSymbol(symbolTableId).setForeignSymbolTableId(typeReference);
+            if (typeId == -1) errorWithoutException(Errors.UNDEFINED_TYPE);
+            symbolTable.getSymbol(symbolTableId).setForeignSymbolTableId(typeId);
             match(Tokens.TIDEN);
         } else {
             // stype
@@ -431,7 +439,7 @@ public class Parser {
                 match(Tokens.TBOOL);
                 return PrimitiveTypes.BOOLEAN;
             default:
-                error(Errors.INVALID_TYPE);
+                error(Errors.UNDEFINED_TYPE);
                 return PrimitiveTypes.UNKNOWN;
         }
     }
@@ -495,6 +503,7 @@ public class Parser {
 
         int typeId =
             symbolTable.getSymbolIdFromReference(idenList.get(1).getTokenLiteral(), currentScope);
+        if (typeId == -1) errorWithoutException(Errors.UNDEFINED_TYPE);
         symbolTable.getSymbol(symbolTableId).setForeignSymbolTableId(typeId);
 
         return t;
@@ -777,10 +786,22 @@ public class Parser {
         t.setSymbolTableId(symbolTableId);
         match(Tokens.TDOTT);
         if (lookahead.getToken() == Tokens.TIDEN) {
-            int fieldReference = symbolTable.getSymbolIdFromReference(
-                    lookahead.getTokenLiteral(), currentScope);
+            // Get type of symbolTableId, either an array or a struct
+            int varTypeId = symbolTable.getSymbol(symbolTableId).getForeignSymbolTableId();
+            // Get type of the struct, assume first that it is a struct but if it is an array pull the type off the
+            // array's default foreign ID
+            int structTypeId = varTypeId;
+            if (symbolTable.getSymbol(varTypeId).getSymbolType() == SymbolType.ARRAY_TYPE) {
+                // Arrays require an extra lookup
+                structTypeId = symbolTable.getSymbol(varTypeId).getForeignSymbolTableId();
+            }
+            // Using the struct name as symbol table scope, check if a field exists within the of the struct and add an
+            // error if it does not
+            int fieldId = symbolTable.getSymbolIdFromReference(
+                    lookahead.getTokenLiteral(), symbolTable.getSymbol(structTypeId).getRef(), false);
+            if (fieldId == -1) errorWithoutException(Errors.UNDEFINED_VARIABLE, lookahead.getTokenLiteral());
             match(Tokens.TIDEN);
-            t.setNextChild(new TreeNode(TreeNodes.NSIMV, fieldReference));
+            t.setNextChild(new TreeNode(TreeNodes.NSIMV, fieldId));
         } else {
             error(Errors.EXPECTED_IDENTIFIER);
         }
@@ -1170,17 +1191,17 @@ public class Parser {
             return t;
         } else if (lookahead.getToken() == Tokens.TIDEN) {
             Token nameIdenToken = parseIdentifierFollowedByColon().get(0);
-            int symbolTableId =
+            int typeId =
                 symbolTable.getSymbolIdFromReference(lookahead.getTokenLiteral(), currentScope);
-            if (symbolTableId == -1) {
+            if (typeId == -1) {
                 // The type does not exist in the symbol table, so it must be a primitive type, or
                 // undefined. Parse as sdecl
                 return new TreeNode(TreeNodes.NSIMP, sdecl(nameIdenToken));
             }
-            if (symbolTable.getSymbol(symbolTableId).getSymbolType() == SymbolType.STRUCT_TYPE) {
+            if (symbolTable.getSymbol(typeId).getSymbolType() == SymbolType.STRUCT_TYPE) {
                 // The symbol exists and is a struct, can also be parsed as sdecl
                 return new TreeNode(TreeNodes.NSIMP, sdecl(nameIdenToken));
-            } else if (symbolTable.getSymbol(symbolTableId).getSymbolType()
+            } else if (symbolTable.getSymbol(typeId).getSymbolType()
                 == SymbolType.ARRAY_TYPE) {
                 // The symbol exists and is an array, parse as arrdecl
                 return new TreeNode(TreeNodes.NSIMP, arrdecl(nameIdenToken));
@@ -1221,17 +1242,17 @@ public class Parser {
 
     private TreeNode decl() throws CD22ParserException {
         Token nameIdenToken = parseIdentifierFollowedByColon().get(0);
-        int symbolTableId =
+        int typeId =
             symbolTable.getSymbolIdFromReference(lookahead.getTokenLiteral(), currentScope);
-        if (symbolTableId == -1) {
+        if (typeId == -1) {
             // The type does not exist in the symbol table, so it must be a primitive type, or
             // undefined. Parse as sdecl
             return sdecl(nameIdenToken);
         }
-        if (symbolTable.getSymbol(symbolTableId).getSymbolType() == SymbolType.STRUCT_TYPE) {
+        if (symbolTable.getSymbol(typeId).getSymbolType() == SymbolType.STRUCT_TYPE) {
             // Struct type, also parse as sdecl
             return sdecl(nameIdenToken);
-        } else if (symbolTable.getSymbol(symbolTableId).getSymbolType() == SymbolType.ARRAY_TYPE) {
+        } else if (symbolTable.getSymbol(typeId).getSymbolType() == SymbolType.ARRAY_TYPE) {
             // The symbol exists and is an array, parse as arrdecl
             return arrdecl(nameIdenToken);
         }

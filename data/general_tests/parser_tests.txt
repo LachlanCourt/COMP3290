@@ -13,19 +13,27 @@ constants
 types
 
     arrayStruct def
+        x : int,
+        y : int,
+        z : int
+    end
+
+    arrayStruct2 def
         x : hi,
         y : ^,
         z : boolean,
         a : int
     end
 
-    arrayStruct2 def
+    arrayStruct3 def
         x : int
     ^
 
+    someOtherArrayType def array [] of arrayStruct2 end
+
     arrayType def array [ARRAYSIZE] of arrayStruct end
 
-    someOtherArrayType def array [] of arrayStruct2 end
+
 
 arrays
 
@@ -86,7 +94,9 @@ main
     i : int,
     j : int,
     smallest : int,
-    largest : int
+    largest : int,
+    test : arrayStruct,
+    anotherTest : toodlePip
 begin
     /-- Read values in from stdin
     for (i = 0; i < arraySize)
@@ -99,6 +109,9 @@ begin
         smallest = 7;
         smallest (
     until k < 5;
+
+    test.x = 7;
+    test.u = 3;
 
     smallest / findSmallest(someArray);
     largest = findLargest(someArray);

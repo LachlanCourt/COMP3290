@@ -18,7 +18,8 @@ public class ErrorMessage {
         NOT_AT_EOF,
         NOT_A_NUMBER,
         NO_STATEMENTS,
-        INVALID_TYPE,
+        UNDEFINED_TYPE,
+        UNDEFINED_VARIABLE,
         EXPECTED_ASSIGNMENT_OPERATOR,
         CUSTOM_ERROR,
         WARNING_CD22_SEMANTIC_CASING,
@@ -96,8 +97,11 @@ public class ErrorMessage {
             case EXPECTED_ASSIGNMENT_OPERATOR:
                 errorText = "Expected assignment operator";
                 break;
-            case INVALID_TYPE:
-                errorText = "Invalid type";
+            case UNDEFINED_TYPE:
+                errorText = "Undefined type";
+                break;
+            case UNDEFINED_VARIABLE:
+                errorText = "Undefined variable \"" + data + "\"";
                 break;
             case CUSTOM_ERROR:
                 errorText = data;

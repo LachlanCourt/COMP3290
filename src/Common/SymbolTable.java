@@ -8,6 +8,7 @@
 package Common;
 
 import Scanner.Token;
+
 import java.util.HashMap;
 import java.util.Map;
 
@@ -28,7 +29,7 @@ public class SymbolTable {
         LITERAL
     }
 
-    public enum PrimitiveTypes { INTEGER, FLOAT, BOOLEAN, VOID, UNKNOWN }
+    public enum PrimitiveTypes {INTEGER, FLOAT, BOOLEAN, VOID, UNKNOWN}
 
     private SymbolTable() {
         table = new HashMap<String, HashMap<Integer, Symbol>>();
@@ -93,6 +94,10 @@ public class SymbolTable {
     }
 
     public int getSymbolIdFromReference(String reference, String scope) {
+        return getSymbolIdFromReference(reference, scope, true);
+    }
+
+    public int getSymbolIdFromReference(String reference, String scope, boolean fallbackToGlobal) {
         if (table.containsKey(scope)) {
             for (Map.Entry<Integer, Symbol> entry : table.get(scope).entrySet()) {
                 if (reference.compareTo(entry.getValue().getRef()) == 0) {
@@ -100,9 +105,12 @@ public class SymbolTable {
                 }
             }
         }
-        for (Map.Entry<Integer, Symbol> entry : table.get("@global").entrySet()) {
-            if (reference.compareTo(entry.getValue().getRef()) == 0) {
-                return entry.getKey();
+
+        if (fallbackToGlobal) {
+            for (Map.Entry<Integer, Symbol> entry : table.get("@global").entrySet()) {
+                if (reference.compareTo(entry.getValue().getRef()) == 0) {
+                    return entry.getKey();
+                }
             }
         }
 
@@ -121,10 +129,10 @@ public class SymbolTable {
             out += "\n" + scopeEntry.getKey() + "\n";
             for (Map.Entry<Integer, Symbol> entry : table.get(scopeEntry.getKey()).entrySet()) {
                 out += entry.getKey() + ", " + entry.getValue().getRef() + ", "
-                    + entry.getValue().getVal() + ", " + entry.getValue().getForeignSymbolTableId()
-                    +
+                        + entry.getValue().getVal() + ", " + entry.getValue().getForeignSymbolTableId()
+                        +
 
-                    ", " + entry.getValue().getSymbolType() + "\n";
+                        ", " + entry.getValue().getSymbolType() + "\n";
             }
         }
         return out;

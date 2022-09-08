@@ -52,8 +52,8 @@ public class OutputController {
         reportWarnings();
         listing.addErrorsToListing(errorHandler.getErrors());
         listing.addErrorsToListing(errorHandler.getWarnings());
-        if (hasErrors())
-            System.exit(1);
+//        if (hasErrors())
+//            System.exit(1);
     }
 
     /**

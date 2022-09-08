@@ -362,8 +362,8 @@ public class Parser {
             t.setNextChild(fields());
             t.setNodeType(TreeNodes.NRTYPE);
         } else {
-            // This edge case handles if we enter panic mode error recovery whilst within a struct
-            // or array definition
+            // This edge case handles if we enter panic mode error recovery whilst within a struct or array
+            // definition. Is slightly different from other lists as types are not separated by commas or semicolons
             return null;
         }
         match(Tokens.TTEND);
@@ -374,9 +374,9 @@ public class Parser {
         TreeNode t1 = null, t2 = null;
 
         try {
-            t1 = sdecl();
+            t1 = sdecl(false);
         } catch (CD22ParserException e) {
-            panic(utils.getTokenList(Tokens.TCOMA, Tokens.TTEND));
+            panic(utils.getTokenList(Tokens.TCOMA, Tokens.TTEND, Tokens.TARRS, Tokens.TFUNC));
         }
 
         if (lookahead.getToken() == Tokens.TTEND) {
@@ -388,16 +388,24 @@ public class Parser {
         return new TreeNode(TreeNodes.NFLIST, t1, t2);
     }
 
+    private TreeNode sdecl(boolean allowStructTypes) throws CD22ParserException {
+        return sdecl(parseIdentifierFollowedByColon().get(0), allowStructTypes);
+    }
+
     private TreeNode sdecl() throws CD22ParserException {
-        return sdecl(parseIdentifierFollowedByColon().get(0));
+        return sdecl(parseIdentifierFollowedByColon().get(0), true);
     }
 
     private TreeNode sdecl(Token nameIdenToken) throws CD22ParserException {
+        return sdecl(nameIdenToken, true);
+    }
+
+    private TreeNode sdecl(Token nameIdenToken, boolean allowStructTypes) throws CD22ParserException {
         int symbolTableId = symbolTable.addSymbol(SymbolType.VARIABLE, nameIdenToken, currentScope);
         // Grab the symbol table ID for this node either from the NTDECL parent node or from the
         // variable name referencing it
         TreeNode t = new TreeNode(TreeNodes.NTDECL, symbolTableId);
-        if (lookahead.getToken() == Tokens.TIDEN) {
+        if (lookahead.getToken() == Tokens.TIDEN && allowStructTypes) {
             // structid
             int typeReference =
                 symbolTable.getSymbolIdFromReference(lookahead.getTokenLiteral(), currentScope);

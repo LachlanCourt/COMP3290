@@ -10,10 +10,10 @@ constants
     h = 15,
     hithere = 12
 
-
+types
 
     arrayStruct def
-        x : int,
+        x : hi,
         y : ^,
         z : boolean,
         a : int

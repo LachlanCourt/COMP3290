@@ -365,7 +365,7 @@ public class Scanner {
                 && tokenLiteral.compareTo("CD22") != 0)
                 outputController.addWarning(
                     currentRow, currentColumn, Errors.WARNING_CD22_SEMANTIC_CASING);
-            return Tokens.getToken(tokenLiteral.toLowerCase());
+            return utils.getTokenFromInitialiser(tokenLiteral.toLowerCase());
         }
 
         // A string should start and end with " and be at least two characters long (A single " is

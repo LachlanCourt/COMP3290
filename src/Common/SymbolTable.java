@@ -25,7 +25,8 @@ public class SymbolTable {
         CONSTANT,
         VARIABLE,
         FUNCTION,
-        LITERAL
+        LITERAL,
+        UNKNOWN
     }
 
     public enum PrimitiveTypes { INTEGER, FLOAT, BOOLEAN, VOID, UNKNOWN }
@@ -33,6 +34,13 @@ public class SymbolTable {
     private SymbolTable() {
         table = new HashMap<String, HashMap<Integer, Symbol>>();
         latestId = 1;
+
+        // The result of an invalid call to getSymbol returns -1. This ensures that there is always
+        // an object returned that can have symbol functions called on it. This is still an error
+        // state, although it will help prevent unexpected program crashes without constant
+        // verification of the return value
+        table.put("@error", new HashMap<Integer, Symbol>());
+        table.get("@error").put(-1, new Symbol(SymbolType.UNKNOWN, ""));
     }
 
     public static SymbolTable getSymbolTable() {
@@ -93,6 +101,10 @@ public class SymbolTable {
     }
 
     public int getSymbolIdFromReference(String reference, String scope) {
+        return getSymbolIdFromReference(reference, scope, true);
+    }
+
+    public int getSymbolIdFromReference(String reference, String scope, boolean fallbackToGlobal) {
         if (table.containsKey(scope)) {
             for (Map.Entry<Integer, Symbol> entry : table.get(scope).entrySet()) {
                 if (reference.compareTo(entry.getValue().getRef()) == 0) {
@@ -100,9 +112,12 @@ public class SymbolTable {
                 }
             }
         }
-        for (Map.Entry<Integer, Symbol> entry : table.get("@global").entrySet()) {
-            if (reference.compareTo(entry.getValue().getRef()) == 0) {
-                return entry.getKey();
+
+        if (fallbackToGlobal) {
+            for (Map.Entry<Integer, Symbol> entry : table.get("@global").entrySet()) {
+                if (reference.compareTo(entry.getValue().getRef()) == 0) {
+                    return entry.getKey();
+                }
             }
         }
 

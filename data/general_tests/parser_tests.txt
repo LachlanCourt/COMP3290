@@ -10,22 +10,30 @@ constants
     h = 15,
     hithere = 12
 
-
+types
 
     arrayStruct def
         x : int,
+        y : int,
+        z : int
+    end
+
+    arrayStruct2 def
+        x : hi,
         y : ^,
         z : boolean,
         a : int
     end
 
-    arrayStruct2 def
+    arrayStruct3 def
         x : int
     ^
 
+    someOtherArrayType def array [] of arrayStruct2 end
+
     arrayType def array [ARRAYSIZE] of arrayStruct end
 
-    someOtherArrayType def array [] of arrayStruct2 end
+
 
 arrays
 
@@ -56,8 +64,9 @@ func findSmallest(const someParameterArray : arrayType, i : int) : int
 end
 
 /-- This function loops through the mutable array and returns the largest value
-func findLargest(someParameterArray : arrayType) : int
-    largest : int
+func findLargest(someParameterArray : b) : int
+    largest : int,
+    j : int
 begin
     /-- Assume the smallest is the first element to have a baseline
     largest = someParameterArray[0].x;
@@ -86,7 +95,9 @@ main
     i : int,
     j : int,
     smallest : int,
-    largest : int
+    largest : int,
+    test : arrayStruct,
+    anotherTest : toodlePip
 begin
     /-- Read values in from stdin
     for (i = 0; i < arraySize)
@@ -99,6 +110,9 @@ begin
         smallest = 7;
         smallest (
     until k < 5;
+
+    test.x = 7;
+    test.u = 3;
 
     smallest / findSmallest(someArray);
     largest = findLargest(someArray);

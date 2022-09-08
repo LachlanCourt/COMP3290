@@ -71,6 +71,11 @@ public class Parser {
         throw new CD22ParserException();
     }
 
+    private void error(Errors error, String message) throws CD22ParserException {
+        outputController.addError(previousLookahead.getRow(), previousLookahead.getCol(), error, message);
+        throw new CD22ParserException();
+    }
+
     private void errorWithoutException(Errors error) {
         outputController.addError(previousLookahead.getRow(), previousLookahead.getCol(), error);
     }
@@ -90,7 +95,7 @@ public class Parser {
             previousLookahead = lookahead;
             lookahead = getToken();
         } else
-            error("Expected keyword or operator \"" + token + "\"");
+            error("Expected \"" + utils.getInitialiserFromToken(token) + "\"");
     }
 
     /**
@@ -220,7 +225,7 @@ public class Parser {
 
         if (lookahead.getToken() != Tokens.TTYPS && lookahead.getToken() != Tokens.TARRS
             && lookahead.getToken() != Tokens.TFUNC && lookahead.getToken() != Tokens.TMAIN) {
-            errorWithoutException("Unexpected token " + lookahead);
+            errorWithoutException("Unexpected token \"" + lookahead.getTokenLiteral() + "\"");
             // Prevent silent errors if the "Types" keyword is missing but types are declared - as
             // all these fields are optional, without this check error recovery will skip all the
             // way to main and miss all arrays and functions
@@ -231,7 +236,7 @@ public class Parser {
 
         if (lookahead.getToken() != Tokens.TARRS && lookahead.getToken() != Tokens.TFUNC
             && lookahead.getToken() != Tokens.TMAIN) {
-            errorWithoutException("Unexpected token " + lookahead);
+            errorWithoutException("Unexpected token \"" + lookahead.getTokenLiteral() + "\"");
             // Prevent silent errors
             panic(utils.getTokenList(Tokens.TARRS, Tokens.TFUNC, Tokens.TMAIN));
         }
@@ -239,7 +244,7 @@ public class Parser {
         t.setNextChild(arrays());
 
         if (lookahead.getToken() != Tokens.TFUNC && lookahead.getToken() != Tokens.TMAIN) {
-            errorWithoutException("Unexpected token " + lookahead);
+            errorWithoutException("Unexpected token \"" + lookahead.getTokenLiteral() + "\"");
             // Prevent silent errors
             panic(utils.getTokenList(Tokens.TFUNC, Tokens.TMAIN));
         }
@@ -752,6 +757,7 @@ public class Parser {
     private TreeNode var(Token nameIdenToken) throws CD22ParserException {
         int symbolTableId =
             symbolTable.getSymbolIdFromReference(nameIdenToken.getTokenLiteral(), currentScope);
+        if (symbolTableId == -1) error(Errors.UNDEFINED_VARIABLE, nameIdenToken.getTokenLiteral());
         if (lookahead.getToken() == Tokens.TLBRK) {
             TreeNode t = new TreeNode();
             t.setSymbolTableId(symbolTableId);

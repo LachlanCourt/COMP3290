@@ -524,7 +524,7 @@ public class Parser {
 
         int typeId =
             symbolTable.getSymbolIdFromReference(idenList.get(1).getTokenLiteral(), currentScope);
-        if (typeId == -1)
+        if (typeId == -1 || symbolTable.getSymbol(typeId).getSymbolType() != SymbolType.ARRAY_TYPE)
             errorWithoutException(Errors.UNDEFINED_TYPE);
         symbolTable.getSymbol(symbolTableId).setForeignSymbolTableId(typeId);
 

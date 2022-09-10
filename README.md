@@ -24,6 +24,8 @@ The Parser should be able to implement some form of error recovery in order to m
 
 The program should also generate a program listing and a log file which copies the stdout.
 
+Part of this task included converting the given grammar rules into an LL(1) style grammar, (Read left to right, Left recursive, 1 lookahead token at a time). This conversion and associated calculations is documented in [this spreadsheet](source_language_spec/Grammar_Conversion.xlsx)
+
 Task 3:
 
 Implement Semantic Analysis into the Parser, and finish with Code Generation in SM22 stack machine operation codes

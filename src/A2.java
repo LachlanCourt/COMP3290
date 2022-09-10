@@ -1,9 +1,10 @@
 /*******************************************************************************
- ****    COMP3290 Assignment 1
+ ****    COMP3290 Assignment 2
  ****    c3308061
  ****    Lachlan Court
- ****    10/08/2022
- ****    This class is the main file for a Scanner for the CD22 programming language
+ ****    10/09/2022
+ ****    This class is the main file for a Scanner and Parser for the CD22
+ ****    programming language
  *******************************************************************************/
 
 import CodeGenerator.CodeGenerator;
@@ -38,6 +39,10 @@ public class A2 {
         return true;
     }
 
+    /**
+     * Main run method of A2
+     * @param args CLA passed from main
+     */
     public void run(String[] args) {
         // Create instances of the necessary classes
         OutputController oc = new OutputController();
@@ -57,10 +62,8 @@ public class A2 {
         if (oc.hasErrors())
             oc.reportErrorsAndWarnings();
 
-        // Initialise the code generator
+        // Intitialise and run code generator's debug routine to output the syntax tree
         cg.initialise();
-
-        // Start the code generator's debug routine to output the syntax tree
         cg.run();
 
         // Report any errors and warnings found so far in the compilation

@@ -95,7 +95,8 @@ public class OutputController {
     }
 
     /**
-     * Output all errors and warnings, including adding them to the listing
+     * Output all errors and warnings, including adding them to the listing. Exits program with invalid status code if
+     * any errors exist
      */
     public void reportErrorsAndWarnings() {
         // Output errors and warnings to both stdout and to file

@@ -85,7 +85,7 @@ public class Scanner {
      * and will never pass source code that is within comments through to the buffer
      */
     private void readFileIntoBufferUntilWhitespace() {
-        String bufferCandidate = "";
+        String bufferCandidate;
         String character;
 
         // Start by assuming we are reading valid code
@@ -102,6 +102,7 @@ public class Scanner {
 
         // Loop until we have reached the end of file, ensuring to check that the file reader buffer
         // is empty
+        StringBuilder bufferCandidateBuilder = new StringBuilder();
         while (!eof() || fileReaderUndefinedTokenBuffer.length() > 0) {
             // If the file reader buffer is empty, read a character from the file and immediately
             // save it to the listing If the buffer is not empty, read out of there first.
@@ -131,8 +132,7 @@ public class Scanner {
                 scannerColumnPosition = 1;
             }
 
-            // If a " symbol has been found and we are currently scanning code, we have now entered
-            // a string
+            // If a " symbol has been found, and we are currently scanning code, we have now entered a string
             if (readerState == ReaderStates.CODE && character.compareTo("\"") == 0)
                 readerState = ReaderStates.IN_STRING;
 
@@ -161,43 +161,44 @@ public class Scanner {
                 }
             }
 
-            bufferCandidate += character;
+            bufferCandidateBuilder.append(character);
 
             // Check if adding that character has caused the context to change to inside a comment
-            if (bufferCandidate.contains("/--") && readerState == ReaderStates.CODE)
+            if (bufferCandidateBuilder.toString().contains("/--") && readerState == ReaderStates.CODE)
                 readerState = ReaderStates.IN_SINGLE_LINE_COMMENT;
-            if (bufferCandidate.contains("/**") && readerState == ReaderStates.CODE)
+            if (bufferCandidateBuilder.toString().contains("/**") && readerState == ReaderStates.CODE)
                 readerState = ReaderStates.IN_MULTI_LINE_COMMENT;
 
             // Check if a single line comment has ended at a newline
             if (readerState == ReaderStates.IN_SINGLE_LINE_COMMENT
                 && character.compareTo("\n") == 0) {
-                bufferCandidate = bufferCandidate.substring(0, bufferCandidate.indexOf("/--"));
+                bufferCandidateBuilder = new StringBuilder(bufferCandidateBuilder.substring(0, bufferCandidateBuilder.indexOf("/--")));
                 break;
             }
             // Check if a multiline comment has ended at a **/ or if the file has terminated
             if (readerState == ReaderStates.IN_MULTI_LINE_COMMENT
-                && (bufferCandidate.endsWith("**/") || eof())) {
-                bufferCandidate = bufferCandidate.substring(0, bufferCandidate.indexOf("/**"));
+                && (bufferCandidateBuilder.toString().endsWith("**/") || eof())) {
+                bufferCandidateBuilder = new StringBuilder(bufferCandidateBuilder.substring(0, bufferCandidateBuilder.indexOf("/**")));
                 break;
             }
-            // Check if a string has ended (must start and end with a " and be at least 2 characters
+            // Check if a string has ended (must start and end with an " and be at least 2 characters
             // long so a single " does not get considered a string)
-            if (bufferCandidate.startsWith("\"") && bufferCandidate.endsWith("\"")
-                && bufferCandidate.length() > 1) {
+            if (bufferCandidateBuilder.toString().startsWith("\"") && bufferCandidateBuilder.toString().endsWith("\"")
+                && bufferCandidateBuilder.length() > 1) {
                 break;
             }
             // Check if a string has been started but a newline has been reached before the second
             // ", in which case remove the trailing newline character and return where it will be
             // interpreted as an undefined token
             if (readerState == ReaderStates.IN_STRING && character.compareTo("\n") == 0) {
-                bufferCandidate = bufferCandidate.substring(0, bufferCandidate.length() - 1);
+                bufferCandidateBuilder = new StringBuilder(bufferCandidateBuilder.substring(0, bufferCandidateBuilder.length() - 1));
                 break;
             }
         }
+        bufferCandidate = bufferCandidateBuilder.toString();
 
         // Extra check for eof to prevent infinite loops if there is whitespace at the end of the
-        // file. Otherwise recurse to consume any repeated spaces or newlines mid-code
+        // file, otherwise recurse to consume any repeated spaces or newlines mid-code
         if ((!eof() || fileReaderUndefinedTokenBuffer.length() > 0)
             && bufferCandidate.length() == 0) {
             readFileIntoBufferUntilWhitespace();
@@ -220,14 +221,14 @@ public class Scanner {
      * it no longer matches a valid operator
      *
      * @return A candidate token string to be passed to the Token constructor from the buffer
-     * @brief Scans the buffer and finds the next valid token string by following some basic
+     * Scans the buffer and finds the next valid token string by following some basic
      * syntactical rules
      */
     private String getTokenStringFromBuffer() {
-        String tokenStringCandidate = "";
+        String tokenStringCandidate;
         String character;
 
-        // This could either be a full string or just a phrase that starts with a " . In either
+        // This could either be a full string or just a phrase that starts with an " . In either
         // case, return it as a token candidate as regardless of whether the string ends or not,
         // strings cannot be multiline so if it was not terminated correctly it should become an
         // undefined token
@@ -267,7 +268,7 @@ public class Scanner {
 
                     // Anything that doesn't match one of these will remain as an undefined token
                     // until the end of the buffer as the readFileIntoBufferUntilWhitespace function
-                    // has already stopped reading into the buffer at the next valid character so we
+                    // has already stopped reading into the buffer at the next valid character, so we
                     // can assume the entire buffer is undefined
                     break;
 
@@ -294,7 +295,7 @@ public class Scanner {
                         && !utils.matches(buffer.substring(0, 2), MatchTypes.DOUBLE_OPERATOR)) {
                         tokenStringFound = true;
                     }
-                    // If i has successfully gotten to this point we have found a double operator
+                    // If it has successfully gotten to this point we have found a double operator
                     if (index > 1)
                         tokenStringFound = true;
                     break;
@@ -316,7 +317,7 @@ public class Scanner {
                     else if (utils.matches(character, MatchTypes.LETTER, MatchTypes.UNDEFINED))
                         tokenStringFound = true;
 
-                    // If we have previously found a decimal and now we have seen another number, we
+                    // If we have previously found a decimal, and now we have seen another number, we
                     // have found a float
                     else if (decimalState == DecimalStates.FOUND_DECIMAL
                         && utils.matches(character, MatchTypes.NUMBER)) {
@@ -384,8 +385,8 @@ public class Scanner {
             if (tokenLiteral.contains(".")) {
                 try {
                     // Check that the float is not more than 64 bits long
-                    Long exponent = Long.parseLong(tokenLiteral.split("\\.")[0]);
-                    Long fraction = Long.parseLong(tokenLiteral.split("\\.")[1]);
+                    long exponent = Long.parseLong(tokenLiteral.split("\\.")[0]);
+                    long fraction = Long.parseLong(tokenLiteral.split("\\.")[1]);
                     if (exponent > Math.pow(2, 11)) {
                         throw new NumberFormatException();
                     }
@@ -416,7 +417,7 @@ public class Scanner {
             return Tokens.TILIT;
         }
 
-        // Indentifier
+        // Identifier
         if (utils.matches(tokenLiteral, MatchTypes.IDENTIFIER)) {
             return Tokens.TIDEN;
         }
@@ -463,11 +464,11 @@ public class Scanner {
      * @return an array list of tokens identified by the scanner
      */
     public Queue<Token> getTokenStream() {
-        Queue<Token> tokenStream = new LinkedList<Token>();
+        Queue<Token> tokenStream = new LinkedList<>();
 
         // Loop until we retrieve an EOF token
         Token t = null;
-        while (t == null || !t.isEof()) {
+        while (t == null || t.isNotEof()) {
             t = getToken();
             tokenStream.add(t);
         }

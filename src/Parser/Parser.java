@@ -45,7 +45,8 @@ public class Parser {
     }
 
     /**
-     * Initialisation function, gets a token list from the scanner and prepares the parser for a parse
+     * Initialisation function, gets a token list from the scanner and prepares the parser for a
+     * parse
      */
     public void initialise() {
         tokenStream = scanner.getTokenStream();
@@ -53,8 +54,8 @@ public class Parser {
     }
 
     /**
-     * Gets a token from the token stream if there is more than one left, or repeatedly returns the last one if there
-     * is only one
+     * Gets a token from the token stream if there is more than one left, or repeatedly returns the
+     * last one if there is only one
      * @return the next token in the token stream
      */
     public Token getToken() {
@@ -72,7 +73,7 @@ public class Parser {
      */
     private void error(Errors error, String message) throws CD22ParserException {
         outputController.addError(
-                previousLookahead.getRow(), previousLookahead.getCol(), error, message);
+            previousLookahead.getRow(), previousLookahead.getCol(), error, message);
         throw new CD22ParserException();
     }
 
@@ -102,7 +103,7 @@ public class Parser {
      */
     private void errorWithoutException(Errors error, String message) {
         outputController.addError(
-                previousLookahead.getRow(), previousLookahead.getCol(), error, message);
+            previousLookahead.getRow(), previousLookahead.getCol(), error, message);
     }
     /**
      * Add a parser error to the error handler without throwing a parsing exception
@@ -152,7 +153,8 @@ public class Parser {
             // End of file reached while in panic mode error recovery. The error that set off panic
             // mode will exist in the error handler so no need to do anything here
         }
-        // If we have finished parsing and found "end CD22 identifier" but there are still tokens, this is an error
+        // If we have finished parsing and found "end CD22 identifier" but there are still tokens,
+        // this is an error
         if (lookahead.isNotEof() && !outputController.hasErrors()) {
             errorWithoutException(Errors.NOT_AT_EOF);
         }
@@ -161,8 +163,9 @@ public class Parser {
     // ----------------- ERROR RECOVERY ------------------
 
     /**
-     * Panic mode error recovery function. Retrieve a list of tokens that the caller could resynchronise on, and
-     * consume tokens until one of those is found, or throws an exception if the end of file is reached
+     * Panic mode error recovery function. Retrieve a list of tokens that the caller could
+     * resynchronise on, and consume tokens until one of those is found, or throws an exception if
+     * the end of file is reached
      * @param synchronisingTokens a list of tokens that can be used to resynchronise
      */
     public void panic(ArrayList<Tokens> synchronisingTokens) throws CD22EofException {
@@ -178,7 +181,8 @@ public class Parser {
     }
 
     /**
-     * Tries to match a colon but will also match semicolons, commas, or epsilon while adding an error
+     * Tries to match a colon but will also match semicolons, commas, or epsilon while adding an
+     * error
      */
     private void gracefullyMatchColon() throws CD22ParserException {
         // Best case
@@ -201,7 +205,8 @@ public class Parser {
     }
 
     /**
-     * Tries to match a semicolon but will also match colons, commas, or epsilon while adding an error
+     * Tries to match a semicolon but will also match colons, commas, or epsilon while adding an
+     * error
      */
     private void gracefullyMatchSemicolon() throws CD22ParserException {
         // Best case
@@ -366,7 +371,8 @@ public class Parser {
                 Tokens.TCOMA, Tokens.TTYPS, Tokens.TARRS, Tokens.TFUNC, Tokens.TMAIN));
         }
 
-        // If a keyword for other sections of the program has been found we can stop parsing constants
+        // If a keyword for other sections of the program has been found we can stop parsing
+        // constants
         if (lookahead.getToken() == Tokens.TTYPS || lookahead.getToken() == Tokens.TARRS
             || lookahead.getToken() == Tokens.TFUNC || lookahead.getToken() == Tokens.TMAIN) {
             return t1;
@@ -438,8 +444,8 @@ public class Parser {
             return t1;
         }
 
-        // Types are not separated by commas so unless another important keyword has been found we can recursively
-        // call the typelist again
+        // Types are not separated by commas so unless another important keyword has been found we
+        // can recursively call the typelist again
         t2 = typelist();
 
         return new TreeNode(TreeNodes.NTYPEL, t1, t2);
@@ -488,9 +494,9 @@ public class Parser {
             }
             t.setNodeType(TreeNodes.NATYPE);
 
-            // Get the symbol added at the start of the type parsing and add foreign IDs to indicate type and size
-            Symbol newSymbol =
-                symbolTable.getSymbol(symbolTableId);
+            // Get the symbol added at the start of the type parsing and add foreign IDs to indicate
+            // type and size
+            Symbol newSymbol = symbolTable.getSymbol(symbolTableId);
             newSymbol.setForeignSymbolTableId(typeId);
             newSymbol.setForeignSymbolTableId("size", exprNode.getSymbolTableId());
 
@@ -499,7 +505,8 @@ public class Parser {
             // Create a symbol with the type name
             int symbolTableId = symbolTable.addSymbol(SymbolType.STRUCT_TYPE, typeNameToken);
             t.setSymbolTableId(symbolTableId);
-            // Set the scope as struct fiels are stored under the scope of the struct name in the symbol table
+            // Set the scope as struct fiels are stored under the scope of the struct name in the
+            // symbol table
             currentScope = typeNameToken.getTokenLiteral();
             // Parse the struct fields
             t.setNextChild(fields());
@@ -530,7 +537,8 @@ public class Parser {
             panic(utils.getTokenList(Tokens.TCOMA, Tokens.TTEND, Tokens.TARRS, Tokens.TFUNC));
         }
 
-        // If we see end we have finished parsing the struct, otherwise recursively parse another field
+        // If we see end we have finished parsing the struct, otherwise recursively parse another
+        // field
         if (lookahead.getToken() == Tokens.TTEND) {
             return t1;
         } else if (lookahead.getToken() == Tokens.TCOMA) {
@@ -586,15 +594,16 @@ public class Parser {
             int typeId =
                 symbolTable.getSymbolIdFromReference(lookahead.getTokenLiteral(), currentScope);
             // If the type does not exist or is not a valid struct type
-            if (typeId == -1 || symbolTable.getSymbol(typeId).getSymbolType() != SymbolType.STRUCT_TYPE)
+            if (typeId == -1
+                || symbolTable.getSymbol(typeId).getSymbolType() != SymbolType.STRUCT_TYPE)
                 errorWithoutException(Errors.UNDEFINED_TYPE);
             // Add the type to the sdecl symbol
             symbolTable.getSymbol(symbolTableId).setForeignSymbolTableId(typeId);
             match(Tokens.TIDEN);
         } else {
             // stype
-            // Add the sdecl to the symbol table with the given name, adding the boolean flag to the adder tp indicate
-            // that the symbol is a primitive type
+            // Add the sdecl to the symbol table with the given name, adding the boolean flag to the
+            // adder tp indicate that the symbol is a primitive type
             int symbolTableId =
                 symbolTable.addSymbol(SymbolType.VARIABLE, nameIdenToken, currentScope, true);
             t.setSymbolTableId(symbolTableId);
@@ -623,7 +632,8 @@ public class Parser {
                 match(Tokens.TBOOL);
                 return PrimitiveTypes.BOOLEAN;
             default:
-                // Any other value is not a primitive type, add an error which will throw an exception
+                // Any other value is not a primitive type, add an error which will throw an
+                // exception
                 error(Errors.UNDEFINED_TYPE);
                 // Will never hit this because the above line throws an exception
                 return PrimitiveTypes.UNKNOWN;
@@ -657,7 +667,8 @@ public class Parser {
             panic(utils.getTokenList(Tokens.TCOMA, Tokens.TFUNC, Tokens.TMAIN));
         }
 
-        // If we've reached another important keyword in the program we can stop parsing array declarations
+        // If we've reached another important keyword in the program we can stop parsing array
+        // declarations
         if (lookahead.getToken() == Tokens.TFUNC || lookahead.getToken() == Tokens.TMAIN) {
             return t1;
         }
@@ -674,8 +685,8 @@ public class Parser {
      * @return arrdecl node
      */
     private TreeNode arrdecl() throws CD22ParserException {
-        // An arrdecl is two identifiers separated by a colon. Analysis will happen in the overloaded function this one
-        // recalls but at the moment just parse the idens
+        // An arrdecl is two identifiers separated by a colon. Analysis will happen in the
+        // overloaded function this one recalls but at the moment just parse the idens
         ArrayList<Token> idenList = parseColonSeparatedIdentifiers();
         return arrdecl(idenList);
     }
@@ -906,7 +917,8 @@ public class Parser {
         t.setNextChild(rel());
         // Call the recursive rule and pass down the parent
         boolr(t);
-        // If the recursive bool function did not assign a node type, just return the rel parsed earlier
+        // If the recursive bool function did not assign a node type, just return the rel parsed
+        // earlier
         if (t.getNodeType() == null) {
             return t.getLeft();
         }
@@ -963,7 +975,8 @@ public class Parser {
         // Parse the first two aspects of the node, saving them both for interpretation
         TreeNode exprNode = expr();
         TreeNode relopNode = relop();
-        // If the relop node did not exist, return just the expr node, as a child of a not node if necessary
+        // If the relop node did not exist, return just the expr node, as a child of a not node if
+        // necessary
         if (relopNode == null) {
             if (not) {
                 return new TreeNode(TreeNodes.NNOT, exprNode);
@@ -1020,7 +1033,8 @@ public class Parser {
      * @return fncall node
      */
     private TreeNode fncall(Token nameIdenToken) throws CD22ParserException {
-        // Create a new node with the symbol table ID referring to the function definition in the symbol table
+        // Create a new node with the symbol table ID referring to the function definition in the
+        // symbol table
         TreeNode t = new TreeNode(TreeNodes.NFCALL,
             symbolTable.getSymbolIdFromReference(nameIdenToken.getTokenLiteral(), "@global"));
         match(Tokens.TLPAR);
@@ -1081,7 +1095,8 @@ public class Parser {
             error(Errors.UNDEFINED_VARIABLE, nameIdenToken.getTokenLiteral());
         // Check if we are indexing an array
         if (lookahead.getToken() == Tokens.TLBRK) {
-            // Create the node and assign the variable name symbol table ID, but not the node type yet
+            // Create the node and assign the variable name symbol table ID, but not the node type
+            // yet
             TreeNode t = new TreeNode();
             t.setSymbolTableId(symbolTableId);
             match(Tokens.TLBRK);
@@ -1136,7 +1151,8 @@ public class Parser {
                 lookahead.getTokenLiteral(), symbolTable.getSymbol(structTypeId).getRef(), false);
             if (fieldId == -1)
                 errorWithoutException(Errors.UNDEFINED_VARIABLE, lookahead.getTokenLiteral());
-            // Match the identifier now we have finished type checking with it, and add the field to the node's children
+            // Match the identifier now we have finished type checking with it, and add the field to
+            // the node's children
             match(Tokens.TIDEN);
             t.setNextChild(new TreeNode(TreeNodes.NSIMV, fieldId));
         } else {
@@ -1225,7 +1241,8 @@ public class Parser {
                 panic(utils.getTokenList(Tokens.TSEMI, Tokens.TTFOR, Tokens.TIFTH, Tokens.TREPT,
                     Tokens.TINPT, Tokens.TPRNT, Tokens.TPRLN, Tokens.TRETN));
                 if (lookahead.getToken() == Tokens.TSEMI) {
-                    // If we have resynchronized on a semicolon we actually care about the data after it
+                    // If we have resynchronized on a semicolon we actually care about the data
+                    // after it
                     gracefullyMatchSemicolon();
                 }
                 return stats();
@@ -1339,7 +1356,8 @@ public class Parser {
      * @return strstat node
      */
     private TreeNode strstat() throws CD22ParserException, CD22EofException {
-        // This function only gets called if the lookahead is for or if, so if it is not for it must be if
+        // This function only gets called if the lookahead is for or if, so if it is not for it must
+        // be if
         if (lookahead.getToken() == Tokens.TTFOR) {
             return forstat();
         }
@@ -1369,7 +1387,8 @@ public class Parser {
      * @return asgnstat node
      */
     private TreeNode asgnstat() throws CD22ParserException {
-        // This function is called as a last resort else in the stat function, so we need to ensure it is an identifier
+        // This function is called as a last resort else in the stat function, so we need to ensure
+        // it is an identifier
         if (lookahead.getToken() == Tokens.TIDEN) {
             Token token = lookahead;
             match(Tokens.TIDEN);
@@ -1434,7 +1453,8 @@ public class Parser {
         match(Tokens.TRPAR);
         // Parse statement block
         t.setNextChild(stats());
-        // If we've reached the end of the first statement block with no further if or else then the parse is complete
+        // If we've reached the end of the first statement block with no further if or else then the
+        // parse is complete
         if (lookahead.getToken() == Tokens.TTEND) {
             t.setNodeType(TreeNodes.NIFTH);
             match(Tokens.TTEND);
@@ -1611,7 +1631,8 @@ public class Parser {
     private TreeNode func() throws CD22ParserException, CD22EofException {
         TreeNode t = new TreeNode(TreeNodes.NFUND);
         match(Tokens.TFUNC);
-        // Add the function name to the symbol table as a primitive type so that it's return value can be stored
+        // Add the function name to the symbol table as a primitive type so that it's return value
+        // can be stored
         int symbolTableId = 0;
         if (lookahead.getToken() == Tokens.TIDEN) {
             symbolTableId = symbolTable.addSymbol(SymbolType.FUNCTION, lookahead, "@global", true);
@@ -1644,7 +1665,8 @@ public class Parser {
      * @return plist node
      */
     private TreeNode plist() throws CD22ParserException, CD22EofException {
-        // Parameters are optional and will either be identifiers and types, or that prefixed with "const" for arrays
+        // Parameters are optional and will either be identifiers and types, or that prefixed with
+        // "const" for arrays
         if (lookahead.getToken() == Tokens.TIDEN || lookahead.getToken() == Tokens.TCNST) {
             return params();
         }
@@ -1666,7 +1688,8 @@ public class Parser {
     }
 
     /**
-     * Parse the function body with no type as it is only a placeholder to return to the func function
+     * Parse the function body with no type as it is only a placeholder to return to the func
+     * function
      * @return a node with local variables and statements
      */
     private TreeNode funcbody() throws CD22ParserException, CD22EofException {

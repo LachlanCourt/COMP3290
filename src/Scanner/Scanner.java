@@ -132,7 +132,8 @@ public class Scanner {
                 scannerColumnPosition = 1;
             }
 
-            // If a " symbol has been found, and we are currently scanning code, we have now entered a string
+            // If a " symbol has been found, and we are currently scanning code, we have now entered
+            // a string
             if (readerState == ReaderStates.CODE && character.compareTo("\"") == 0)
                 readerState = ReaderStates.IN_STRING;
 
@@ -164,26 +165,31 @@ public class Scanner {
             bufferCandidateBuilder.append(character);
 
             // Check if adding that character has caused the context to change to inside a comment
-            if (bufferCandidateBuilder.toString().contains("/--") && readerState == ReaderStates.CODE)
+            if (bufferCandidateBuilder.toString().contains("/--")
+                && readerState == ReaderStates.CODE)
                 readerState = ReaderStates.IN_SINGLE_LINE_COMMENT;
-            if (bufferCandidateBuilder.toString().contains("/**") && readerState == ReaderStates.CODE)
+            if (bufferCandidateBuilder.toString().contains("/**")
+                && readerState == ReaderStates.CODE)
                 readerState = ReaderStates.IN_MULTI_LINE_COMMENT;
 
             // Check if a single line comment has ended at a newline
             if (readerState == ReaderStates.IN_SINGLE_LINE_COMMENT
                 && character.compareTo("\n") == 0) {
-                bufferCandidateBuilder = new StringBuilder(bufferCandidateBuilder.substring(0, bufferCandidateBuilder.indexOf("/--")));
+                bufferCandidateBuilder = new StringBuilder(
+                    bufferCandidateBuilder.substring(0, bufferCandidateBuilder.indexOf("/--")));
                 break;
             }
             // Check if a multiline comment has ended at a **/ or if the file has terminated
             if (readerState == ReaderStates.IN_MULTI_LINE_COMMENT
                 && (bufferCandidateBuilder.toString().endsWith("**/") || eof())) {
-                bufferCandidateBuilder = new StringBuilder(bufferCandidateBuilder.substring(0, bufferCandidateBuilder.indexOf("/**")));
+                bufferCandidateBuilder = new StringBuilder(
+                    bufferCandidateBuilder.substring(0, bufferCandidateBuilder.indexOf("/**")));
                 break;
             }
-            // Check if a string has ended (must start and end with an " and be at least 2 characters
-            // long so a single " does not get considered a string)
-            if (bufferCandidateBuilder.toString().startsWith("\"") && bufferCandidateBuilder.toString().endsWith("\"")
+            // Check if a string has ended (must start and end with an " and be at least 2
+            // characters long so a single " does not get considered a string)
+            if (bufferCandidateBuilder.toString().startsWith("\"")
+                && bufferCandidateBuilder.toString().endsWith("\"")
                 && bufferCandidateBuilder.length() > 1) {
                 break;
             }
@@ -191,7 +197,8 @@ public class Scanner {
             // ", in which case remove the trailing newline character and return where it will be
             // interpreted as an undefined token
             if (readerState == ReaderStates.IN_STRING && character.compareTo("\n") == 0) {
-                bufferCandidateBuilder = new StringBuilder(bufferCandidateBuilder.substring(0, bufferCandidateBuilder.length() - 1));
+                bufferCandidateBuilder = new StringBuilder(
+                    bufferCandidateBuilder.substring(0, bufferCandidateBuilder.length() - 1));
                 break;
             }
         }
@@ -268,8 +275,8 @@ public class Scanner {
 
                     // Anything that doesn't match one of these will remain as an undefined token
                     // until the end of the buffer as the readFileIntoBufferUntilWhitespace function
-                    // has already stopped reading into the buffer at the next valid character, so we
-                    // can assume the entire buffer is undefined
+                    // has already stopped reading into the buffer at the next valid character, so
+                    // we can assume the entire buffer is undefined
                     break;
 
                 case LETTER:
@@ -317,8 +324,8 @@ public class Scanner {
                     else if (utils.matches(character, MatchTypes.LETTER, MatchTypes.UNDEFINED))
                         tokenStringFound = true;
 
-                    // If we have previously found a decimal, and now we have seen another number, we
-                    // have found a float
+                    // If we have previously found a decimal, and now we have seen another number,
+                    // we have found a float
                     else if (decimalState == DecimalStates.FOUND_DECIMAL
                         && utils.matches(character, MatchTypes.NUMBER)) {
                         decimalState = DecimalStates.FOUND_FOLLOWING_NUMBER;

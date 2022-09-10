@@ -145,9 +145,7 @@ public class Token {
             return out.toString();
         } else {
             // In debug mode, output some additional information from the token
-            String out = "(" + token.name() + " ," +
-                    row + "," +
-                    col + ")";
+            String out = "(" + token.name() + " ," + row + "," + col + ")";
             return out + " " + tokenLiteral;
         }
     }

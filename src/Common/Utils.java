@@ -9,23 +9,20 @@
 package Common;
 
 import Scanner.Token.Tokens;
-
 import java.util.*;
 
 public class Utils {
     private static Utils self;
     // Definition Lists for custom matching
-    private static final ArrayList<String> validPunctuation =
-        new ArrayList<>(Arrays.asList(",", "[", "]", "(", ")", "=", "+", "-", "*", "/", "%",
-            "^", "<", ">", "!", "\"", ":", ";", "."));
-    private static final ArrayList<String> validStandaloneOperators =
-        new ArrayList<>(Arrays.asList(
-            ",", "[", "]", "(", ")", "=", "+", "-", "*", "/", "%", "^", "<", ">", ":", ";", "."));
+    private static final ArrayList<String> validPunctuation = new ArrayList<>(Arrays.asList(",",
+        "[", "]", "(", ")", "=", "+", "-", "*", "/", "%", "^", "<", ">", "!", "\"", ":", ";", "."));
+    private static final ArrayList<String> validStandaloneOperators = new ArrayList<>(Arrays.asList(
+        ",", "[", "]", "(", ")", "=", "+", "-", "*", "/", "%", "^", "<", ">", ":", ";", "."));
     private static final ArrayList<String> validDoubleOperators =
         new ArrayList<>(Arrays.asList("!=", "==", "<=", ">=", "+=", "-=", "/=", "*="));
     private static final ArrayList<String> letters =
-        new ArrayList<>(Arrays.asList("a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k",
-            "l", "m", "n", "o", "p", "q", "r", "s", "t", "u", "v", "w", "x", "y", "z"));
+        new ArrayList<>(Arrays.asList("a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l",
+            "m", "n", "o", "p", "q", "r", "s", "t", "u", "v", "w", "x", "y", "z"));
     private static final ArrayList<String> numbers =
         new ArrayList<>(Arrays.asList("0", "1", "2", "3", "4", "5", "6", "7", "8", "9"));
     private static final ArrayList<String> keywords = new ArrayList<>(Arrays.asList("cd22",
@@ -221,7 +218,8 @@ public class Utils {
         return true;
     }
 
-    // Overloaded functions to retrieve a series of Tokens as parameters and return those same values as an arraylist
+    // Overloaded functions to retrieve a series of Tokens as parameters and return those same
+    // values as an arraylist
     public ArrayList<Tokens> getTokenList(Tokens first) {
         return new ArrayList<>(Collections.singletonList(first));
     }
@@ -245,8 +243,7 @@ public class Utils {
     }
     public ArrayList<Tokens> getTokenList(Tokens first, Tokens second, Tokens third, Tokens fourth,
         Tokens fifth, Tokens sixth, Tokens seventh) {
-        return new ArrayList<>(
-            Arrays.asList(first, second, third, fourth, fifth, sixth, seventh));
+        return new ArrayList<>(Arrays.asList(first, second, third, fourth, fifth, sixth, seventh));
     }
     public ArrayList<Tokens> getTokenList(Tokens first, Tokens second, Tokens third, Tokens fourth,
         Tokens fifth, Tokens sixth, Tokens seventh, Tokens eighth) {

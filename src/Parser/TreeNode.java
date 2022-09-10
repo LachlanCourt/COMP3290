@@ -91,7 +91,8 @@ public class TreeNode {
 
     int symbolTableId;
 
-    // A reference to the symbol table is kept so that symbols can be stored as references rather than whole symbols
+    // A reference to the symbol table is kept so that symbols can be stored as references rather
+    // than whole symbols
     SymbolTable symbolTable;
 
     // Default constructor which sets default variables
@@ -193,7 +194,7 @@ public class TreeNode {
 
     /**
      * Default to string function, returning out the node name and the token literal
-      * @return stringified version of the token and its lexeme
+     * @return stringified version of the token and its lexeme
      */
     @Override
     public String toString() {
@@ -224,8 +225,8 @@ public class TreeNode {
             case NFLIT:
                 return " " + ((LiteralSymbol) symbolTable.getSymbol(symbolTableId)).getVal();
 
-            // These node types will always have an entry in the symbol table as a regular symbol with a lexeme. If
-            // they don't, null is returned for the purposes of error checking
+            // These node types will always have an entry in the symbol table as a regular symbol
+            // with a lexeme. If they don't, null is returned for the purposes of error checking
             case NPROG:
             case NSIMV:
             case NSTRV:

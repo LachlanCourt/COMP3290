@@ -1324,7 +1324,9 @@ public class Parser {
         String formattedTree = "";
         String line = "";
         for (int i = 0; i < treeList.length; i++) {
-            line += treeList[i] + " ";
+            String outValue = treeList[i];
+            int size = (outValue.length() / 7) * 7 + 7;
+            line += outValue + " ".repeat(size - outValue.length());
             if (line.length() >= 70) {
                 formattedTree += line + "\n";
                 line = "";

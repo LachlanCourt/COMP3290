@@ -1318,9 +1318,9 @@ public class Parser {
 
     @Override
     public String toString() {
-        boolean debug =
+        boolean debugEnvironment =
             System.getenv("DEBUG") != null && System.getenv("DEBUG").compareTo("true") == 0;
-        String[] treeList = outputHelper(syntaxTree, debug).split("\\s");
+        String[] treeList = outputHelper(syntaxTree, debugEnvironment).split("\\s");
         String formattedTree = "";
         String line = "";
         for (int i = 0; i < treeList.length; i++) {

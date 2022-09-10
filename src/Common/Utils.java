@@ -1,36 +1,31 @@
 /*******************************************************************************
- ****    COMP3290 Assignment 1
+ ****    COMP3290 Assignment 2
  ****    c3308061
  ****    Lachlan Court
- ****    10/08/2022
+ ****    10/09/2022
  ****    This class contains some common functions and lists that are used throughout
  ****    the compiling process
  *******************************************************************************/
 package Common;
 
 import Scanner.Token.Tokens;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 public class Utils {
     private static Utils self;
     // Definition Lists for custom matching
-    private static final ArrayList<String> validPunctuation =
-        new ArrayList<String>(Arrays.asList(",", "[", "]", "(", ")", "=", "+", "-", "*", "/", "%",
-            "^", "<", ">", "!", "\"", ":", ";", "."));
-    private static final ArrayList<String> validStandaloneOperators =
-        new ArrayList<String>(Arrays.asList(
-            ",", "[", "]", "(", ")", "=", "+", "-", "*", "/", "%", "^", "<", ">", ":", ";", "."));
+    private static final ArrayList<String> validPunctuation = new ArrayList<>(Arrays.asList(",",
+        "[", "]", "(", ")", "=", "+", "-", "*", "/", "%", "^", "<", ">", "!", "\"", ":", ";", "."));
+    private static final ArrayList<String> validStandaloneOperators = new ArrayList<>(Arrays.asList(
+        ",", "[", "]", "(", ")", "=", "+", "-", "*", "/", "%", "^", "<", ">", ":", ";", "."));
     private static final ArrayList<String> validDoubleOperators =
-        new ArrayList<String>(Arrays.asList("!=", "==", "<=", ">=", "+=", "-=", "/=", "*="));
+        new ArrayList<>(Arrays.asList("!=", "==", "<=", ">=", "+=", "-=", "/=", "*="));
     private static final ArrayList<String> letters =
-        new ArrayList<String>(Arrays.asList("a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k",
-            "l", "m", "n", "o", "p", "q", "r", "s", "t", "u", "v", "w", "x", "y", "z"));
+        new ArrayList<>(Arrays.asList("a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l",
+            "m", "n", "o", "p", "q", "r", "s", "t", "u", "v", "w", "x", "y", "z"));
     private static final ArrayList<String> numbers =
-        new ArrayList<String>(Arrays.asList("0", "1", "2", "3", "4", "5", "6", "7", "8", "9"));
-    private static final ArrayList<String> keywords = new ArrayList<String>(Arrays.asList("cd22",
+        new ArrayList<>(Arrays.asList("0", "1", "2", "3", "4", "5", "6", "7", "8", "9"));
+    private static final ArrayList<String> keywords = new ArrayList<>(Arrays.asList("cd22",
         "constants", "types", "def", "arrays", "main", "begin", "end", "array", "of", "func",
         "void", "const", "int", "float", "bool", "for", "repeat", "until", "if", "else", "elif",
         "input", "print", "printline", "return", "not", "and", "or", "xor", "true", "false"));
@@ -67,8 +62,11 @@ public class Utils {
         return self;
     }
 
+    /**
+     * Initialise the keyword to token hashmap with values
+     */
     private void buildTokensMap() {
-        tokenMap = new HashMap<String, Tokens>();
+        tokenMap = new HashMap<>();
         tokenMap.put("cd22", Tokens.TCD22);
         tokenMap.put("constants", Tokens.TCONS);
         tokenMap.put("types", Tokens.TTYPS);
@@ -126,19 +124,24 @@ public class Utils {
         tokenMap.put("-=", Tokens.TMNEQ);
         tokenMap.put("/=", Tokens.TDVEQ);
         tokenMap.put("*=", Tokens.TSTEQ);
-        tokenMap.put("false", Tokens.TFALS);
-        tokenMap.put("false", Tokens.TFALS);
-        tokenMap.put("false", Tokens.TFALS);
-        tokenMap.put("false", Tokens.TFALS);
-        tokenMap.put("false", Tokens.TFALS);
     }
 
+    /**
+     * Gets a token given a string initialiser
+     * @param initialiser value to be checked for a token
+     * @return the enum value that matches the initialiser key, or TUNDF if it does not exist
+     */
     public Tokens getTokenFromInitialiser(String initialiser) {
         if (tokenMap.containsKey(initialiser))
             return tokenMap.get(initialiser);
         return Tokens.TUNDF;
     }
 
+    /**
+     * Gets a string initialiser from a token
+     * @param token enum value to be returned as a string
+     * @return string key that matches the enum value, or null if it does not exist
+     */
     public String getInitialiserFromToken(Tokens token) {
         // The value in the map is lowercase so have an explicit check for CD22
         if (token == Tokens.TCD22)
@@ -215,35 +218,36 @@ public class Utils {
         return true;
     }
 
+    // Overloaded functions to retrieve a series of Tokens as parameters and return those same
+    // values as an arraylist
     public ArrayList<Tokens> getTokenList(Tokens first) {
-        return new ArrayList<Tokens>(Arrays.asList(first));
+        return new ArrayList<>(Collections.singletonList(first));
     }
     public ArrayList<Tokens> getTokenList(Tokens first, Tokens second) {
-        return new ArrayList<Tokens>(Arrays.asList(first, second));
+        return new ArrayList<>(Arrays.asList(first, second));
     }
     public ArrayList<Tokens> getTokenList(Tokens first, Tokens second, Tokens third) {
-        return new ArrayList<Tokens>(Arrays.asList(first, second, third));
+        return new ArrayList<>(Arrays.asList(first, second, third));
     }
     public ArrayList<Tokens> getTokenList(
         Tokens first, Tokens second, Tokens third, Tokens fourth) {
-        return new ArrayList<Tokens>(Arrays.asList(first, second, third, fourth));
+        return new ArrayList<>(Arrays.asList(first, second, third, fourth));
     }
     public ArrayList<Tokens> getTokenList(
         Tokens first, Tokens second, Tokens third, Tokens fourth, Tokens fifth) {
-        return new ArrayList<Tokens>(Arrays.asList(first, second, third, fourth, fifth));
+        return new ArrayList<>(Arrays.asList(first, second, third, fourth, fifth));
     }
     public ArrayList<Tokens> getTokenList(
         Tokens first, Tokens second, Tokens third, Tokens fourth, Tokens fifth, Tokens sixth) {
-        return new ArrayList<Tokens>(Arrays.asList(first, second, third, fourth, fifth, sixth));
+        return new ArrayList<>(Arrays.asList(first, second, third, fourth, fifth, sixth));
     }
     public ArrayList<Tokens> getTokenList(Tokens first, Tokens second, Tokens third, Tokens fourth,
         Tokens fifth, Tokens sixth, Tokens seventh) {
-        return new ArrayList<Tokens>(
-            Arrays.asList(first, second, third, fourth, fifth, sixth, seventh));
+        return new ArrayList<>(Arrays.asList(first, second, third, fourth, fifth, sixth, seventh));
     }
     public ArrayList<Tokens> getTokenList(Tokens first, Tokens second, Tokens third, Tokens fourth,
         Tokens fifth, Tokens sixth, Tokens seventh, Tokens eighth) {
-        return new ArrayList<Tokens>(
+        return new ArrayList<>(
             Arrays.asList(first, second, third, fourth, fifth, sixth, seventh, eighth));
     }
 }

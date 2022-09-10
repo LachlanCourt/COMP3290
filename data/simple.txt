@@ -32,17 +32,17 @@ someArray : arrayType,
 someOtherArray : someArrayType
 
 main
-i : bool,
-d : int,
-g : float,
-h : int
+w : bool,
+x : int,
+y : float,
+z : int
 
 begin
 
 repeat ()
- i = true;
- d = 0;
- d += 45;
+ w = true;
+ x = 0;
+ x += 45;
 until false;
 
 end CD22 ProgramName

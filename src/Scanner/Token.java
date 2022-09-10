@@ -1,13 +1,14 @@
 /*******************************************************************************
- ****    COMP3290 Assignment 1
+ ****    COMP3290 Assignment 2
  ****    c3308061
  ****    Lachlan Court
- ****    10/08/2022
- ****    This class represents a token that has been indentified by the Scanner
+ ****    10/09/2022
+ ****    This class represents a token that has been identified by the Scanner
  *******************************************************************************/
 package Scanner;
 
 public class Token {
+    @SuppressWarnings("SpellCheckingInspection")
     public enum Tokens {
         TTEOF,
         TCD22,
@@ -95,8 +96,8 @@ public class Token {
         tokenLiteral = "";
     }
 
-    public boolean isEof() {
-        return token == Tokens.TTEOF;
+    public boolean isNotEof() {
+        return token != Tokens.TTEOF;
     }
 
     public boolean isUndf() {
@@ -138,17 +139,14 @@ public class Token {
                     // As per specification, literal values should be padded as a multiple of 6 with
                     // at least one trailing space
                     int size = (tokenLiteral.length() / 6) * 6 + 6;
-                    out.append(tokenLiteral + " ".repeat(size - tokenLiteral.length()));
+                    out.append(tokenLiteral).append(" ".repeat(size - tokenLiteral.length()));
             }
 
             return out.toString();
         } else {
             // In debug mode, output some additional information from the token
-            StringBuilder out = new StringBuilder("(");
-            out.append(token.name() + " ,");
-            out.append(row + ",");
-            out.append(col + ")");
-            return out.toString() + " " + tokenLiteral;
+            String out = "(" + token.name() + " ," + row + "," + col + ")";
+            return out + " " + tokenLiteral;
         }
     }
 }

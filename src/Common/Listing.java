@@ -1,8 +1,8 @@
 /*******************************************************************************
- ****    COMP3290 Assignment 1
+ ****    COMP3290 Assignment 2
  ****    c3308061
  ****    Lachlan Court
- ****    10/08/2022
+ ****    10/09/2022
  ****    This class handles the generation of the program listing during the
  ****    compiling process
  *******************************************************************************/
@@ -84,7 +84,7 @@ public class Listing {
             }
             writer.close();
         } catch (IOException e) {
-            System.err.println("An error occurred outputting the listing to file");
+            System.err.println("An error occurred outputting the program listing to file");
             e.printStackTrace();
         }
     }

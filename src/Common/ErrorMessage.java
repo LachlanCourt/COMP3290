@@ -1,15 +1,15 @@
 /*******************************************************************************
- ****    COMP3290 Assignment 1
+ ****    COMP3290 Assignment 2
  ****    c3308061
  ****    Lachlan Court
- ****    10/08/2022
+ ****    10/09/2022
  ****    This class represents a single error message stored in the error handler
  *******************************************************************************/
 package Common;
 
 public class ErrorMessage {
     public enum Errors {
-        UNKNOWNM,
+        UNKNOWN,
         UNDEFINED_TOKEN,
         INTEGER_OUT_OF_RANGE,
         FLOAT_OUT_OF_RANGE,
@@ -44,6 +44,9 @@ public class ErrorMessage {
     private String errorMessage;
     private boolean isWarning;
 
+    /**
+     * Private constructor used by the public ones to set defaults for all errors
+     */
     private ErrorMessage() {
         isWarning = false;
     }
@@ -65,56 +68,52 @@ public class ErrorMessage {
         setErrorMessage();
     }
 
+    /**
+     * Sets the error text so that it is available via a simple query
+     */
     private void setErrorMessage() {
-        String errorText;
+        String errorText = getErrorText();
+        errorMessage = (isWarning ? "Warning" : "Error") + " on line " + row + " at column " + col
+            + ": " + errorText;
+    }
+
+    /**
+     * Get the error text based on the error type
+     * @return the human-readable error from the enum type
+     */
+    private String getErrorText() {
         // Output a helpful error message for each error type
         switch (type) {
             case UNDEFINED_TOKEN:
-                errorText = "Undefined token: " + data;
-                break;
+                return "Undefined token: " + data;
             case WARNING_CD22_SEMANTIC_CASING:
-                errorText = "CD22 should be capitalised";
                 isWarning = true;
-                break;
+                return "CD22 should be capitalised";
             case INTEGER_OUT_OF_RANGE:
-                errorText = "Integer Out of Range " + data;
-                break;
+                return "Integer Out of Range " + data;
             case FLOAT_OUT_OF_RANGE:
-                errorText = "Float Out of Range " + data;
-                break;
+                return "Float Out of Range " + data;
             case EXPECTED_IDENTIFIER:
-                errorText = "Expected Identifier";
-                break;
+                return "Expected Identifier";
             case PROGRAM_IDEN_MISSING:
-                errorText = "Program Identifier Missing";
-                break;
+                return "Program Identifier Missing";
             case NOT_A_NUMBER:
-                errorText = "Expected number or identifier";
-                break;
+                return "Expected number or identifier";
             case NO_STATEMENTS:
-                errorText = "At least one statement is required";
-                break;
+                return "At least one statement is required";
             case EXPECTED_ASSIGNMENT_OPERATOR:
-                errorText = "Expected assignment operator";
-                break;
+                return "Expected assignment operator";
             case UNDEFINED_TYPE:
-                errorText = "Undefined type";
-                break;
+                return "Undefined type";
             case UNDEFINED_VARIABLE:
-                errorText = "Undefined variable \"" + data + "\"";
-                break;
+                return "Undefined variable \"" + data + "\"";
             case CUSTOM_ERROR:
-                errorText = data;
-                break;
+                return data;
             case NOT_AT_EOF:
-                errorText = "Unexpected content at end of program";
-                break;
+                return "Unexpected content at end of program";
             default:
-                errorText = "";
+                return "An error occurred";
         }
-
-        errorMessage = (isWarning ? "Warning" : "Error") + " on line " + row + " at column " + col
-            + ": " + errorText;
     }
 
     @Override
@@ -124,7 +123,7 @@ public class ErrorMessage {
 
     public String toString(boolean showColouredText) {
         if (showColouredText) {
-            return (isWarning ? YELLOW : RED) + toString() + RESET;
+            return (isWarning ? YELLOW : RED) + this + RESET;
         } else {
             return toString();
         }

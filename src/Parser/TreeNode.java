@@ -12,6 +12,7 @@ import Common.Symbol;
 import Common.SymbolTable;
 
 public class TreeNode {
+    @SuppressWarnings("SpellCheckingInspection")
     enum TreeNodes {
         NPROG,
         NGLOB,
@@ -217,13 +218,13 @@ public class TreeNode {
      */
     public String getTokenString() {
         switch (nodeType) {
-            // These node types will always have an entry in the table as a LiteralSymble
+            // These node types will always have an entry in the table as a LiteralSymbol
             case NSTRG:
             case NILIT:
             case NFLIT:
                 return " " + ((LiteralSymbol) symbolTable.getSymbol(symbolTableId)).getVal();
 
-            // These ndoe types will always have an entry in the symbol table as a regular symbol with a lexeme. If
+            // These node types will always have an entry in the symbol table as a regular symbol with a lexeme. If
             // they don't, null is returned for the purposes of error checking
             case NPROG:
             case NSIMV:

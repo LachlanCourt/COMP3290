@@ -8,6 +8,7 @@
 package Scanner;
 
 public class Token {
+    @SuppressWarnings("SpellCheckingInspection")
     public enum Tokens {
         TTEOF,
         TCD22,

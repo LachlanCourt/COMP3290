@@ -47,7 +47,7 @@ public class SymbolTable {
         // state, although it will help prevent unexpected program crashes without constant
         // verification of the return value
         table.put("@error", new HashMap<>());
-        table.get("@error").put(-1, new Symbol<String>(SymbolType.UNKNOWN, ""));
+        table.get("@error").put(-1, new Symbol(SymbolType.UNKNOWN, ""));
     }
 
     /**
@@ -150,7 +150,7 @@ public class SymbolTable {
      * @param id of the symbol to be retrieved
      * @return the symbol from the table, or null if it does not exist
      */
-    public Symbol<?> getSymbol(int id) {
+    public Symbol getSymbol(int id) {
         // Loop through the main symbol table map
         for (Map.Entry<String, HashMap<Integer, Symbol>> scopeEntry : table.entrySet()) {
             // Loop through the map for each scope

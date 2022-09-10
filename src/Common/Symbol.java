@@ -10,7 +10,7 @@ package Common;
 import Common.SymbolTable.SymbolType;
 import java.util.HashMap;
 
-public class Symbol<T extends Comparable<T>> {
+public class Symbol {
     // The variable name identifier associated with the symbol
     protected String ref;
 

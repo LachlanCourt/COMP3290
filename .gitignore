@@ -3,3 +3,6 @@ out/**/**
 .idea/**/**
 **listing.txt
 format.sh
+*.log
+*.cd
+*.lst

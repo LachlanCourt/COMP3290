@@ -58,7 +58,7 @@ public class Scanner {
         utils = Common.Utils.getUtils();
     }
 
-    public void init(String filename) {
+    public void initialise(String filename) {
         fileScanner = null;
         try {
             fileScanner = new java.util.Scanner(new File(filename));
@@ -438,7 +438,7 @@ public class Scanner {
         if (buffer.length() == 0 && eof()) {
             outputController.flushListing();
             fileScanner.close();
-            return new Token(true);
+            return new Token();
         }
 
         // Create a new token by reading a candidate token string out of the buffer

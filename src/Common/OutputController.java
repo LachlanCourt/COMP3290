@@ -8,46 +8,66 @@
  *******************************************************************************/
 package Common;
 
-import java.io.File;
-import java.io.FileNotFoundException;
+import java.io.*;
 
 public class OutputController {
     private ErrorHandler errorHandler;
     private Listing listing;
+    private String filename;
 
     public OutputController() {
         errorHandler = new ErrorHandler();
         listing = new Listing();
     }
 
+    public void initialise(String filename_) {
+        // Strip directory path
+        String[] arr = filename_.split("/");
+        filename = arr.length > 0 ? arr[arr.length - 1] : filename_;
+        // Remove existing extension and add .log
+        filename = filename.substring(0, filename.lastIndexOf(".")) + ".log";
+    }
+
     /**
      * Output the errors to standard error
      */
-    public void reportErrors() {
+    public void reportErrors(boolean showColouredText) {
         if (errorHandler.hasErrors()) {
-            System.err.println("Errors exist within the compilation process:\n");
+            System.out.println("Errors exist within the compilation process:\n");
             for (ErrorMessage error : errorHandler.getErrors()) {
-                System.err.println(error.toString(true));
+                System.out.println(error.toString(showColouredText));
             }
         }
+    }
+
+    public void reportErrors() {
+        reportErrors(true);
     }
 
     /**
      * Output the warnings to standard error
      */
-    public void reportWarnings() {
+    public void reportWarnings(boolean showColouredText) {
         if (errorHandler.hasWarnings()) {
-            System.err.println("\nWarnings exist within the compilation process:\n");
+            System.out.println("\nWarnings exist within the compilation process:\n");
             for (ErrorMessage warning : errorHandler.getWarnings()) {
-                System.err.println(warning.toString(true));
+                System.out.println(warning.toString(showColouredText));
             }
         }
+    }
+
+    public void reportWarnings() {
+        reportWarnings(true);
     }
 
     /**
      * Output all errors and warnings, including adding them to the listing
      */
     public void reportErrorsAndWarnings() {
+        setOutToFile();
+        reportErrors(false);
+        reportWarnings(false);
+        setOutToConsole();
         reportErrors();
         reportWarnings();
         listing.addErrorsToListing(errorHandler.getErrors());
@@ -134,5 +154,24 @@ public class OutputController {
 
     public boolean hasWarningsOrErrors() {
         return hasErrors() || hasWarnings();
+    }
+
+    public void out(String data) {
+        setOutToFile();
+        System.out.println(data);
+        setOutToConsole();
+        System.out.println(data);
+    }
+
+    private void setOutToFile() {
+        try {
+        System.setOut(new PrintStream(filename));
+        } catch (FileNotFoundException e) {
+            System.err.println("Log file could not be opened");
+        }
+    }
+
+    private void setOutToConsole() {
+        System.setOut(new PrintStream(new FileOutputStream(FileDescriptor.out)));
     }
 }

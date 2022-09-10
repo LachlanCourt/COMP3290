@@ -33,10 +33,7 @@ public class A2 {
         }
         // Ensure the first argument refers to a valid file
         File f = new File(args[0]);
-        if (!f.exists()) {
-            return false;
-        }
-        return true;
+        return f.exists();
     }
 
     /**
@@ -62,7 +59,7 @@ public class A2 {
         if (oc.hasErrors())
             oc.reportErrorsAndWarnings();
 
-        // Intitialise and run code generator's debug routine to output the syntax tree
+        // Initialise and run code generator's debug routine to output the syntax tree
         cg.initialise();
         cg.run();
 

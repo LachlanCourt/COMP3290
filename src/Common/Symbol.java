@@ -16,8 +16,9 @@ public class Symbol<T extends Comparable<T>> {
 
     protected SymbolType symbolType;
 
-    // Most symbols will only have a single default foreign ID, either related to type or in the case of constants the
-    // value; however symbols such as array types also need to keep track of size and therefore a map is used
+    // Most symbols will only have a single default foreign ID, either related to type or in the
+    // case of constants the value; however symbols such as array types also need to keep track of
+    // size and therefore a map is used
     protected final HashMap<String, Integer> foreignSymbolTableIds;
 
     // Private constructor called by the others to set default values
@@ -79,8 +80,8 @@ public class Symbol<T extends Comparable<T>> {
      * Set the symbol type to constant array
      */
     public void makeConstArray() {
-        // This is the only way a symbol type can be modified after creation, and is required here as a byproduct of
-        // how constant array params are parsed
+        // This is the only way a symbol type can be modified after creation, and is required here
+        // as a byproduct of how constant array params are parsed
         symbolType = SymbolType.CONSTANT_ARRAY;
     }
 }

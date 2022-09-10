@@ -25,8 +25,8 @@ public class CodeGenerator {
     }
 
     /**
-     * Run the parser, and then output the syntax tree. In order for the parser to run, it must have already been
-     * initialised
+     * Run the parser, and then output the syntax tree. In order for the parser to run, it must have
+     * already been initialised
      */
     public void run() {
         parser.run();

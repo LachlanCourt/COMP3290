@@ -90,29 +90,29 @@ public class ErrorMessage {
                 isWarning = true;
                 return "CD22 should be capitalised";
             case INTEGER_OUT_OF_RANGE:
-              return "Integer Out of Range " + data;
+                return "Integer Out of Range " + data;
             case FLOAT_OUT_OF_RANGE:
-               return "Float Out of Range " + data;
+                return "Float Out of Range " + data;
             case EXPECTED_IDENTIFIER:
-               return  "Expected Identifier";
+                return "Expected Identifier";
             case PROGRAM_IDEN_MISSING:
-            return "Program Identifier Missing";
+                return "Program Identifier Missing";
             case NOT_A_NUMBER:
-              return "Expected number or identifier";
+                return "Expected number or identifier";
             case NO_STATEMENTS:
-              return "At least one statement is required";
+                return "At least one statement is required";
             case EXPECTED_ASSIGNMENT_OPERATOR:
-               return "Expected assignment operator";
+                return "Expected assignment operator";
             case UNDEFINED_TYPE:
-            return "Undefined type";
+                return "Undefined type";
             case UNDEFINED_VARIABLE:
-             return "Undefined variable \"" + data + "\"";
+                return "Undefined variable \"" + data + "\"";
             case CUSTOM_ERROR:
-               return data;
+                return data;
             case NOT_AT_EOF:
-             return "Unexpected content at end of program";
+                return "Unexpected content at end of program";
             default:
-               return "An error occurred";
+                return "An error occurred";
         }
     }
 

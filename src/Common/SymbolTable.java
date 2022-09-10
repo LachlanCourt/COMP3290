@@ -68,14 +68,15 @@ public class SymbolTable {
      * @return the ID of the symbol just added to the table
      */
     public int addSymbol(SymbolType symbolType_, Token token_) {
-        // Literal values get added to a different section of the table. Literals, globals, and error symbol table
-        // scopes are all prefixed by @ which is an invalid token in CD22 and thus guarantees there won't be a clash
-        // between these keywords and a function name or struct type which is also used as scope
+        // Literal values get added to a different section of the table. Literals, globals, and
+        // error symbol table scopes are all prefixed by @ which is an invalid token in CD22 and
+        // thus guarantees there won't be a clash between these keywords and a function name or
+        // struct type which is also used as scope
         if (symbolType_ == SymbolType.LITERAL) {
             return addSymbol(symbolType_, token_, "@literals");
         }
-        // If no scope is specified and the symbol type is not a literal, add it in at the global scope. This could be
-        // global variables, constants, types, array types, or function names
+        // If no scope is specified and the symbol type is not a literal, add it in at the global
+        // scope. This could be global variables, constants, types, array types, or function names
         return addSymbol(symbolType_, token_, "@global");
     }
 
@@ -101,15 +102,17 @@ public class SymbolTable {
             symbol = new LiteralSymbol(symbolType, null, token.getTokenLiteral());
 
         } else if (primitiveType) {
-            symbol = new PrimitiveTypeSymbol(symbolType, token.getTokenLiteral(), PrimitiveTypes.UNKNOWN);
-        }
-        else {
-            // If the symbol is anything other than a literal, there is a reference but there is no value
+            symbol = new PrimitiveTypeSymbol(
+                symbolType, token.getTokenLiteral(), PrimitiveTypes.UNKNOWN);
+        } else {
+            // If the symbol is anything other than a literal, there is a reference but there is no
+            // value
             symbol = new Symbol(symbolType, token.getTokenLiteral());
         }
         // Check if the symbol already exists in the table
         int symbolTableId = containsEntry(table.get(scope), token);
-        // If the symbol does not already exist, add the symbol and increment the running ID for the next symbol
+        // If the symbol does not already exist, add the symbol and increment the running ID for the
+        // next symbol
         if (symbolTableId == -1) {
             table.get(scope).put(latestId, symbol);
             return latestId++;
@@ -129,7 +132,8 @@ public class SymbolTable {
         for (Map.Entry<Integer, Symbol> entry : map.entrySet()) {
             // If the token is a literal, compare the value
             if (entry.getValue().getSymbolType() == SymbolType.LITERAL) {
-                if (((LiteralSymbol) entry.getValue()).getVal().compareTo(token.getTokenLiteral()) == 0)
+                if (((LiteralSymbol) entry.getValue()).getVal().compareTo(token.getTokenLiteral())
+                    == 0)
                     return entry.getKey();
             } else {
                 // If the token is not a literal, compare the reference
@@ -162,8 +166,8 @@ public class SymbolTable {
     }
 
     /**
-     * Gets a symbol given a reference and a scope. Will check the scope first, and then check global if not found in
-     * the given scope
+     * Gets a symbol given a reference and a scope. Will check the scope first, and then check
+     * global if not found in the given scope
      * @param reference the reference of the required symbol
      * @param scope the scope of the table to look in
      * @return the ID of the symbol, or -1 if it does not exist
@@ -173,11 +177,12 @@ public class SymbolTable {
     }
 
     /**
-     * Gets a symbol given a reference and a scope. Will check the scope first, and then optionally check global if not
-     * found in the given scope
+     * Gets a symbol given a reference and a scope. Will check the scope first, and then optionally
+     * check global if not found in the given scope
      * @param reference the reference of the required symbol
      * @param scope the scope of the table to look in
-     * @param fallbackToGlobal whether to check the global scope if the reference is not found in the given scope
+     * @param fallbackToGlobal whether to check the global scope if the reference is not found in
+     *     the given scope
      * @return the ID of the symbol, or -1 if it does not exist
      */
     public int getSymbolIdFromReference(String reference, String scope, boolean fallbackToGlobal) {
@@ -210,16 +215,26 @@ public class SymbolTable {
      */
     @Override
     public String toString() {
-        StringBuilder out = new StringBuilder("SymbolId, Reference, Val, ForeignSymbolTableReference, Type\n");
+        StringBuilder out =
+            new StringBuilder("SymbolId, Reference, Val, ForeignSymbolTableReference, Type\n");
         for (Map.Entry<String, HashMap<Integer, Symbol>> scopeEntry : table.entrySet()) {
             out.append("\n").append(scopeEntry.getKey()).append("\n");
             for (Map.Entry<Integer, Symbol> entry : table.get(scopeEntry.getKey()).entrySet()) {
-                out.append(entry.getKey()).append(", ").append(entry.getValue().getRef()).append(", ");
-                        if (entry.getValue() instanceof PrimitiveTypeSymbol)
-                            out.append(((PrimitiveTypeSymbol) entry.getValue()).getVal()).append(", ");
+                out.append(entry.getKey())
+                    .append(", ")
+                    .append(entry.getValue().getRef())
+                    .append(", ");
+
+                // Only output the value if it is not a standard symbol
+                if (entry.getValue() instanceof PrimitiveTypeSymbol)
+                    out.append(((PrimitiveTypeSymbol) entry.getValue()).getVal()).append(", ");
                 if (entry.getValue() instanceof LiteralSymbol)
                     out.append(((LiteralSymbol) entry.getValue()).getVal()).append(", ");
-                        out.append(entry.getValue().getForeignSymbolTableId()).append(", ").append(entry.getValue().getSymbolType()).append("\n");
+
+                out.append(entry.getValue().getForeignSymbolTableId())
+                    .append(", ")
+                    .append(entry.getValue().getSymbolType())
+                    .append("\n");
             }
         }
         return out.toString();

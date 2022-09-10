@@ -22,7 +22,8 @@ public class OutputController {
     }
 
     /**
-     * Initialises the output controller by determining the filename the log and listing files should have
+     * Initialises the output controller by determining the filename the log and listing files
+     * should have
      * @param filename_ the path passed into the program to the source code file
      */
     public void initialise(String filename_) {
@@ -103,8 +104,8 @@ public class OutputController {
         // Output errors and warnings to the program listing
         listing.addErrorsToListing(errorHandler.getErrors());
         listing.addErrorsToListing(errorHandler.getWarnings());
-        // Exit if there are any errors, to prevent the compiler moving onto the next phase until all errors from that
-        // phase are resolved
+        // Exit if there are any errors, to prevent the compiler moving onto the next phase until
+        // all errors from that phase are resolved
         if (hasErrors())
             System.exit(1);
     }
@@ -160,7 +161,6 @@ public class OutputController {
         listing.flushListing();
     }
 
-
     // Getters and queries
 
     public boolean hasErrors() {
@@ -174,7 +174,6 @@ public class OutputController {
     public boolean hasWarningsOrErrors() {
         return hasErrors() || hasWarnings();
     }
-
 
     /**
      * Output to both stdout and log file

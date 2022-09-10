@@ -109,11 +109,11 @@ public class Parser {
         try {
             syntaxTree = program();
         } catch (CD22ParserException e) {
-            // We want to catch the exception so the program doesn't crash, but errors will be outputted to the user
-            // via the output controller so no need to do anything here
+            // We want to catch the exception so the program doesn't crash, but errors will be
+            // outputted to the user via the output controller so no need to do anything here
         } catch (CD22EofException e) {
-            // End of file reached while in panic mode error recovery. The error that set off panic mode will exist in
-            // the error handler so no need to do anything here
+            // End of file reached while in panic mode error recovery. The error that set off panic
+            // mode will exist in the error handler so no need to do anything here
         }
         if (!lookahead.isEof() && !outputController.hasErrors()) {
             errorWithoutException(Errors.NOT_AT_EOF);
@@ -420,7 +420,8 @@ public class Parser {
         TreeNode t = new TreeNode(TreeNodes.NTDECL);
         if (lookahead.getToken() == Tokens.TIDEN && allowStructTypes) {
             // structid
-            int symbolTableId = symbolTable.addSymbol(SymbolType.VARIABLE, nameIdenToken, currentScope);
+            int symbolTableId =
+                symbolTable.addSymbol(SymbolType.VARIABLE, nameIdenToken, currentScope);
             t.setSymbolTableId(symbolTableId);
             int typeId =
                 symbolTable.getSymbolIdFromReference(lookahead.getTokenLiteral(), currentScope);
@@ -430,10 +431,12 @@ public class Parser {
             match(Tokens.TIDEN);
         } else {
             // stype
-            int symbolTableId = symbolTable.addSymbol(SymbolType.VARIABLE, nameIdenToken, currentScope, true);
+            int symbolTableId =
+                symbolTable.addSymbol(SymbolType.VARIABLE, nameIdenToken, currentScope, true);
             t.setSymbolTableId(symbolTableId);
 
-            PrimitiveTypeSymbol typeSymbol = (PrimitiveTypeSymbol)symbolTable.getSymbol(symbolTableId);
+            PrimitiveTypeSymbol typeSymbol =
+                (PrimitiveTypeSymbol) symbolTable.getSymbol(symbolTableId);
             typeSymbol.setVal(stype());
             t.setNodeType(TreeNodes.NSDECL);
         }

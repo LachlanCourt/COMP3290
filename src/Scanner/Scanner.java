@@ -12,7 +12,8 @@ import Common.Utils.MatchTypes;
 import Scanner.Token.Tokens;
 import java.io.File;
 import java.io.FileNotFoundException;
-import java.util.ArrayList;
+import java.util.LinkedList;
+import java.util.Queue;
 
 public class Scanner {
     private enum ContextStates {
@@ -461,8 +462,8 @@ public class Scanner {
      * Complete a full scan of the source code and generate an array list of tokens
      * @return an array list of tokens identified by the scanner
      */
-    public ArrayList<Token> getTokenStream() {
-        ArrayList<Token> tokenStream = new ArrayList<Token>();
+    public Queue<Token> getTokenStream() {
+        Queue<Token> tokenStream = new LinkedList<Token>();
 
         // Loop until we retrieve an EOF token
         Token t = null;

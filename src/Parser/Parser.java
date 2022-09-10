@@ -19,10 +19,10 @@ import Scanner.Token;
 import Scanner.Token.Tokens;
 import java.io.EOFException;
 import java.util.ArrayList;
+import java.util.Queue;
 
 public class Parser {
-    private ArrayList<Token> tokenStream;
-    private int tokenStreamIndex;
+    private Queue<Token> tokenStream;
     private final Scanner scanner;
     private Token lookahead;
     private Token previousLookahead;
@@ -39,7 +39,6 @@ public class Parser {
     public Parser(Scanner s_, SymbolTable symbolTable_, OutputController outputController_) {
         scanner = s_;
         symbolTable = symbolTable_;
-        tokenStreamIndex = 0;
         outputController = outputController_;
         utils = Utils.getUtils();
     }
@@ -53,10 +52,10 @@ public class Parser {
     }
 
     public Token getToken() {
-        if (tokenStreamIndex < tokenStream.size()) {
-            return tokenStream.get(tokenStreamIndex++);
+        if (tokenStream.size() > 1) {
+            return tokenStream.poll();
         } else {
-            return tokenStream.get(tokenStream.size() - 1);
+            return tokenStream.peek();
         }
     }
 

@@ -3,9 +3,9 @@
  ****    c3308061
  ****    Lachlan Court
  ****    10/09/2022
- ****    Exception for when the end of file is reached during panic mode error
- ****    recovery
+ ****    Exception for various parsing errors throughout the Parser's recursive descent algorithm to
+ *allow jumping to
+ ****    specific areas of the parse
  *******************************************************************************/
-package Common;
-
-public class CD22EofException extends Exception {}
+package Parser;
+public class CD22ParserException extends Exception {}

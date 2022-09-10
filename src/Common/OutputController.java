@@ -31,7 +31,8 @@ public class OutputController {
         listing.initialise(filename + ".lst");
         filename += ".log";
         try {
-        fileOut = new PrintStream(filename); } catch (FileNotFoundException e) {
+            fileOut = new PrintStream(filename);
+        } catch (FileNotFoundException e) {
             System.err.println("Log file could not be opened");
         }
     }
@@ -62,8 +63,8 @@ public class OutputController {
     public void reportWarnings(boolean outputToFile) {
         if (errorHandler.hasWarnings()) {
             System.out.println("\nWarnings exist within the compilation process:\n");
-            if(outputToFile)
-                  outputToFile("\nWarnings exist within the compilation process:\n");
+            if (outputToFile)
+                outputToFile("\nWarnings exist within the compilation process:\n");
             for (ErrorMessage warning : errorHandler.getWarnings()) {
                 System.out.println(warning.toString(true));
                 if (outputToFile)
@@ -84,8 +85,8 @@ public class OutputController {
         reportWarnings(true);
         listing.addErrorsToListing(errorHandler.getErrors());
         listing.addErrorsToListing(errorHandler.getWarnings());
-                if (hasErrors())
-                    System.exit(1);
+        if (hasErrors())
+            System.exit(1);
     }
 
     /**
@@ -96,7 +97,8 @@ public class OutputController {
      * @param error         the error type
      * @param data          the token that caused the error
      */
-    public void addError(int currentRow, int currentColumn, ErrorMessage.Errors error, String data) {
+    public void addError(
+        int currentRow, int currentColumn, ErrorMessage.Errors error, String data) {
         errorHandler.addError(currentRow, currentColumn, error, data);
     }
 
@@ -177,8 +179,8 @@ public class OutputController {
     }
 
     private void outputToFile(String data) {
-      if (fileOut != null) {
-          fileOut.println(data);
-      }
+        if (fileOut != null) {
+            fileOut.println(data);
+        }
     }
 }

@@ -8,60 +8,94 @@
  *******************************************************************************/
 package Common;
 
-import java.io.File;
-import java.io.FileNotFoundException;
+import java.io.*;
 
 public class OutputController {
     private ErrorHandler errorHandler;
     private Listing listing;
+    private String filename;
+
+    private PrintStream fileOut;
 
     public OutputController() {
         errorHandler = new ErrorHandler();
         listing = new Listing();
     }
 
+    public void initialise(String filename_) {
+        // Strip directory path
+        String[] arr = filename_.split("/");
+        filename = arr.length > 0 ? arr[arr.length - 1] : filename_;
+        // Remove existing extension and add .log
+        filename = filename.substring(0, filename.lastIndexOf("."));
+        listing.initialise(filename + ".lst");
+        filename += ".log";
+        try {
+            fileOut = new PrintStream(filename);
+        } catch (FileNotFoundException e) {
+            System.err.println("Log file could not be opened");
+        }
+    }
+
     /**
      * Output the errors to standard error
      */
-    public void reportErrors() {
+    public void reportErrors(boolean outputToFile) {
         if (errorHandler.hasErrors()) {
-            System.err.println("Errors exist within the compilation process:\n");
+            System.out.println("Errors exist within the compilation process:\n");
+            if (outputToFile)
+                outputToFile("Errors exist within the compilation process:\n");
             for (ErrorMessage error : errorHandler.getErrors()) {
-                System.err.println(error.toString(true));
+                System.out.println(error.toString(true));
+                if (outputToFile)
+                    outputToFile(error.toString(false));
             }
         }
+    }
+
+    public void reportErrors() {
+        reportErrors(false);
     }
 
     /**
      * Output the warnings to standard error
      */
-    public void reportWarnings() {
+    public void reportWarnings(boolean outputToFile) {
         if (errorHandler.hasWarnings()) {
-            System.err.println("\nWarnings exist within the compilation process:\n");
+            System.out.println("\nWarnings exist within the compilation process:\n");
+            if (outputToFile)
+                outputToFile("\nWarnings exist within the compilation process:\n");
             for (ErrorMessage warning : errorHandler.getWarnings()) {
-                System.err.println(warning.toString(true));
+                System.out.println(warning.toString(true));
+                if (outputToFile)
+                    outputToFile(warning.toString(false));
             }
         }
+    }
+
+    public void reportWarnings() {
+        reportWarnings(false);
     }
 
     /**
      * Output all errors and warnings, including adding them to the listing
      */
     public void reportErrorsAndWarnings() {
-        reportErrors();
-        reportWarnings();
+        reportErrors(true);
+        reportWarnings(true);
         listing.addErrorsToListing(errorHandler.getErrors());
         listing.addErrorsToListing(errorHandler.getWarnings());
-        //        if (hasErrors())
-        //            System.exit(1);
+        if (hasErrors())
+            System.exit(1);
     }
 
     /**
      * Add a single error and associated data to the error handler
-     * @param currentRow row of the token
+     *
+     * @param currentRow    row of the token
      * @param currentColumn column of the token
-     * @param error the error type
-     * @param data the token that caused the error
+     * @param error         the error type
+     * @param data          the token that caused the error
      */
     public void addError(
         int currentRow, int currentColumn, ErrorMessage.Errors error, String data) {
@@ -74,9 +108,10 @@ public class OutputController {
 
     /**
      * Add a single warning and associated data to the error handler
-     * @param currentRow row of the token
+     *
+     * @param currentRow    row of the token
      * @param currentColumn column of the token
-     * @param warning the error type
+     * @param warning       the error type
      */
     public void addWarning(int currentRow, int currentColumn, ErrorMessage.Errors warning) {
         errorHandler.addWarning(currentRow, currentColumn, warning);
@@ -84,6 +119,7 @@ public class OutputController {
 
     /**
      * Add a single character to the listing
+     *
      * @param c the character to be added to the listing
      */
     public void addListingCharacter(String c) {
@@ -91,7 +127,7 @@ public class OutputController {
     }
 
     /**
-     * Recall the listing's flushLishing function
+     * Re-call the listing's flushListing function
      */
     public void flushListing() {
         listing.flushListing();
@@ -99,6 +135,7 @@ public class OutputController {
 
     /**
      * Retrieve a specific character from the listing given a specific row and column
+     *
      * @param row target row of character
      * @param col target column of character
      * @return the character at the specified location
@@ -106,7 +143,7 @@ public class OutputController {
     public String getCharacterFromListing(int row, int col) {
         java.util.Scanner fileScanner = null;
         try {
-            fileScanner = new java.util.Scanner(new File("listing.txt"));
+            fileScanner = new java.util.Scanner(new File(filename));
         } catch (FileNotFoundException e) {
             System.err.println("Listing file does not exist");
             System.exit(1);
@@ -134,5 +171,16 @@ public class OutputController {
 
     public boolean hasWarningsOrErrors() {
         return hasErrors() || hasWarnings();
+    }
+
+    public void out(String data) {
+        System.out.println(data);
+        outputToFile(data);
+    }
+
+    private void outputToFile(String data) {
+        if (fileOut != null) {
+            fileOut.println(data);
+        }
     }
 }

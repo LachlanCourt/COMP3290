@@ -1,13 +1,16 @@
 package CodeGenerator;
 
 import Common.CD22ParserException;
+import Common.OutputController;
 import Parser.Parser;
 
 public class CodeGenerator {
-    public Parser parser;
+    private Parser parser;
+    private OutputController outputController;
 
-    public CodeGenerator(Parser p_) {
+    public CodeGenerator(Parser p_, OutputController oc_) {
         parser = p_;
+        outputController = oc_;
     }
 
     public void initialise() {
@@ -16,6 +19,6 @@ public class CodeGenerator {
 
     public void run() {
         parser.run();
-        System.out.println(parser);
+        outputController.out(parser.toString());
     }
 }

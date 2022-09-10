@@ -16,13 +16,19 @@ public class Listing {
     private String currentLine;
     private int lineNumber;
 
+    private String filename;
+
     public Listing() {
         currentLine = "";
         lineNumber = 1;
+    }
+
+    public void initialise(String filename_) {
+        filename = filename_;
 
         // Open and close the file to clear it and start fresh
         try {
-            new FileWriter("listing.txt").close();
+            new FileWriter(filename).close();
         } catch (IOException e) {
             System.err.println("An error occurred creating the listing file");
             e.printStackTrace();
@@ -34,7 +40,7 @@ public class Listing {
      */
     private void outputCurrentLine() {
         try {
-            FileWriter writer = new FileWriter("listing.txt", true);
+            FileWriter writer = new FileWriter(filename, true);
             writer.write(lineNumber + currentLine + "\n");
             writer.close();
             currentLine = "";
@@ -71,7 +77,7 @@ public class Listing {
      */
     public void addErrorsToListing(ArrayList<ErrorMessage> errors) {
         try {
-            FileWriter writer = new FileWriter("listing.txt", true);
+            FileWriter writer = new FileWriter(filename, true);
             writer.write("\n");
             for (ErrorMessage e : errors) {
                 writer.write(e.toString(false) + "\n");

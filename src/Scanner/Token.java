@@ -88,13 +88,9 @@ public class Token {
     }
 
     /**
-     * The EOF token is a special kind that requires no other data. A boolean is passed in to
-     * prevent accidentally creating one with the implicit default constructor. It's value does not
-     * matter.
-     *
-     * @param eof an arbitrary variable to differentiate from the default constructor
+     * The EOF token is a special kind that requires no other data. It's value does not matter.
      */
-    public Token(boolean eof) {
+    public Token() {
         token = Tokens.TTEOF;
         tokenLiteral = "";
     }

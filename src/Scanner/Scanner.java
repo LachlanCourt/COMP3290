@@ -58,7 +58,7 @@ public class Scanner {
         utils = Common.Utils.getUtils();
     }
 
-    public void init(String filename) {
+    public void initialise(String filename) {
         fileScanner = null;
         try {
             fileScanner = new java.util.Scanner(new File(filename));
@@ -71,6 +71,7 @@ public class Scanner {
 
     /**
      * Returns whether the scanner has reached the end of file
+     *
      * @return the result of a scanner hasNext function on the current source file
      */
     private boolean eof() {
@@ -353,6 +354,7 @@ public class Scanner {
     /**
      * Takes a string that has been determined to be one and only one token, and assigns the correct
      * type to it
+     *
      * @param tokenLiteral a string to be matched into one and only one token
      * @return the token type that the string matches
      */
@@ -425,6 +427,7 @@ public class Scanner {
 
     /**
      * Retrieve the next valid token from the source file
+     *
      * @return a single token determined from the source code
      */
     private Token getToken() {
@@ -438,7 +441,7 @@ public class Scanner {
         if (buffer.length() == 0 && eof()) {
             outputController.flushListing();
             fileScanner.close();
-            return new Token(true);
+            return new Token();
         }
 
         // Create a new token by reading a candidate token string out of the buffer
@@ -462,6 +465,16 @@ public class Scanner {
             t = getToken();
             tokenStream.add(t);
         }
+
+        // Output the tokens if in debug mode
+        if (System.getenv("DEBUG") != null && System.getenv("DEBUG").compareTo("true") == 0) {
+            outputController.out("TOKENS");
+            for (Token outToken : tokenStream) {
+                outputController.out(outToken.toString());
+            }
+            outputController.out("\n");
+        }
+
         return tokenStream;
     }
 }

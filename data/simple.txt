@@ -12,7 +12,11 @@ constants
 
 types
 
-   arrayType def array [7] of arrayStruct end
+    someStruct def
+        g : bool
+    end
+
+   someArrayType def array [7] of someStruct end
 
     arrayStruct def
         x : bool,
@@ -25,7 +29,7 @@ types
 arrays
 
 someArray : arrayType,
-someOtherArray : weewoo
+someOtherArray : someArrayType
 
 main
 i : bool,

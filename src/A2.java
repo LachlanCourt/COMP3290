@@ -44,10 +44,11 @@ public class A2 {
         SymbolTable st = SymbolTable.getSymbolTable();
         Scanner s = new Scanner(oc);
         Parser p = new Parser(s, st, oc);
-        CodeGenerator cg = new CodeGenerator(p);
+        CodeGenerator cg = new CodeGenerator(p, oc);
 
-        // Initialise the scanner passing the filename of the source code
-        s.init(args[0]);
+        // Initialise the output controller and scanner passing the filename of the source code
+        oc.initialise(args[0]);
+        s.initialise(args[0]);
 
         // Initialise the parser which gets the token stream from the scanner. As undefined tokens
         // should not be parsed, check for errors before continuing, which will terminate if any are

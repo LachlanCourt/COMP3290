@@ -524,7 +524,7 @@ public class Parser {
 
         int typeId =
             symbolTable.getSymbolIdFromReference(idenList.get(1).getTokenLiteral(), currentScope);
-        if (typeId == -1)
+        if (typeId == -1 || symbolTable.getSymbol(typeId).getSymbolType() != SymbolType.ARRAY_TYPE)
             errorWithoutException(Errors.UNDEFINED_TYPE);
         symbolTable.getSymbol(symbolTableId).setForeignSymbolTableId(typeId);
 
@@ -1318,13 +1318,16 @@ public class Parser {
 
     @Override
     public String toString() {
-        boolean debug =
+        boolean debugEnvironment =
             System.getenv("DEBUG") != null && System.getenv("DEBUG").compareTo("true") == 0;
-        String[] treeList = outputHelper(syntaxTree, debug).split("\\s");
+
+        String[] treeList = outputHelper(syntaxTree, debugEnvironment).split("\\s");
         String formattedTree = "";
         String line = "";
         for (int i = 0; i < treeList.length; i++) {
-            line += treeList[i] + " ";
+            String outValue = treeList[i];
+            int size = (outValue.length() / 7) * 7 + 7;
+            line += outValue + " ".repeat(size - outValue.length());
             if (line.length() >= 70) {
                 formattedTree += line + "\n";
                 line = "";

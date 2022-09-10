@@ -1,9 +1,9 @@
 /*******************************************************************************
- ****    COMP3290 Assignment 1
+ ****    COMP3290 Assignment 2
  ****    c3308061
  ****    Lachlan Court
- ****    10/08/2022
- ****    This class represents a token that has been indentified by the Scanner
+ ****    10/09/2022
+ ****    This class represents a token that has been identified by the Scanner
  *******************************************************************************/
 package Scanner;
 
@@ -148,7 +148,7 @@ public class Token {
             out.append(token.name() + " ,");
             out.append(row + ",");
             out.append(col + ")");
-            return out.toString() + " " + tokenLiteral;
+            return out + " " + tokenLiteral;
         }
     }
 }

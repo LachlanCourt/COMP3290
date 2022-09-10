@@ -1,8 +1,8 @@
 /*******************************************************************************
- ****    COMP3290 Assignment 1
+ ****    COMP3290 Assignment 2
  ****    c3308061
  ****    Lachlan Court
- ****    10/08/2022
+ ****    10/09/2022
  ****    This class is a Scanner for the CD22 programming language
  *******************************************************************************/
 package Scanner;
@@ -457,9 +457,14 @@ public class Scanner {
         return token;
     }
 
+    /**
+     * Complete a full scan of the source code and generate an array list of tokens
+     * @return an array list of tokens identified by the scanner
+     */
     public ArrayList<Token> getTokenStream() {
         ArrayList<Token> tokenStream = new ArrayList<Token>();
 
+        // Loop until we retrieve an EOF token
         Token t = null;
         while (t == null || !t.isEof()) {
             t = getToken();

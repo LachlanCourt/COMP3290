@@ -1,8 +1,8 @@
 /*******************************************************************************
- ****    COMP3290 Assignment 1
+ ****    COMP3290 Assignment 2
  ****    c3308061
  ****    Lachlan Court
- ****    10/08/2022
+ ****    10/09/2022
  ****    This class contains some common functions and lists that are used throughout
  ****    the compiling process
  *******************************************************************************/
@@ -67,6 +67,9 @@ public class Utils {
         return self;
     }
 
+    /**
+     * Intialise the keyword to token hashmap with values
+     */
     private void buildTokensMap() {
         tokenMap = new HashMap<String, Tokens>();
         tokenMap.put("cd22", Tokens.TCD22);
@@ -133,12 +136,22 @@ public class Utils {
         tokenMap.put("false", Tokens.TFALS);
     }
 
+    /**
+     * Gets a token given a string initialiser
+     * @param initialiser value to be checked for a token
+     * @return the enum value that matches the initialiser key, or TUNDF if it does not exist
+     */
     public Tokens getTokenFromInitialiser(String initialiser) {
         if (tokenMap.containsKey(initialiser))
             return tokenMap.get(initialiser);
         return Tokens.TUNDF;
     }
 
+    /**
+     * Gets a string initialiser from a token
+     * @param token enum value to be returned as a string
+     * @return string key that matches the enum value, or null if it does not exist
+     */
     public String getInitialiserFromToken(Tokens token) {
         // The value in the map is lowercase so have an explicit check for CD22
         if (token == Tokens.TCD22)
@@ -215,6 +228,7 @@ public class Utils {
         return true;
     }
 
+    // Overloaded functions to retrieve a series of Tokens as parameters and return those same values as an arraylist
     public ArrayList<Tokens> getTokenList(Tokens first) {
         return new ArrayList<Tokens>(Arrays.asList(first));
     }

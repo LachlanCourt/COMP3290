@@ -21,11 +21,12 @@ arrays
 
 /-- This function loops through the constant array and returns the smallest value
 func findSmallest(const someParameterArray : arrayType) : int
-    smallest : int
+    smallest : int,
+    i : int
 begin
     /-- Assume the smallest is the first element to have a baseline
     smallest = someParameterArray[0].x;
-    for (i = 0; i < arraySize)
+    for (i = 0; i < ARRAYSIZE)
         if (someParameterArray[i].x < smallest)
             smallest = someParameterArray[i].x;
             i += 1;
@@ -35,11 +36,12 @@ end
 
 /-- This function loops through the mutable array and returns the largest value
 func findLargest(someParameterArray : arrayType) : int
-    largest : int
+    largest : int,
+    i : int
 begin
     /-- Assume the smallest is the first element to have a baseline
     largest = someParameterArray[0].x;
-    for (i = 0; i < arraySize)
+    for (i = 0; i < ARRAYSIZE)
         if (someParameterArray[i].x > largest)
             largest = someParameterArray[i].x;
             i += 1;
@@ -62,7 +64,7 @@ main
     largest : int
 begin
     /-- Read values in from stdin
-    for (i = 0; i < arraySize)
+    for (i = 0; i < ARRAYSIZE)
         input someArray[i].x;
         i += 1;
     end

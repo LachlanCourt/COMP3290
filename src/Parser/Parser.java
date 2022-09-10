@@ -1214,7 +1214,7 @@ public class Parser {
                 return new TreeNode(TreeNodes.NSIMP, sdecl(nameIdenToken));
             } else if (symbolTable.getSymbol(typeId).getSymbolType() == SymbolType.ARRAY_TYPE) {
                 // The symbol exists and is an array, parse as arrdecl
-                return new TreeNode(TreeNodes.NSIMP, arrdecl(nameIdenToken));
+                return new TreeNode(TreeNodes.NARRP, arrdecl(nameIdenToken));
             }
             return null;
         }

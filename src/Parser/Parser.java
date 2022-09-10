@@ -23,17 +23,17 @@ import java.util.ArrayList;
 public class Parser {
     private ArrayList<Token> tokenStream;
     private int tokenStreamIndex;
-    private Scanner scanner;
+    private final Scanner scanner;
     private Token lookahead;
     private Token previousLookahead;
 
     private TreeNode syntaxTree;
 
-    private SymbolTable symbolTable;
+    private final SymbolTable symbolTable;
 
     private String currentScope;
 
-    private OutputController outputController;
+    private final OutputController outputController;
     private final Utils utils;
 
     public Parser(Scanner s_, SymbolTable symbolTable_, OutputController outputController_) {
@@ -109,11 +109,11 @@ public class Parser {
         try {
             syntaxTree = program();
         } catch (CD22ParserException e) {
-            // Vibe
-            int i = 2;
+            // We want to catch the exception so the program doesn't crash, but errors will be outputted to the user
+            // via the output controller so no need to do anything here
         } catch (CD22EofException e) {
-            // Vibe
-            int i = 3;
+            // End of file reached while in panic mode error recovery. The error that set off panic mode will exist in
+            // the error handler so no need to do anything here
         }
         if (!lookahead.isEof() && !outputController.hasErrors()) {
             errorWithoutException(Errors.NOT_AT_EOF);
@@ -180,19 +180,6 @@ public class Parser {
     public ArrayList<Token> parseColonSeparatedIdentifiers() throws CD22ParserException {
         ArrayList<Token> list = new ArrayList<Token>();
         list.add(parseIdentifierFollowedByColon().get(0));
-        if (lookahead.getToken() == Tokens.TIDEN) {
-            list.add(lookahead);
-            match(Tokens.TIDEN);
-        } else {
-            error(Errors.EXPECTED_IDENTIFIER);
-        }
-        return list;
-    }
-
-    public ArrayList<Token> parseColonSeparatedIdentifiers(Token first) throws CD22ParserException {
-        ArrayList<Token> list = new ArrayList<Token>();
-        list.add(first);
-        gracefullyMatchColon();
         if (lookahead.getToken() == Tokens.TIDEN) {
             list.add(lookahead);
             match(Tokens.TIDEN);
@@ -428,12 +415,13 @@ public class Parser {
 
     private TreeNode sdecl(Token nameIdenToken, boolean allowStructTypes)
         throws CD22ParserException {
-        int symbolTableId = symbolTable.addSymbol(SymbolType.VARIABLE, nameIdenToken, currentScope);
         // Grab the symbol table ID for this node either from the NTDECL parent node or from the
         // variable name referencing it
-        TreeNode t = new TreeNode(TreeNodes.NTDECL, symbolTableId);
+        TreeNode t = new TreeNode(TreeNodes.NTDECL);
         if (lookahead.getToken() == Tokens.TIDEN && allowStructTypes) {
             // structid
+            int symbolTableId = symbolTable.addSymbol(SymbolType.VARIABLE, nameIdenToken, currentScope);
+            t.setSymbolTableId(symbolTableId);
             int typeId =
                 symbolTable.getSymbolIdFromReference(lookahead.getTokenLiteral(), currentScope);
             if (typeId == -1)
@@ -442,7 +430,11 @@ public class Parser {
             match(Tokens.TIDEN);
         } else {
             // stype
-            symbolTable.getSymbol(symbolTableId).setVal(stype());
+            int symbolTableId = symbolTable.addSymbol(SymbolType.VARIABLE, nameIdenToken, currentScope, true);
+            t.setSymbolTableId(symbolTableId);
+
+            PrimitiveTypeSymbol typeSymbol = (PrimitiveTypeSymbol)symbolTable.getSymbol(symbolTableId);
+            typeSymbol.setVal(stype());
             t.setNodeType(TreeNodes.NSDECL);
         }
         return t;
@@ -728,16 +720,6 @@ public class Parser {
         return null;
     }
 
-    private TreeNode fncall() throws CD22ParserException {
-        if (lookahead.getToken() == Tokens.TIDEN) {
-            Token token = lookahead;
-            match(Tokens.TIDEN);
-            return fncall(token);
-        }
-        error(Errors.EXPECTED_IDENTIFIER);
-        return null;
-    }
-
     private TreeNode fncall(Token nameIdenToken) throws CD22ParserException {
         TreeNode t = new TreeNode(TreeNodes.NFCALL,
             symbolTable.getSymbolIdFromReference(nameIdenToken.getTokenLiteral(), "@global"));
@@ -970,16 +952,6 @@ public class Parser {
         return ifstat();
     }
 
-    private TreeNode callstat() throws CD22ParserException {
-        if (lookahead.getToken() == Tokens.TIDEN) {
-            Token token = lookahead;
-            match(Tokens.TIDEN);
-            return callstat(token);
-        }
-        error(Errors.EXPECTED_IDENTIFIER);
-        return null;
-    }
-
     private TreeNode callstat(Token nameIdenToken) throws CD22ParserException {
         TreeNode t = new TreeNode(TreeNodes.NCALL,
             symbolTable.getSymbolIdFromReference(nameIdenToken.getTokenLiteral(), currentScope));
@@ -1154,7 +1126,7 @@ public class Parser {
         match(Tokens.TFUNC);
         int symbolTableId = 0;
         if (lookahead.getToken() == Tokens.TIDEN) {
-            symbolTableId = symbolTable.addSymbol(SymbolType.FUNCTION, lookahead);
+            symbolTableId = symbolTable.addSymbol(SymbolType.FUNCTION, lookahead, "@global", true);
             currentScope = lookahead.getTokenLiteral();
             match(Tokens.TIDEN);
             t.setSymbolTableId(symbolTableId);
@@ -1167,7 +1139,7 @@ public class Parser {
             t.setNextChild(plistNode);
         match(Tokens.TRPAR);
         gracefullyMatchColon();
-        symbolTable.getSymbol(symbolTableId).setVal(rtype());
+        ((PrimitiveTypeSymbol) symbolTable.getSymbol(symbolTableId)).setVal(rtype());
         TreeNode funcbodyNode = funcbody();
         t.setNextChild(funcbodyNode.getLeft());
         t.setNextChild(funcbodyNode.getMid());

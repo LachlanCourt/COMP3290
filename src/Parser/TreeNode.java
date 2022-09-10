@@ -1,5 +1,7 @@
 package Parser;
 
+import Common.LiteralSymbol;
+import Common.PrimitiveTypeSymbol;
 import Common.Symbol;
 import Common.SymbolTable;
 
@@ -204,7 +206,7 @@ public class TreeNode {
             case NSTRG:
             case NILIT:
             case NFLIT:
-                return " " + symbolTable.getSymbol(symbolTableId).getVal();
+                return " " + ((LiteralSymbol) symbolTable.getSymbol(symbolTableId)).getVal();
 
             case NPROG:
             case NSIMV:

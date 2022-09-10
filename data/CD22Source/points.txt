@@ -41,7 +41,8 @@ end
 
 /-- Find the point with the furthest distance from the point identified by the index
 func findFurthestDistanceFromIndex(index : int, furthestDistance : furthestDistanceType) : int
-    i : int
+    i : int,
+    furthestDistanceIndex : int
 begin
     /-- Start by calculating according to the first item in the list as a baseline
     furthestDistance.a = index;

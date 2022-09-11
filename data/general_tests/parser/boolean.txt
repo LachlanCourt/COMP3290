@@ -1,0 +1,22 @@
+CD22 BooleanExpressions
+
+main
+    i : bool,
+    j : int
+begin
+    i = true;
+    j = 7;
+
+    if (i and (not i xor j < 12) or j + 7 == 14)
+        printline "out";
+    end
+
+    if ((i and j + 7 == 14) or (i xor j > 12))
+        printline "out";
+    end
+
+    if (i and not i xor j < 12 or j + 7 == 14 and i and j + 7 == 14 or i xor j > 12)
+        printline "out";
+    end
+
+end CD22 BooleanExpressions

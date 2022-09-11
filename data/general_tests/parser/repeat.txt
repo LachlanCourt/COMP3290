@@ -1,0 +1,30 @@
+CD22 RepeatTests
+
+main
+    i : bool,
+    j : int,
+    inputVal : int
+begin
+    repeat (i = true)
+        input inputVal;
+
+        if (inputVal == 10)
+            j = 5;
+        elif (inputVal < 10)
+            if (inputVal > 5)
+                j = 4;
+            else
+                j = 3;
+            end
+        end
+
+        if (inputVal > 10)
+            j = 6;
+        end
+
+        if (j == 3)
+            i = false;
+        end
+    until i;
+    printline inputVal, " is equal to or less than 5";
+end CD22 RepeatTests

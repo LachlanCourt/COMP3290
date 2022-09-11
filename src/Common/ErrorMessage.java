@@ -74,8 +74,8 @@ public class ErrorMessage {
      */
     private void setErrorMessage() {
         String errorText = getErrorText();
-        errorMessage = (isWarning ? "Warning" : "Error") + " on line " + row + " around column " + col
-            + ": " + errorText;
+        errorMessage = (isWarning ? "Warning" : "Error") + " on line " + row + " around column "
+            + col + ": " + errorText;
     }
 
     /**

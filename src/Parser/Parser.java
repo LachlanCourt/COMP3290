@@ -872,7 +872,8 @@ public class Parser {
             t.setNodeType(TreeNodes.NPOW);
             TreeNode exponentNode = new TreeNode(exponent());
             factr(exponentNode);
-            t.setNextChild(exponentNode.getNodeType() == null ? exponentNode.getLeft() : exponentNode);
+            t.setNextChild(
+                exponentNode.getNodeType() == null ? exponentNode.getLeft() : exponentNode);
         }
     }
 
@@ -1919,7 +1920,8 @@ public class Parser {
             // Ensure strings are padded correctly
             if (outValue.contains("\"")) {
                 stringVal = !stringVal;
-                if (outValue.length() > 1 && outValue.endsWith("\"")) stringVal = false;
+                if (outValue.length() > 1 && outValue.endsWith("\""))
+                    stringVal = false;
                 if (!stringVal) {
                     int size = (line.length() / 7) * 7 + 7;
                     line.append(" ".repeat(size - line.length()));

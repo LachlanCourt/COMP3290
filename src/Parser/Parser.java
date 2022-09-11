@@ -615,7 +615,8 @@ public class Parser {
             if (symbolTable.getSymbol(symbolTableId) instanceof PrimitiveTypeSymbol) {
                 ((PrimitiveTypeSymbol) symbolTable.getSymbol(symbolTableId)).setVal(stype());
             } else {
-                // TODO An error has occured, likely related to the variable already being defined in this scope
+                // TODO An error has occured, likely related to the variable already being defined
+                // in this scope
                 stype();
             }
 
@@ -1179,8 +1180,14 @@ public class Parser {
         TreeNode t = new TreeNode(TreeNodes.NMAIN);
         match(Tokens.TMAIN);
         currentScope = "@main";
-        // Local variable list
-        t.setNextChild(slist());
+
+        try {
+            // Local variable list
+            t.setNextChild(slist());
+        } catch (CD22ParserException e) {
+            panic(utils.getTokenList(Tokens.TBEGN));
+        }
+
         match(Tokens.TBEGN);
         // Statements
         t.setNextChild(stats());
@@ -1667,7 +1674,8 @@ public class Parser {
         if (symbolTable.getSymbol(symbolTableId) instanceof PrimitiveTypeSymbol) {
             ((PrimitiveTypeSymbol) symbolTable.getSymbol(symbolTableId)).setVal(rtype());
         } else {
-            // TODO An error has occured, likely related to the variable already being defined in this scope
+            // TODO An error has occured, likely related to the variable already being defined in
+            // this scope
             rtype();
         }
         // Match the function body and pull its children up to attach to the func node instead
@@ -1894,12 +1902,35 @@ public class Parser {
         StringBuilder formattedTree = new StringBuilder();
         StringBuilder line = new StringBuilder();
         // Loop through and add lines of 10 columns where each word is padded to a multiple of 7
+        boolean stringVal = false;
         for (String outValue : treeList) {
-            int size = (outValue.length() / 7) * 7 + 7;
-            line.append(outValue).append(" ".repeat(size - outValue.length()));
-            if (line.length() >= 70) {
-                formattedTree.append(line).append("\n");
-                line = new StringBuilder();
+            line.append(outValue);
+            // Ensure strings are padded correctly
+            if (outValue.contains("\"")) {
+                stringVal = !stringVal;
+                if (outValue.endsWith("\"")) stringVal = false;
+                if (!stringVal) {
+                    int size = (line.length() / 7) * 7 + 7;
+                    line.append(" ".repeat(size - line.length()));
+                    if (line.length() >= 70) {
+                        formattedTree.append(line).append("\n");
+                        line = new StringBuilder();
+                    }
+                    continue;
+                }
+            }
+            // This output will automatically trim strings to single space separated words, but if
+            // there are multiple spaces they will still carry through for codegen
+            if (stringVal) {
+                line.append(" ");
+            } else {
+                // Pad a regular node to multiple of 7 characters
+                int size = (outValue.length() / 7) * 7 + 7;
+                line.append(" ".repeat(size - outValue.length()));
+                if (line.length() >= 70) {
+                    formattedTree.append(line).append("\n");
+                    line = new StringBuilder();
+                }
             }
         }
         // Output the last line

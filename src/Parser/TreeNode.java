@@ -224,7 +224,10 @@ public class TreeNode {
             case NILIT:
             case NFLIT:
                 Symbol literalSymbol = symbolTable.getSymbol(symbolTableId);
-                return " " + (literalSymbol instanceof LiteralSymbol ? ((LiteralSymbol) symbolTable.getSymbol(symbolTableId)).getVal() : "null");
+                return " "
+                    + (literalSymbol instanceof LiteralSymbol
+                            ? ((LiteralSymbol) symbolTable.getSymbol(symbolTableId)).getVal()
+                            : "null");
 
             // These node types will always have an entry in the symbol table as a regular symbol
             // with a lexeme. If they don't, null is returned for the purposes of error checking

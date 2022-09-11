@@ -223,7 +223,8 @@ public class TreeNode {
             case NSTRG:
             case NILIT:
             case NFLIT:
-                return " " + ((LiteralSymbol) symbolTable.getSymbol(symbolTableId)).getVal();
+                Symbol literalSymbol = symbolTable.getSymbol(symbolTableId);
+                return " " + (literalSymbol instanceof LiteralSymbol ? ((LiteralSymbol) symbolTable.getSymbol(symbolTableId)).getVal() : "null");
 
             // These node types will always have an entry in the symbol table as a regular symbol
             // with a lexeme. If they don't, null is returned for the purposes of error checking
@@ -236,11 +237,11 @@ public class TreeNode {
             case NTDECL:
             case NINIT:
             case NARRD:
-                Symbol symbol = symbolTable.getSymbol(symbolTableId);
-                if (symbol == null) {
+                Symbol idenSymbol = symbolTable.getSymbol(symbolTableId);
+                if (idenSymbol == null) {
                     return " null";
                 }
-                return " " + symbol.getRef();
+                return " " + idenSymbol.getRef();
         }
         return "";
     }

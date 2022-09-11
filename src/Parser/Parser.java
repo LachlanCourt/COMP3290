@@ -606,10 +606,19 @@ public class Parser {
             // adder tp indicate that the symbol is a primitive type
             int symbolTableId =
                 symbolTable.addSymbol(SymbolType.VARIABLE, nameIdenToken, currentScope, true);
+            if (symbolTableId == -1) {
+                // TODO semantic error, already defined
+            }
             t.setSymbolTableId(symbolTableId);
 
             // Get the symbol and set its type to an stype
-            ((PrimitiveTypeSymbol) symbolTable.getSymbol(symbolTableId)).setVal(stype());
+            if (symbolTable.getSymbol(symbolTableId) instanceof PrimitiveTypeSymbol) {
+                ((PrimitiveTypeSymbol) symbolTable.getSymbol(symbolTableId)).setVal(stype());
+            } else {
+                // TODO An error has occured, likely related to the variable already being defined in this scope
+                stype();
+            }
+
             t.setNodeType(TreeNodes.NSDECL);
         }
         return t;
@@ -1169,6 +1178,7 @@ public class Parser {
     private TreeNode mainbody() throws CD22ParserException, CD22EofException {
         TreeNode t = new TreeNode(TreeNodes.NMAIN);
         match(Tokens.TMAIN);
+        currentScope = "@main";
         // Local variable list
         t.setNextChild(slist());
         match(Tokens.TBEGN);
@@ -1636,6 +1646,9 @@ public class Parser {
         int symbolTableId = 0;
         if (lookahead.getToken() == Tokens.TIDEN) {
             symbolTableId = symbolTable.addSymbol(SymbolType.FUNCTION, lookahead, "@global", true);
+            if (symbolTableId == -1) {
+                // TODO semantic error, already defined
+            }
             currentScope = lookahead.getTokenLiteral();
             match(Tokens.TIDEN);
             t.setSymbolTableId(symbolTableId);
@@ -1651,7 +1664,12 @@ public class Parser {
         match(Tokens.TRPAR);
         gracefullyMatchColon();
         // Match the return type, which may be void
-        ((PrimitiveTypeSymbol) symbolTable.getSymbol(symbolTableId)).setVal(rtype());
+        if (symbolTable.getSymbol(symbolTableId) instanceof PrimitiveTypeSymbol) {
+            ((PrimitiveTypeSymbol) symbolTable.getSymbol(symbolTableId)).setVal(rtype());
+        } else {
+            // TODO An error has occured, likely related to the variable already being defined in this scope
+            rtype();
+        }
         // Match the function body and pull its children up to attach to the func node instead
         TreeNode funcbodyNode = funcbody();
         t.setNextChild(funcbodyNode.getLeft());

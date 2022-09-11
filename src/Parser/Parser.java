@@ -177,6 +177,7 @@ public class Parser {
             lookahead = getToken();
         }
         // End of file was reached without finding a synchronising token
+        errorWithoutException(Errors.UNEXPECTED_EOF);
         throw new CD22EofException();
     }
 
@@ -606,10 +607,20 @@ public class Parser {
             // adder tp indicate that the symbol is a primitive type
             int symbolTableId =
                 symbolTable.addSymbol(SymbolType.VARIABLE, nameIdenToken, currentScope, true);
+            if (symbolTableId == -1) {
+                // TODO semantic error, already defined
+            }
             t.setSymbolTableId(symbolTableId);
 
             // Get the symbol and set its type to an stype
-            ((PrimitiveTypeSymbol) symbolTable.getSymbol(symbolTableId)).setVal(stype());
+            if (symbolTable.getSymbol(symbolTableId) instanceof PrimitiveTypeSymbol) {
+                ((PrimitiveTypeSymbol) symbolTable.getSymbol(symbolTableId)).setVal(stype());
+            } else {
+                // TODO An error has occured, likely related to the variable already being defined
+                // in this scope
+                stype();
+            }
+
             t.setNodeType(TreeNodes.NSDECL);
         }
         return t;
@@ -745,7 +756,7 @@ public class Parser {
         // Parse the left hand side of the equation
         t.setNextChild(term());
         // Sets node type, if it is not epsilon
-        t.setNextChild(exprr(t));
+        exprr(t);
         if (t.getNodeType() == null) {
             // Epsilon path of recursive exprr rule. If no following token was found, just return
             // the term as its own node
@@ -759,22 +770,25 @@ public class Parser {
      * @param t the parent node of the rule, to assign a node type to
      * @return expr node
      */
-    private TreeNode exprr(TreeNode t) throws CD22ParserException {
+    private void exprr(TreeNode t) throws CD22ParserException {
         // Match a + and update the node name
         if (lookahead.getToken() == Tokens.TPLUS) {
             match(Tokens.TPLUS);
             t.setNodeType(TreeNodes.NADD);
             // Add a term as the right hand side
-            return term();
-            // Match a - and update the node nam
+            TreeNode termNode = new TreeNode(term());
+            exprr(termNode);
+            t.setNextChild(termNode.getNodeType() == null ? termNode.getLeft() : termNode);
+            // Match a - and update the node name
         } else if (lookahead.getToken() == Tokens.TMINS) {
             match(Tokens.TMINS);
             t.setNodeType(TreeNodes.NSUB);
             // Add a term as the right hand side
-            return term();
+            TreeNode termNode = new TreeNode(term());
+            exprr(termNode);
+            t.setNextChild(termNode.getNodeType() == null ? termNode.getLeft() : termNode);
         }
         // No right hand side
-        return null;
     }
 
     /**
@@ -786,7 +800,7 @@ public class Parser {
         // Parse a fact as the left hand side
         t.setNextChild(fact());
         // Sets node type, if it is not epsilon
-        t.setNextChild(termr(t));
+        termr(t);
         if (t.getNodeType() == null) {
             // Epsilon path of recursive termr rule. If no following token was found, just return
             // the fact as its own node
@@ -800,27 +814,32 @@ public class Parser {
      * @param t parent node to assign a type to
      * @return term node
      */
-    private TreeNode termr(TreeNode t) throws CD22ParserException {
+    private void termr(TreeNode t) throws CD22ParserException {
         // Match a * and return a fact as the right hand side
         if (lookahead.getToken() == Tokens.TSTAR) {
             match(Tokens.TSTAR);
             t.setNodeType(TreeNodes.NMUL);
-            return fact();
+            TreeNode factNode = new TreeNode(fact());
+            termr(factNode);
+            t.setNextChild(factNode.getNodeType() == null ? factNode.getLeft() : factNode);
             // Match a / and return a fact as the right hand side
 
         } else if (lookahead.getToken() == Tokens.TDIVD) {
             match(Tokens.TDIVD);
             t.setNodeType(TreeNodes.NDIV);
-            return fact();
+            TreeNode factNode = new TreeNode(fact());
+            termr(factNode);
+            t.setNextChild(factNode.getNodeType() == null ? factNode.getLeft() : factNode);
             // Match a % and return a fact as the right hand side
 
         } else if (lookahead.getToken() == Tokens.TPERC) {
             match(Tokens.TPERC);
             t.setNodeType(TreeNodes.NMOD);
-            return fact();
+            TreeNode factNode = fact();
+            termr(factNode);
+            t.setNextChild(factNode.getNodeType() == null ? factNode.getLeft() : factNode);
         }
         // No right hand side
-        return null;
     }
 
     /**
@@ -832,7 +851,7 @@ public class Parser {
         // Parse an exponent as the left hand side
         t.setNextChild(exponent());
         // Sets node type, if it is not epsilon
-        t.setNextChild(factr(t));
+        factr(t);
         if (t.getNodeType() == null) {
             // Epsilon path of recursive factr rule. If no following token was found, just return
             // the exponent as its own node
@@ -846,14 +865,16 @@ public class Parser {
      * @param t parent node to assign a type to
      * @return fact node
      */
-    private TreeNode factr(TreeNode t) throws CD22ParserException {
+    private void factr(TreeNode t) throws CD22ParserException {
         // Match a ^ and return an exponent as the right hand side
         if (lookahead.getToken() == Tokens.TCART) {
             match(Tokens.TCART);
             t.setNodeType(TreeNodes.NPOW);
-            return exponent();
+            TreeNode exponentNode = new TreeNode(exponent());
+            factr(exponentNode);
+            t.setNextChild(
+                exponentNode.getNodeType() == null ? exponentNode.getLeft() : exponentNode);
         }
-        return null;
     }
 
     /**
@@ -935,7 +956,9 @@ public class Parser {
         // If a logical operation existed, we can set the node type as a boolean expression
         if (t.getMid() != null) {
             t.setNodeType(TreeNodes.NBOOL);
-            t.setNextChild(rel());
+            TreeNode boolrNode = new TreeNode(rel());
+            boolr(boolrNode);
+            t.setNextChild(boolrNode.getNodeType() == null ? boolrNode.getLeft() : boolrNode);
         }
     }
 
@@ -1169,8 +1192,15 @@ public class Parser {
     private TreeNode mainbody() throws CD22ParserException, CD22EofException {
         TreeNode t = new TreeNode(TreeNodes.NMAIN);
         match(Tokens.TMAIN);
-        // Local variable list
-        t.setNextChild(slist());
+        currentScope = "@main";
+
+        try {
+            // Local variable list
+            t.setNextChild(slist());
+        } catch (CD22ParserException e) {
+            panic(utils.getTokenList(Tokens.TBEGN));
+        }
+
         match(Tokens.TBEGN);
         // Statements
         t.setNextChild(stats());
@@ -1413,7 +1443,6 @@ public class Parser {
         t.setSymbolTableId(varNode.getSymbolTableId());
         // Set the variable as a child, and parse any boolean expressions that follow it
         t.setNextChild(varNode);
-        // TODO likely this should be expression not bool
         t.setNextChild(bool());
         return t;
     }
@@ -1636,6 +1665,9 @@ public class Parser {
         int symbolTableId = 0;
         if (lookahead.getToken() == Tokens.TIDEN) {
             symbolTableId = symbolTable.addSymbol(SymbolType.FUNCTION, lookahead, "@global", true);
+            if (symbolTableId == -1) {
+                // TODO semantic error, already defined
+            }
             currentScope = lookahead.getTokenLiteral();
             match(Tokens.TIDEN);
             t.setSymbolTableId(symbolTableId);
@@ -1651,7 +1683,13 @@ public class Parser {
         match(Tokens.TRPAR);
         gracefullyMatchColon();
         // Match the return type, which may be void
-        ((PrimitiveTypeSymbol) symbolTable.getSymbol(symbolTableId)).setVal(rtype());
+        if (symbolTable.getSymbol(symbolTableId) instanceof PrimitiveTypeSymbol) {
+            ((PrimitiveTypeSymbol) symbolTable.getSymbol(symbolTableId)).setVal(rtype());
+        } else {
+            // TODO An error has occured, likely related to the variable already being defined in
+            // this scope
+            rtype();
+        }
         // Match the function body and pull its children up to attach to the func node instead
         TreeNode funcbodyNode = funcbody();
         t.setNextChild(funcbodyNode.getLeft());
@@ -1876,12 +1914,36 @@ public class Parser {
         StringBuilder formattedTree = new StringBuilder();
         StringBuilder line = new StringBuilder();
         // Loop through and add lines of 10 columns where each word is padded to a multiple of 7
+        boolean stringVal = false;
         for (String outValue : treeList) {
-            int size = (outValue.length() / 7) * 7 + 7;
-            line.append(outValue).append(" ".repeat(size - outValue.length()));
-            if (line.length() >= 70) {
-                formattedTree.append(line).append("\n");
-                line = new StringBuilder();
+            line.append(outValue);
+            // Ensure strings are padded correctly
+            if (outValue.contains("\"")) {
+                stringVal = !stringVal;
+                if (outValue.length() > 1 && outValue.endsWith("\""))
+                    stringVal = false;
+                if (!stringVal) {
+                    int size = (line.length() / 7) * 7 + 7;
+                    line.append(" ".repeat(size - line.length()));
+                    if (line.length() >= 70) {
+                        formattedTree.append(line).append("\n");
+                        line = new StringBuilder();
+                    }
+                    continue;
+                }
+            }
+            // This output will automatically trim strings to single space separated words, but if
+            // there are multiple spaces they will still carry through for codegen
+            if (stringVal) {
+                line.append(" ");
+            } else {
+                // Pad a regular node to multiple of 7 characters
+                int size = (outValue.length() / 7) * 7 + 7;
+                line.append(" ".repeat(size - outValue.length()));
+                if (line.length() >= 70) {
+                    formattedTree.append(line).append("\n");
+                    line = new StringBuilder();
+                }
             }
         }
         // Output the last line

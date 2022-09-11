@@ -6,9 +6,10 @@ func someFunc(someVar : int) : bool
     end
 
 main
-    i : bool;
+    i : bool,
+    a : float
 
 begin
     i = 5;
-    someFunc(2.5);
+    a = someFunc(2.5);
 end CD22 DoesNotMatch

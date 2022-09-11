@@ -31,16 +31,28 @@ arrays
 someArray : arrayType,
 someOtherArray : someArrayType
 
+func someFunc() : void
+i:int
+begin
+i = 9;
+end
+
+func someFunc() : void
+i:int
+begin
+i = 9;
+end
+
 main
-w : bool,
+i : bool,
 x : int,
-y : float,
+d : float,
 z : int
 
 begin
 
 repeat ()
- w = true;
+ i = true;
  x = 0;
  x += 45;
 until false;

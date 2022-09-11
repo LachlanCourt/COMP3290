@@ -1,4 +1,4 @@
-name: Build Test
+name: Build And Run Test
 
 on:
   push:
@@ -19,5 +19,27 @@ jobs:
         distribution: 'adopt'
     - name: make
       run: cd src && javac A2.java
-    - name: run
+    - name: run simple
       run: cd src && java A2 ../data/simple.txt
+    - name: run factorial
+      run: cd src && java A2 ../data/CD22Source/factorial.txt
+    - name: run fibonacci
+      run: cd src && java A2 ../data/CD22Source/fibonacci.txt
+    - name: run points
+      run: cd src && java A2 ../data/CD22Source/points.txt
+    - name: run semantic
+      run: cd src && java A2 ../data/CD22Source/semantic.txt
+    - name: run simple
+      run: cd src && java A2 ../data/CD22Source/simple.txt
+    - name: run simple_array
+      run: cd src && java A2 ../data/CD22Source/simple_array.txt
+    - name: run simple_function
+      run: cd src && java A2 ../data/CD22Source/simple_function.txt
+    - name: run simple_variable
+      run: cd src && java A2 ../data/CD22Source/simple_variable.txt
+    - name: run boolean
+      run: cd src && java A2 ../data/general_tests/parser/boolean.txt
+    - name: run expression
+      run: cd src && java A2 ../data/general_tests/parser/expression.txt
+    - name: run repeat
+      run: cd src && java A2 ../data/general_tests/parser/repeat.txt

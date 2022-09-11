@@ -117,8 +117,8 @@ public class SymbolTable {
             table.get(scope).put(latestId, symbol);
             return latestId++;
         }
-        // If the symbol already exists, return the ID of that symbol. Consider adding an error here
-        return symbolTableId;
+        // If the symbol already exists, return error unless it is a literal
+        return symbolType == SymbolType.LITERAL ? symbolTableId : -1;
     }
 
     /**

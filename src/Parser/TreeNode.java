@@ -119,6 +119,14 @@ public class TreeNode {
         right = null;
     }
 
+    public TreeNode(TreeNode left_) {
+        this();
+        nodeType = null;
+        left = left_;
+        mid = null;
+        right = null;
+    }
+
     public TreeNode(TreeNodes type_, TreeNode left_) {
         this();
         nodeType = type_;

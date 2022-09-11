@@ -954,7 +954,9 @@ public class Parser {
         // If a logical operation existed, we can set the node type as a boolean expression
         if (t.getMid() != null) {
             t.setNodeType(TreeNodes.NBOOL);
-            t.setNextChild(rel());
+            TreeNode boolrNode = new TreeNode(rel());
+            boolr(boolrNode);
+            t.setNextChild(boolrNode.getNodeType() == null ? boolrNode.getLeft() : boolrNode);
         }
     }
 
@@ -1916,7 +1918,7 @@ public class Parser {
             // Ensure strings are padded correctly
             if (outValue.contains("\"")) {
                 stringVal = !stringVal;
-                if (outValue.endsWith("\"")) stringVal = false;
+                if (outValue.length() > 1 && outValue.endsWith("\"")) stringVal = false;
                 if (!stringVal) {
                     int size = (line.length() / 7) * 7 + 7;
                     line.append(" ".repeat(size - line.length()));

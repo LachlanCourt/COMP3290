@@ -63,12 +63,12 @@ public class A2 {
         cg.initialise();
         cg.run();
 
-        // Report any errors and warnings found so far in the compilation
-        oc.reportErrorsAndWarnings();
-
         // Output the symbol table when debugging
         if (System.getenv("DEBUG") != null && System.getenv("DEBUG").compareTo("true") == 0) {
             System.out.println("\nSYMBOL TABLE\n" + st);
         }
+
+        // Report any errors and warnings found so far in the compilation
+        oc.reportErrorsAndWarnings();
     }
 }

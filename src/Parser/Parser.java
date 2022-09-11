@@ -177,6 +177,7 @@ public class Parser {
             lookahead = getToken();
         }
         // End of file was reached without finding a synchronising token
+        errorWithoutException(Errors.UNEXPECTED_EOF);
         throw new CD22EofException();
     }
 

@@ -93,7 +93,7 @@ public class Token {
      */
     public Token() {
         token = Tokens.TTEOF;
-        tokenLiteral = "";
+        tokenLiteral = "EOF";
     }
 
     public boolean isNotEof() {

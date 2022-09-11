@@ -16,6 +16,7 @@ public class ErrorMessage {
         EXPECTED_IDENTIFIER,
         PROGRAM_IDEN_MISSING,
         NOT_AT_EOF,
+        UNEXPECTED_EOF,
         NOT_A_NUMBER,
         NO_STATEMENTS,
         UNDEFINED_TYPE,
@@ -73,7 +74,7 @@ public class ErrorMessage {
      */
     private void setErrorMessage() {
         String errorText = getErrorText();
-        errorMessage = (isWarning ? "Warning" : "Error") + " on line " + row + " at column " + col
+        errorMessage = (isWarning ? "Warning" : "Error") + " on line " + row + " around column " + col
             + ": " + errorText;
     }
 
@@ -111,6 +112,8 @@ public class ErrorMessage {
                 return data;
             case NOT_AT_EOF:
                 return "Unexpected content at end of program";
+            case UNEXPECTED_EOF:
+                return "Unexpected end of file";
             default:
                 return "An error occurred";
         }

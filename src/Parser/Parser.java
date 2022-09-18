@@ -1212,7 +1212,10 @@ public class Parser {
                 symbolTable.getSymbolIdFromReference(lookahead.getTokenLiteral(), currentScope);
             match(Tokens.TIDEN);
             t.setSymbolTableId(symbolTableId);
-            // TODO check the identifier matches the program identifier
+            // SEMANTICS
+            if (symbolTable.getSymbol(symbolTableId).getSymbolType() != SymbolType.PROGRAM_IDEN) {
+                errorWithoutException(Errors.PROGRAM_IDEN_MISMATCH);
+            }
         } else {
             error(Errors.EXPECTED_IDENTIFIER);
         }

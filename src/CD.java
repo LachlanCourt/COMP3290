@@ -14,9 +14,9 @@ import Parser.Parser;
 import Scanner.Scanner;
 import java.io.File;
 
-public class A2 {
+public class CD {
     public static void main(String[] args) {
-        A2 a = new A2();
+        CD a = new CD();
         // Only run the compiler if a valid filename has been provided
         if (a.validateArgs(args)) {
             a.run(args);

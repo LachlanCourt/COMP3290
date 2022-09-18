@@ -7,6 +7,10 @@
  *******************************************************************************/
 package Common;
 
+import java.lang.reflect.Array;
+import java.util.ArrayList;
+import java.util.Arrays;
+
 public class ErrorMessage {
     public enum Errors {
         UNKNOWN,
@@ -22,6 +26,7 @@ public class ErrorMessage {
         UNDEFINED_TYPE,
         UNDEFINED_VARIABLE,
         EXPECTED_ASSIGNMENT_OPERATOR,
+        PROGRAM_IDEN_MISMATCH,
         CUSTOM_ERROR,
         WARNING_CD22_SEMANTIC_CASING,
     }
@@ -37,6 +42,9 @@ public class ErrorMessage {
         System.getProperty("os.name").toLowerCase().contains("windows") ? ""
                                                                         : "\033[0;33m"; // YELLOW
 
+    public static final ArrayList<Errors> lexicalErrors = new ArrayList<>(Arrays.asList(Errors.UNDEFINED_TOKEN, Errors.INTEGER_OUT_OF_RANGE, Errors.FLOAT_OUT_OF_RANGE, Errors.WARNING_CD22_SEMANTIC_CASING));
+    public static final ArrayList<Errors> syntacticalErrors = new ArrayList<>(Arrays.asList(Errors.EXPECTED_IDENTIFIER, Errors.PROGRAM_IDEN_MISSING, Errors.NOT_AT_EOF, Errors.UNEXPECTED_EOF, Errors.NOT_A_NUMBER, Errors.NO_STATEMENTS, Errors.UNDEFINED_TYPE, Errors.EXPECTED_ASSIGNMENT_OPERATOR, Errors.CUSTOM_ERROR));
+    public static final ArrayList<Errors> semanticErrors = new ArrayList<>(Arrays.asList(Errors.PROGRAM_IDEN_MISMATCH));
     private int row;
     private int col;
     private Errors type;
@@ -73,9 +81,18 @@ public class ErrorMessage {
      * Sets the error text so that it is available via a simple query
      */
     private void setErrorMessage() {
+        String errorPrefix = "";
+        if (lexicalErrors.contains(type)) {
+            errorPrefix += "Lexical ";
+        } else if (syntacticalErrors.contains(type)) {
+            errorPrefix += "Syntax ";
+        } else if (semanticErrors.contains(type)) {
+            errorPrefix += "Semantic ";
+        }
         String errorText = getErrorText();
-        errorMessage = (isWarning ? "Warning" : "Error") + " on line " + row + " around column "
+        errorMessage = errorPrefix + (isWarning ? "Warning" : "Error") + " on line " + row + " around column "
             + col + ": " + errorText;
+
     }
 
     /**
@@ -114,6 +131,8 @@ public class ErrorMessage {
                 return "Unexpected content at end of program";
             case UNEXPECTED_EOF:
                 return "Unexpected end of file";
+            case PROGRAM_IDEN_MISMATCH:
+                return "Program identifier at the end of file must match the one at the start";
             default:
                 return "An error occurred";
         }

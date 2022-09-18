@@ -27,8 +27,6 @@ jobs:
       run: cd src && java CD ../data/CD22Source/fibonacci.txt
     - name: run points
       run: cd src && java CD ../data/CD22Source/points.txt
-    - name: run semantic
-      run: cd src && java CD ../data/CD22Source/semantic.txt
     - name: run simple
       run: cd src && java CD ../data/CD22Source/simple.txt
     - name: run simple_array

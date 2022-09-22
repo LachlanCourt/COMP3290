@@ -2,7 +2,7 @@ CD22 ThisProgramName
 
 constants
 
-something = 16 * 3.0,
+something = 16 * 3,
 somethingElse = something + 7 ^ 2,
 someBoolean = (true and (false or true))
 
@@ -17,6 +17,11 @@ func someFunc(someVar : int) : bool
         return 5;
     end
 
+func someVoidFunc() : void
+begin
+    return void;
+end
+
 main
     i : bool,
     a : float,
@@ -26,10 +31,10 @@ main
 begin
 
 
-    i = 5;
+    i = false or true;
 
     if (someBoolean and true and (false xor someBoolean))
-        i = 6;
+        g = 6;
     end
 
 
@@ -38,20 +43,18 @@ begin
 
     f = 2 + something + 4 * 7;
     f = 8 + 3;
-    f = 6 + 2.4;
+    f = 6 + 4;
 
 
     f = 6 + something * somethingElse;
 
 
    /-- FIX THIS
-   i = true + true;
-   f = 7 and 4;
+   i = 5 == 6;
+   i = someFunc(2.5);
+   someVoidFunc();
+   someFunc(2.5);
 
-    i = 5 == 6;
-
-
-    a = someFunc(2.5);
     someStruct.x = 5;
     /--someStruct.y = 5;
 

@@ -49,6 +49,11 @@ begin
 
     f = 7 + someStruct.x;
 
+    /-- FIX INTEGER EXPR ASSIGN TO FLOAT
+    a = 7 ^ 2.7;
+
+    /--g = 7 ^ 2.4;
+
 
     f = 2 + something + 4 * 7;
     f = 8 + 3;

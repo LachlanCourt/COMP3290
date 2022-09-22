@@ -941,11 +941,14 @@ public class Parser {
             TreeNode exponentNode = new TreeNode(exponent());
             factr(exponentNode);
             if (exponentNode.getNodeType() == null) {
+                if (exponentNode.getLeft().getNodeDataType() != VariableTypes.INTEGER) {
+                    error(Errors.BAD_EXPR_TYPE);
+                }
                 t.setNextChild(exponentNode.getLeft());
 
             } else {
-                if (exponentNode.calculateNodeVariableTypeAndValue() == -1) {
-                    errorWithoutException(Errors.BAD_EXPR_TYPE);
+                if (exponentNode.calculateNodeVariableTypeAndValue() == -1 || exponentNode.getNodeDataType() != VariableTypes.INTEGER) {
+                    error(Errors.BAD_EXPR_TYPE);
                 }
                 t.setNextChild(exponentNode);
             }
@@ -1582,7 +1585,7 @@ public class Parser {
         // Set the variable as a child, and parse any boolean expressions that follow it
         t.setNextChild(varNode);
         TreeNode boolNode = bool();
-        if (varNode.getExpectedType() != boolNode.getNodeDataType()) {
+        if (varNode.getExpectedType() != boolNode.getNodeDataType() && (varNode.getExpectedType() != VariableTypes.FLOAT && boolNode.getNodeDataType() != VariableTypes.INTEGER)) {
             error(Errors.BAD_EXPR_TYPE);
         }
         t.setNextChild(boolNode);

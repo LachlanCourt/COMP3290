@@ -271,6 +271,11 @@ public class TreeNode {
             nodeDataType = leftChildNode.getNodeDataType();
         }
 
+        // Type does not match the correct operator
+        if ((leftChildNode.getNodeDataType() == VariableTypes.BOOLEAN && (operationNode.getNodeType() != TreeNodes.NOR && operationNode.getNodeType() != TreeNodes.NAND && operationNode.getNodeType() != TreeNodes.NXOR)) || ((leftChildNode.getNodeDataType() == VariableTypes.INTEGER || leftChildNode.getNodeDataType() == VariableTypes.FLOAT) && (operationNode.getNodeType() == TreeNodes.NOR || operationNode.getNodeType() == TreeNodes.NAND || operationNode.getNodeType() == TreeNodes.NXOR))) {
+            return -1;
+        }
+
         // If the type has been successfully determined, we can now try to calculate the value and assign it to the
         // operation node
         utils.calculateValue(leftChildNode, rightChildNode, operationNode);

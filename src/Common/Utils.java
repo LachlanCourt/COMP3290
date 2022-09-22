@@ -268,7 +268,8 @@ public class Utils {
     }
 
     public void calculateValue(TreeNode left, TreeNode right, TreeNode operation) {
-        if (left.getNodeDataType() == TreeNode.VariableTypes.COMPLEX || right.getNodeDataType() == TreeNode.VariableTypes.COMPLEX || left.getSymbolTableId() == -1 || right.getSymbolTableId() == -1) {
+        // Any of these cases cannot be folded
+        if (left.getNodeDataType() == TreeNode.VariableTypes.COMPLEX || right.getNodeDataType() == TreeNode.VariableTypes.COMPLEX || (left.getNodeType() == TreeNode.TreeNodes.NSIMV && symbolTable.getSymbol(left.getSymbolTableId()).getSymbolType() != SymbolTable.SymbolType.CONSTANT) ||(right.getNodeType() == TreeNode.TreeNodes.NSIMV && symbolTable.getSymbol(right.getSymbolTableId()).getSymbolType() != SymbolTable.SymbolType.CONSTANT) || left.getSymbolTableId() == 0 || right.getSymbolTableId() == 0) {
             return;
         }
 
@@ -276,17 +277,23 @@ public class Utils {
          if (symbolTable.getSymbol(left.getSymbolTableId()) instanceof LiteralSymbol) {
              // If the value is already a literal symbol
              leftVal = Double.parseDouble(((LiteralSymbol) symbolTable.getSymbol(left.getSymbolTableId())).getVal());
-         }  else {
+         }  else if (symbolTable.getSymbol(symbolTable.getSymbol(left.getSymbolTableId()).getForeignSymbolTableId()) instanceof LiteralSymbol){
              // If the value is a constant
              leftVal = Double.parseDouble(((LiteralSymbol) symbolTable.getSymbol(symbolTable.getSymbol(left.getSymbolTableId()).getForeignSymbolTableId())).getVal());
-         }
+         } else {
+             // Likely a struct variable, which cannot be folded
+             return;
+        }
         Double rightVal;
         if (symbolTable.getSymbol(right.getSymbolTableId()) instanceof LiteralSymbol) {
             // If the value is already a literal symbol
             rightVal = Double.parseDouble(((LiteralSymbol) symbolTable.getSymbol(right.getSymbolTableId())).getVal());
-        }  else {
+        }  else if (symbolTable.getSymbol(symbolTable.getSymbol(right.getSymbolTableId()).getForeignSymbolTableId()) instanceof LiteralSymbol) {
             // If the value is a constant
             rightVal = Double.parseDouble(((LiteralSymbol) symbolTable.getSymbol(symbolTable.getSymbol(right.getSymbolTableId()).getForeignSymbolTableId())).getVal());
+        } else {
+            // Likely a struct variable, which cannot be folded
+            return;
         }
 
         Double newVal = null;
@@ -316,6 +323,9 @@ public class Utils {
             case NXOR:
                 newVal = (leftVal == 1.0 || rightVal == 1.0) && !leftVal.equals(rightVal) ? 1.0 : 0.0;
                 break;
+            default:
+                int i = 0;
+                i += 3;
         }
 
         if (newVal != null) {

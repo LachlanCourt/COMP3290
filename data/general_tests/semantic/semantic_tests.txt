@@ -20,27 +20,38 @@ func someFunc(someVar : int) : bool
 main
     i : bool,
     a : float,
+    g : int,
     f : int,
     someStruct : arrayType
 begin
+
+
     i = 5;
 
     if (someBoolean and true and (false xor someBoolean))
         i = 6;
     end
 
-    /**
+
     f = 7 + someStruct.x;
+
+
+    f = 2 + something + 4 * 7;
     f = 8 + 3;
     f = 6 + 2.4;
-    **/
+
 
     f = 6 + something * somethingElse;
 
-    /**
-    i = true + true;
+
+   /-- FIX THIS
+    /--i = true + true;
+
+    i = 5 == 6;
+
+
     a = someFunc(2.5);
     someStruct.x = 5;
-    someStruct.y = 5;
-    **/
+    /--someStruct.y = 5;
+
 end CD22 ThisProgramName

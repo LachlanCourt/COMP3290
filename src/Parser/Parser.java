@@ -839,24 +839,30 @@ public class Parser {
      * @return expr node
      */
     private void exprr(TreeNode t) throws CD22ParserException {
-        // Match a + and update the node name
         if (lookahead.getToken() == Tokens.TPLUS) {
+            // Match a + and update the node name
             match(Tokens.TPLUS);
             t.setNodeType(TreeNodes.NADD);
-            // Add a term as the right hand side
-            TreeNode termNode = new TreeNode(term());
-            exprr(termNode);
-            t.setNextChild(termNode.getNodeType() == null ? termNode.getLeft() : termNode);
-            // Match a - and update the node name
         } else if (lookahead.getToken() == Tokens.TMINS) {
+            // Match a - and update the node name
             match(Tokens.TMINS);
             t.setNodeType(TreeNodes.NSUB);
-            // Add a term as the right hand side
-            TreeNode termNode = new TreeNode(term());
-            exprr(termNode);
-            t.setNextChild(termNode.getNodeType() == null ? termNode.getLeft() : termNode);
+        } else {
+            // No right hand side
+            return;
         }
-        // No right hand side
+
+        // Add a term as the right hand side
+        TreeNode termNode = new TreeNode(term());
+        exprr(termNode);
+        if (termNode.getNodeType() == null) {
+            t.setNextChild(termNode.getLeft());
+        } else {
+            if (termNode.calculateNodeVariableTypeAndValue() == -1) {
+                errorWithoutException(Errors.BAD_EXPR_TYPE);
+            }
+            t.setNextChild(termNode);
+        }
     }
 
     /**
@@ -888,31 +894,33 @@ public class Parser {
      * @return term node
      */
     private void termr(TreeNode t) throws CD22ParserException {
-        // Match a * and return a fact as the right hand side
         if (lookahead.getToken() == Tokens.TSTAR) {
+            // Match a * and return a fact as the right hand side
             match(Tokens.TSTAR);
             t.setNodeType(TreeNodes.NMUL);
-            TreeNode factNode = new TreeNode(fact());
-            termr(factNode);
-            t.setNextChild(factNode.getNodeType() == null ? factNode.getLeft() : factNode);
-            // Match a / and return a fact as the right hand side
-
         } else if (lookahead.getToken() == Tokens.TDIVD) {
+            // Match a / and return a fact as the right hand side
             match(Tokens.TDIVD);
             t.setNodeType(TreeNodes.NDIV);
-            TreeNode factNode = new TreeNode(fact());
-            termr(factNode);
-            t.setNextChild(factNode.getNodeType() == null ? factNode.getLeft() : factNode);
-            // Match a % and return a fact as the right hand side
-
         } else if (lookahead.getToken() == Tokens.TPERC) {
+            // Match a % and return a fact as the right hand side
             match(Tokens.TPERC);
             t.setNodeType(TreeNodes.NMOD);
-            TreeNode factNode = fact();
-            termr(factNode);
-            t.setNextChild(factNode.getNodeType() == null ? factNode.getLeft() : factNode);
+        } else {
+            // No right hand side
+            return;
         }
-        // No right hand side
+        // Add a term as the right hand side
+        TreeNode factNode = new TreeNode(fact());
+        termr(factNode);
+        if (factNode.getNodeType() == null) {
+            t.setNextChild(factNode.getLeft());
+        } else {
+            if (factNode.calculateNodeVariableTypeAndValue() == -1) {
+                errorWithoutException(Errors.BAD_EXPR_TYPE);
+            }
+            t.setNextChild(factNode);
+        }
     }
 
     /**
@@ -950,8 +958,15 @@ public class Parser {
             t.setNodeType(TreeNodes.NPOW);
             TreeNode exponentNode = new TreeNode(exponent());
             factr(exponentNode);
-            t.setNextChild(
-                    exponentNode.getNodeType() == null ? exponentNode.getLeft() : exponentNode);
+            if (exponentNode.getNodeType() == null) {
+                t.setNextChild(exponentNode.getLeft());
+
+            } else {
+                if (exponentNode.calculateNodeVariableTypeAndValue() == -1) {
+                    errorWithoutException(Errors.BAD_EXPR_TYPE);
+                }
+                t.setNextChild(exponentNode);
+            }
         }
     }
 

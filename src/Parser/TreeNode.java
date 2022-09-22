@@ -277,7 +277,7 @@ public class TreeNode {
 
         // If it is possible to calculate the value at compile time, we can drop the children of this node and change
         // it to a literal value
-        if (operationNode.getSymbolTableId() != -1) {
+        if (operationNode.getSymbolTableId() != -1 && symbolTable.getSymbol(operationNode.getSymbolTableId()) instanceof LiteralSymbol) {
             // Node value was able to be calculated at compile time
             String operationNodeValue = ((LiteralSymbol) symbolTable.getSymbol(operationNode.getSymbolTableId())).getVal();
             this.setSymbolTableId(-1);

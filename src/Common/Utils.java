@@ -8,29 +8,34 @@
  *******************************************************************************/
 package Common;
 
+import Parser.TreeNode;
 import Scanner.Token.Tokens;
+import Scanner.Token;
+
 import java.util.*;
 
 public class Utils {
     private static Utils self;
     // Definition Lists for custom matching
     private static final ArrayList<String> validPunctuation = new ArrayList<>(Arrays.asList(",",
-        "[", "]", "(", ")", "=", "+", "-", "*", "/", "%", "^", "<", ">", "!", "\"", ":", ";", "."));
+            "[", "]", "(", ")", "=", "+", "-", "*", "/", "%", "^", "<", ">", "!", "\"", ":", ";", "."));
     private static final ArrayList<String> validStandaloneOperators = new ArrayList<>(Arrays.asList(
-        ",", "[", "]", "(", ")", "=", "+", "-", "*", "/", "%", "^", "<", ">", ":", ";", "."));
+            ",", "[", "]", "(", ")", "=", "+", "-", "*", "/", "%", "^", "<", ">", ":", ";", "."));
     private static final ArrayList<String> validDoubleOperators =
-        new ArrayList<>(Arrays.asList("!=", "==", "<=", ">=", "+=", "-=", "/=", "*="));
+            new ArrayList<>(Arrays.asList("!=", "==", "<=", ">=", "+=", "-=", "/=", "*="));
     private static final ArrayList<String> letters =
-        new ArrayList<>(Arrays.asList("a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l",
-            "m", "n", "o", "p", "q", "r", "s", "t", "u", "v", "w", "x", "y", "z"));
+            new ArrayList<>(Arrays.asList("a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l",
+                    "m", "n", "o", "p", "q", "r", "s", "t", "u", "v", "w", "x", "y", "z"));
     private static final ArrayList<String> numbers =
-        new ArrayList<>(Arrays.asList("0", "1", "2", "3", "4", "5", "6", "7", "8", "9"));
+            new ArrayList<>(Arrays.asList("0", "1", "2", "3", "4", "5", "6", "7", "8", "9"));
     private static final ArrayList<String> keywords = new ArrayList<>(Arrays.asList("cd22",
-        "constants", "types", "def", "arrays", "main", "begin", "end", "array", "of", "func",
-        "void", "const", "int", "float", "bool", "for", "repeat", "until", "if", "else", "elif",
-        "input", "print", "printline", "return", "not", "and", "or", "xor", "true", "false"));
+            "constants", "types", "def", "arrays", "main", "begin", "end", "array", "of", "func",
+            "void", "const", "int", "float", "bool", "for", "repeat", "until", "if", "else", "elif",
+            "input", "print", "printline", "return", "not", "and", "or", "xor", "true", "false"));
 
     private static HashMap<String, Tokens> tokenMap;
+
+    private static final SymbolTable symbolTable = SymbolTable.getSymbolTable();
 
     public enum MatchTypes {
         LETTER,
@@ -128,6 +133,7 @@ public class Utils {
 
     /**
      * Gets a token given a string initialiser
+     *
      * @param initialiser value to be checked for a token
      * @return the enum value that matches the initialiser key, or TUNDF if it does not exist
      */
@@ -139,6 +145,7 @@ public class Utils {
 
     /**
      * Gets a string initialiser from a token
+     *
      * @param token enum value to be returned as a string
      * @return string key that matches the enum value, or null if it does not exist
      */
@@ -157,8 +164,9 @@ public class Utils {
 
     /**
      * Matches a given string based on a specified type
+     *
      * @param candidate a string to be matched
-     * @param matcher a type to match the string to
+     * @param matcher   a type to match the string to
      * @return true if the candidate matches the specified type and false if not
      */
     public boolean matches(String candidate, MatchTypes matcher) {
@@ -179,10 +187,10 @@ public class Utils {
                 return matchesIdentifier(candidate);
             case WHITESPACE:
                 return candidate.compareTo("\n") == 0 || candidate.compareTo(" ") == 0
-                    || candidate.charAt(0) == 9;
+                        || candidate.charAt(0) == 9;
             case UNDEFINED:
                 return !(matches(candidate, MatchTypes.LETTER, MatchTypes.NUMBER,
-                    MatchTypes.PUNCTUATION, MatchTypes.WHITESPACE));
+                        MatchTypes.PUNCTUATION, MatchTypes.WHITESPACE));
         }
         return false;
     }
@@ -193,19 +201,20 @@ public class Utils {
     }
 
     public boolean matches(
-        String candidate, MatchTypes matcher1, MatchTypes matcher2, MatchTypes matcher3) {
+            String candidate, MatchTypes matcher1, MatchTypes matcher2, MatchTypes matcher3) {
         return matches(candidate, matcher1, matcher2) || matches(candidate, matcher3);
     }
 
     public boolean matches(String candidate, MatchTypes matcher1, MatchTypes matcher2,
-        MatchTypes matcher3, MatchTypes matcher4) {
+                           MatchTypes matcher3, MatchTypes matcher4) {
         return matches(candidate, matcher1, matcher2) || matches(candidate, matcher3, matcher4);
     }
 
     /**
      * Matches strings that start with a letter and only contain strings and letters
+     *
      * @param candidate a candidate string to be determined whether it matches the form of an
-     *     identifier
+     *                  identifier
      * @return boolean value representing whether it matches
      */
     public boolean matchesIdentifier(String candidate) {
@@ -223,31 +232,94 @@ public class Utils {
     public ArrayList<Tokens> getTokenList(Tokens first) {
         return new ArrayList<>(Collections.singletonList(first));
     }
+
     public ArrayList<Tokens> getTokenList(Tokens first, Tokens second) {
         return new ArrayList<>(Arrays.asList(first, second));
     }
+
     public ArrayList<Tokens> getTokenList(Tokens first, Tokens second, Tokens third) {
         return new ArrayList<>(Arrays.asList(first, second, third));
     }
+
     public ArrayList<Tokens> getTokenList(
-        Tokens first, Tokens second, Tokens third, Tokens fourth) {
+            Tokens first, Tokens second, Tokens third, Tokens fourth) {
         return new ArrayList<>(Arrays.asList(first, second, third, fourth));
     }
+
     public ArrayList<Tokens> getTokenList(
-        Tokens first, Tokens second, Tokens third, Tokens fourth, Tokens fifth) {
+            Tokens first, Tokens second, Tokens third, Tokens fourth, Tokens fifth) {
         return new ArrayList<>(Arrays.asList(first, second, third, fourth, fifth));
     }
+
     public ArrayList<Tokens> getTokenList(
-        Tokens first, Tokens second, Tokens third, Tokens fourth, Tokens fifth, Tokens sixth) {
+            Tokens first, Tokens second, Tokens third, Tokens fourth, Tokens fifth, Tokens sixth) {
         return new ArrayList<>(Arrays.asList(first, second, third, fourth, fifth, sixth));
     }
+
     public ArrayList<Tokens> getTokenList(Tokens first, Tokens second, Tokens third, Tokens fourth,
-        Tokens fifth, Tokens sixth, Tokens seventh) {
+                                          Tokens fifth, Tokens sixth, Tokens seventh) {
         return new ArrayList<>(Arrays.asList(first, second, third, fourth, fifth, sixth, seventh));
     }
+
     public ArrayList<Tokens> getTokenList(Tokens first, Tokens second, Tokens third, Tokens fourth,
-        Tokens fifth, Tokens sixth, Tokens seventh, Tokens eighth) {
+                                          Tokens fifth, Tokens sixth, Tokens seventh, Tokens eighth) {
         return new ArrayList<>(
-            Arrays.asList(first, second, third, fourth, fifth, sixth, seventh, eighth));
+                Arrays.asList(first, second, third, fourth, fifth, sixth, seventh, eighth));
+    }
+
+    public void calculateValue(TreeNode left, TreeNode right, TreeNode operation) {
+        if (left.getNodeDataType() == TreeNode.VariableTypes.COMPLEX || right.getNodeDataType() == TreeNode.VariableTypes.COMPLEX || left.getSymbolTableId() == -1 || right.getSymbolTableId() == -1) {
+            return;
+        }
+
+        Double leftVal;
+         if (symbolTable.getSymbol(left.getSymbolTableId()) instanceof LiteralSymbol) {
+             // If the value is already a literal symbol
+             leftVal = Double.parseDouble(((LiteralSymbol) symbolTable.getSymbol(left.getSymbolTableId())).getVal());
+         }  else {
+             // If the value is a constant
+             leftVal = Double.parseDouble(((LiteralSymbol) symbolTable.getSymbol(symbolTable.getSymbol(left.getSymbolTableId()).getForeignSymbolTableId())).getVal());
+         }
+        Double rightVal;
+        if (symbolTable.getSymbol(right.getSymbolTableId()) instanceof LiteralSymbol) {
+            // If the value is already a literal symbol
+            rightVal = Double.parseDouble(((LiteralSymbol) symbolTable.getSymbol(right.getSymbolTableId())).getVal());
+        }  else {
+            // If the value is a constant
+            rightVal = Double.parseDouble(((LiteralSymbol) symbolTable.getSymbol(symbolTable.getSymbol(right.getSymbolTableId()).getForeignSymbolTableId())).getVal());
+        }
+
+        Double newVal = null;
+
+        switch (operation.getNodeType()) {
+            case NADD:
+                newVal = leftVal + rightVal;
+                break;
+            case NSUB:
+                newVal = leftVal - rightVal;
+                break;
+            case NMUL:
+                newVal = leftVal * rightVal;
+                break;
+            case NDIV:
+                newVal = leftVal / rightVal;
+                break;
+            case NPOW:
+                newVal = Math.pow(leftVal, rightVal);
+                break;
+            case NAND:
+                newVal = leftVal == 1.0 && rightVal == 1.0 ? 1.0 : 0.0;
+                break;
+            case NOR:
+                newVal = leftVal == 1.0 || rightVal == 1.0 ? 1.0 : 0.0;
+                break;
+            case NXOR:
+                newVal = (leftVal == 1.0 || rightVal == 1.0) && !leftVal.equals(rightVal) ? 1.0 : 0.0;
+                break;
+        }
+
+        if (newVal != null) {
+            operation.setSymbolTableId(symbolTable.addSymbol(SymbolTable.SymbolType.LITERAL, new Token(Tokens.TFLOT, String.valueOf(newVal), 0, 0)));
+        }
     }
 }

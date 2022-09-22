@@ -1,0 +1,46 @@
+CD22 ThisProgramName
+
+constants
+
+something = 16 * 3.0,
+somethingElse = something + 7 ^ 2,
+someBoolean = (true and (false or true))
+
+types
+
+    arrayType def
+        x : int
+    end
+
+func someFunc(someVar : int) : bool
+    begin
+        return 5;
+    end
+
+main
+    i : bool,
+    a : float,
+    f : int,
+    someStruct : arrayType
+begin
+    i = 5;
+
+    if (someBoolean and true and (false xor someBoolean))
+        i = 6;
+    end
+
+    /**
+    f = 7 + someStruct.x;
+    f = 8 + 3;
+    f = 6 + 2.4;
+    **/
+
+    f = 6 + something * somethingElse;
+
+    /**
+    i = true + true;
+    a = someFunc(2.5);
+    someStruct.x = 5;
+    someStruct.y = 5;
+    **/
+end CD22 ThisProgramName

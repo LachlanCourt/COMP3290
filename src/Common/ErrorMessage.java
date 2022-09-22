@@ -7,7 +7,6 @@
  *******************************************************************************/
 package Common;
 
-import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Arrays;
 
@@ -27,6 +26,7 @@ public class ErrorMessage {
         UNDEFINED_VARIABLE,
         EXPECTED_ASSIGNMENT_OPERATOR,
         PROGRAM_IDEN_MISMATCH,
+        BAD_EXPR_TYPE,
         CUSTOM_ERROR,
         WARNING_CD22_SEMANTIC_CASING,
     }
@@ -42,9 +42,15 @@ public class ErrorMessage {
         System.getProperty("os.name").toLowerCase().contains("windows") ? ""
                                                                         : "\033[0;33m"; // YELLOW
 
-    public static final ArrayList<Errors> lexicalErrors = new ArrayList<>(Arrays.asList(Errors.UNDEFINED_TOKEN, Errors.INTEGER_OUT_OF_RANGE, Errors.FLOAT_OUT_OF_RANGE, Errors.WARNING_CD22_SEMANTIC_CASING));
-    public static final ArrayList<Errors> syntacticalErrors = new ArrayList<>(Arrays.asList(Errors.EXPECTED_IDENTIFIER, Errors.PROGRAM_IDEN_MISSING, Errors.NOT_AT_EOF, Errors.UNEXPECTED_EOF, Errors.NOT_A_NUMBER, Errors.NO_STATEMENTS, Errors.UNDEFINED_TYPE, Errors.EXPECTED_ASSIGNMENT_OPERATOR, Errors.CUSTOM_ERROR));
-    public static final ArrayList<Errors> semanticErrors = new ArrayList<>(Arrays.asList(Errors.PROGRAM_IDEN_MISMATCH));
+    public static final ArrayList<Errors> lexicalErrors =
+        new ArrayList<>(Arrays.asList(Errors.UNDEFINED_TOKEN, Errors.INTEGER_OUT_OF_RANGE,
+            Errors.FLOAT_OUT_OF_RANGE, Errors.WARNING_CD22_SEMANTIC_CASING));
+    public static final ArrayList<Errors> syntacticalErrors =
+        new ArrayList<>(Arrays.asList(Errors.EXPECTED_IDENTIFIER, Errors.PROGRAM_IDEN_MISSING,
+            Errors.NOT_AT_EOF, Errors.UNEXPECTED_EOF, Errors.NOT_A_NUMBER, Errors.NO_STATEMENTS,
+            Errors.UNDEFINED_TYPE, Errors.EXPECTED_ASSIGNMENT_OPERATOR, Errors.CUSTOM_ERROR));
+    public static final ArrayList<Errors> semanticErrors =
+        new ArrayList<>(Arrays.asList(Errors.PROGRAM_IDEN_MISMATCH, Errors.UNDEFINED_VARIABLE, Errors.BAD_EXPR_TYPE));
     private int row;
     private int col;
     private Errors type;
@@ -90,9 +96,8 @@ public class ErrorMessage {
             errorPrefix += "Semantic ";
         }
         String errorText = getErrorText();
-        errorMessage = errorPrefix + (isWarning ? "Warning" : "Error") + " on line " + row + " around column "
-            + col + ": " + errorText;
-
+        errorMessage = errorPrefix + (isWarning ? "Warning" : "Error") + " on line " + row
+            + " around column " + col + ": " + errorText;
     }
 
     /**
@@ -133,6 +138,8 @@ public class ErrorMessage {
                 return "Unexpected end of file";
             case PROGRAM_IDEN_MISMATCH:
                 return "Program identifier at the end of file must match the one at the start";
+            case BAD_EXPR_TYPE:
+                return "Badly typed expression";
             default:
                 return "An error occurred";
         }

@@ -27,6 +27,8 @@ public class ErrorMessage {
         EXPECTED_ASSIGNMENT_OPERATOR,
         PROGRAM_IDEN_MISMATCH,
         BAD_EXPR_TYPE,
+        NON_VOID_RETURN_TYPE,
+        REQUIRED_INTEGER,
         CUSTOM_ERROR,
         WARNING_CD22_SEMANTIC_CASING,
     }
@@ -50,7 +52,7 @@ public class ErrorMessage {
             Errors.NOT_AT_EOF, Errors.UNEXPECTED_EOF, Errors.NOT_A_NUMBER, Errors.NO_STATEMENTS,
             Errors.UNDEFINED_TYPE, Errors.EXPECTED_ASSIGNMENT_OPERATOR, Errors.CUSTOM_ERROR));
     public static final ArrayList<Errors> semanticErrors =
-        new ArrayList<>(Arrays.asList(Errors.PROGRAM_IDEN_MISMATCH, Errors.UNDEFINED_VARIABLE, Errors.BAD_EXPR_TYPE));
+        new ArrayList<>(Arrays.asList(Errors.PROGRAM_IDEN_MISMATCH, Errors.UNDEFINED_VARIABLE, Errors.BAD_EXPR_TYPE, Errors.NON_VOID_RETURN_TYPE));
     private int row;
     private int col;
     private Errors type;
@@ -140,6 +142,10 @@ public class ErrorMessage {
                 return "Program identifier at the end of file must match the one at the start";
             case BAD_EXPR_TYPE:
                 return "Badly typed expression";
+            case NON_VOID_RETURN_TYPE:
+                return "Only void functions can be called outside of assignment statements";
+            case REQUIRED_INTEGER:
+                return "An integer is required for this expression";
             default:
                 return "An error occurred";
         }

@@ -517,8 +517,11 @@ public class Parser {
             match(Tokens.TARAY);
             match(Tokens.TLBRK);
             // Parse the length of the array, save the expr node for the type symbol table entry
-            // TODO semantically this can only be made up of constants and literals
             TreeNode exprNode = expr();
+            // SEMANTICS array lengths must be integers
+            if (exprNode.getNodeDataType() != VariableTypes.INTEGER) {
+                error(Errors.REQUIRED_INTEGER);
+            }
             t.setNextChild(exprNode);
             match(Tokens.TRBRK);
             match(Tokens.TTTOF);
@@ -992,7 +995,6 @@ public class Parser {
             Token token = lookahead;
             match(Tokens.TIDEN);
             if (lookahead.getToken() == Tokens.TLPAR) {
-                //TODO Add return type to nodedatatype
                 return fncall(token);
             }
             // If the node is not a function call, it's either an ID or an array accessor. Either
@@ -1227,8 +1229,11 @@ public class Parser {
             t.setSymbolTableId(symbolTableId);
             match(Tokens.TLBRK);
             // Parse the index value in the square brackets
-            // TODO Type check integer
-            t.setNextChild(expr());
+            TreeNode exprNode = expr();
+            if (exprNode.getNodeDataType() != VariableTypes.INTEGER) {
+                error(Errors.REQUIRED_INTEGER);
+            }
+            t.setNextChild(exprNode);
             match(Tokens.TRBRK);
             // Access struct field if one is present
             if (lookahead.getToken() == Tokens.TDOTT) {
@@ -1527,7 +1532,13 @@ public class Parser {
      */
     private TreeNode callstat(Token nameIdenToken) throws CD22ParserException {
         // Create a new node with the ID of the called function as the symbol table ID
-        TreeNode t = new TreeNode(TreeNodes.NCALL, symbolTable.getSymbolIdFromReference(nameIdenToken.getTokenLiteral(), currentScope));
+        int symbolTableId = symbolTable.getSymbolIdFromReference(nameIdenToken.getTokenLiteral(), currentScope);
+        TreeNode t = new TreeNode(TreeNodes.NCALL, symbolTableId);
+
+        if (((PrimitiveTypeSymbol) symbolTable.getSymbol(symbolTableId)).getVal() != PrimitiveTypes.VOID) {
+            errorWithoutException(Errors.NON_VOID_RETURN_TYPE);
+        }
+
         match(Tokens.TLPAR);
         if (lookahead.getToken() != Tokens.TRPAR) {
             // Match an expression list inside parentheses for the function call

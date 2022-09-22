@@ -4,13 +4,20 @@ constants
 
 something = 16 * 3,
 somethingElse = something + 7 ^ 2,
-someBoolean = (true and (false or true))
+someBoolean = (true and (false or true)),
+someFloat = 4.5
 
 types
 
-    arrayType def
+    arrayStructType def
         x : int
     end
+
+    arrayType def array [4 + something] of arrayStructType end
+
+arrays
+
+    someArray : arrayType
 
 func someFunc(someVar : int) : bool
     begin
@@ -27,9 +34,11 @@ main
     a : float,
     g : int,
     f : int,
-    someStruct : arrayType
+    someStruct : arrayStructType
 begin
 
+    someArray[4] = someStruct;
+    someArray[0].x = 6;
 
     i = false or true;
 
@@ -53,7 +62,6 @@ begin
    i = 5 == 6;
    i = someFunc(2.5);
    someVoidFunc();
-   someFunc(2.5);
 
     someStruct.x = 5;
     /--someStruct.y = 5;

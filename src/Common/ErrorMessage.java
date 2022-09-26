@@ -29,6 +29,8 @@ public class ErrorMessage {
         BAD_EXPR_TYPE,
         NON_VOID_RETURN_TYPE,
         REQUIRED_INTEGER,
+        BAD_ARG_TYPE,
+        BAD_ARG_LENGTH,
         CUSTOM_ERROR,
         WARNING_CD22_SEMANTIC_CASING,
     }
@@ -52,7 +54,7 @@ public class ErrorMessage {
             Errors.NOT_AT_EOF, Errors.UNEXPECTED_EOF, Errors.NOT_A_NUMBER, Errors.NO_STATEMENTS,
             Errors.UNDEFINED_TYPE, Errors.EXPECTED_ASSIGNMENT_OPERATOR, Errors.CUSTOM_ERROR));
     public static final ArrayList<Errors> semanticErrors =
-        new ArrayList<>(Arrays.asList(Errors.PROGRAM_IDEN_MISMATCH, Errors.UNDEFINED_VARIABLE, Errors.BAD_EXPR_TYPE, Errors.NON_VOID_RETURN_TYPE));
+        new ArrayList<>(Arrays.asList(Errors.PROGRAM_IDEN_MISMATCH, Errors.UNDEFINED_VARIABLE, Errors.BAD_EXPR_TYPE, Errors.NON_VOID_RETURN_TYPE, Errors.BAD_ARG_TYPE, Errors.BAD_ARG_LENGTH));
     private int row;
     private int col;
     private Errors type;
@@ -146,6 +148,10 @@ public class ErrorMessage {
                 return "Only void functions can be called outside of assignment statements";
             case REQUIRED_INTEGER:
                 return "An integer is required for this expression";
+            case BAD_ARG_TYPE:
+                return "Badly typed function arguments";
+            case BAD_ARG_LENGTH:
+                return "Incorrect number of arguments";
             default:
                 return "An error occurred";
         }

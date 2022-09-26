@@ -13,13 +13,21 @@ types
         x : int
     end
 
+    someOtherStruct def
+        y : float
+    end
+
     arrayType def array [4 + something] of arrayStructType end
+
+    someOtherArrayType def array [4] of arrayStructType end
 
 arrays
 
-    someArray : arrayType
+    someArray : arrayType,
+    someOtherArray : arrayType,
+    someThirdArray : someOtherArrayType
 
-func someFunc(someVar : int) : bool
+func someFunc(someVar : int, someOtherVar : float, someThirdVar : int) : bool
     begin
         return 5;
     end
@@ -29,12 +37,33 @@ begin
     return void;
 end
 
+func someFuncWithStruct(someStructVar : arrayStructType) : void
+begin
+    return void;
+end
+
+func someFuncWithArray(someArrayVar : arrayType) : void
+begin
+    /--someFuncWithConstArray(someArrayVar);
+    return void;
+end
+
+func someFuncWithConstArray(const someConstArrayVar : arrayType) : void
+begin
+    someFuncWithArray(someConstArrayVar);
+    someFuncWithConstArray(someConstArrayVar);
+    return void;
+end
+
+
+
 main
     i : bool,
     a : float,
     g : int,
     f : int,
-    someStruct : arrayStructType
+    someStruct : arrayStructType,
+    someOtherVar : someOtherStruct
 begin
 
     someArray[4] = someStruct;
@@ -49,11 +78,8 @@ begin
 
     f = 7 + someStruct.x;
 
-    /-- FIX INTEGER EXPR ASSIGN TO FLOAT
-    a = 7 ^ 2.7;
 
-    /--g = 7 ^ 2.4;
-
+g = 8 / 2;
 
     f = 2 + something + 4 * 7;
     f = 8 + 3;
@@ -63,12 +89,24 @@ begin
     f = 6 + something * somethingElse;
 
 
-   /-- FIX THIS
    i = 5 == 6;
    i = someFunc(2.5);
    someVoidFunc();
 
+   i = someFunc(4, 8.4, 8);
+
     someStruct.x = 5;
     /--someStruct.y = 5;
+
+    someFuncWithStruct(someStruct);
+    someFuncWithStruct(someOtherVar);
+    someFuncWithArray(someStruct);
+
+
+    someFuncWithConstArray(someArray);
+
+
+    /-- Fix this crash
+    /--hello();
 
 end CD22 ThisProgramName

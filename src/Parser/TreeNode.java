@@ -103,8 +103,8 @@ public class TreeNode {
 
     // A reference to the symbol table is kept so that symbols can be stored as references rather
     // than whole symbols
-    SymbolTable symbolTable;
-    Utils utils;
+    private SymbolTable symbolTable;
+    private Utils utils;
     // Used for variables and expressions for type checking
     private VariableTypes expectedType;
     private int typeIdentifier;

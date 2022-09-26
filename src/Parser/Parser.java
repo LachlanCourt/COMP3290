@@ -273,32 +273,6 @@ public class Parser {
         return list;
     }
 
-    private VariableTypes resolvePrimativeTypeToVariableType(PrimitiveTypes symbolType) {
-        switch (symbolType) {
-            case INTEGER:
-                return VariableTypes.INTEGER;
-            case FLOAT:
-                return VariableTypes.FLOAT;
-            case BOOLEAN:
-                return VariableTypes.BOOLEAN;
-            default:
-                return VariableTypes.UNKNOWN;
-        }
-    }
-
-    private PrimitiveTypes resolveVariableTypeToPrimitiveType(VariableTypes symbolType) {
-        switch (symbolType) {
-            case INTEGER:
-                return PrimitiveTypes.INTEGER;
-            case FLOAT:
-                return PrimitiveTypes.FLOAT;
-            case BOOLEAN:
-                return PrimitiveTypes.BOOLEAN;
-            default:
-                return PrimitiveTypes.UNKNOWN;
-        }
-    }
-
     //--------------------- START PARSE TREE ---------------------------
 
     /**
@@ -442,7 +416,7 @@ public class Parser {
         TreeNode exprNode = expr();
         Symbol contantSymbol = symbolTable.getSymbol(symbolTableId);
         contantSymbol.setForeignSymbolTableId(exprNode.getSymbolTableId());
-        ((PrimitiveTypeSymbol) contantSymbol).setVal(resolveVariableTypeToPrimitiveType(exprNode.getNodeDataType()));
+        ((PrimitiveTypeSymbol) contantSymbol).setVal(utils.resolveVariableTypeToPrimitiveType(exprNode.getNodeDataType()));
         t.setNextChild(exprNode);
         return t;
     }
@@ -1162,12 +1136,20 @@ public class Parser {
         // symbol table
         int symbolTableId = symbolTable.getSymbolIdFromReference(nameIdenToken.getTokenLiteral(), "@global");
         TreeNode t = new TreeNode(TreeNodes.NFCALL, symbolTableId);
-        t.setNodeDataType(resolvePrimativeTypeToVariableType(((PrimitiveTypeSymbol) symbolTable.getSymbol(symbolTableId)).getVal()));
+        t.setNodeDataType(utils.resolvePrimativeTypeToVariableType(((PrimitiveTypeSymbol) symbolTable.getSymbol(symbolTableId)).getVal()));
         match(Tokens.TLPAR);
         // If the function call does not immediately close the parentheses, try parsing an elist
+        TreeNode elistNode = null;
         if (lookahead.getToken() != Tokens.TRPAR) {
-            t.setNextChild(elist());
+            elistNode = elist();
         }
+        int returnCode = utils.checkFunctionArgs(symbolTableId, elistNode);
+        if (returnCode == -1) {
+            errorWithoutException(Errors.BAD_ARG_TYPE);
+        } else if (returnCode == -2) {
+            errorWithoutException(Errors.BAD_ARG_LENGTH);
+        }
+        t.setNextChild(elistNode);
         match(Tokens.TRPAR);
         return t;
     }
@@ -1265,10 +1247,10 @@ public class Parser {
         // If it is not an array or a struct it is just a simple variable
         TreeNode t = new TreeNode(TreeNodes.NSIMV, symbolTableId);
         if (symbolTable.getSymbol(symbolTableId) instanceof PrimitiveTypeSymbol && symbolTable.getSymbol(symbolTableId).getSymbolType() != SymbolType.CONSTANT) {
-            t.setExpectedType(resolvePrimativeTypeToVariableType(((PrimitiveTypeSymbol) symbolTable.getSymbol(symbolTableId)).getVal()));
+            t.setExpectedType(utils.resolvePrimativeTypeToVariableType(((PrimitiveTypeSymbol) symbolTable.getSymbol(symbolTableId)).getVal()));
         } else if (symbolTable.getSymbol(symbolTableId).getSymbolType() == SymbolType.CONSTANT) {
             PrimitiveTypeSymbol constSymbol = ((PrimitiveTypeSymbol) symbolTable.getSymbol(symbolTableId));
-            t.setExpectedType(resolvePrimativeTypeToVariableType(constSymbol.getVal()));
+            t.setExpectedType(utils.resolvePrimativeTypeToVariableType(constSymbol.getVal()));
         } else {
             t.setExpectedType(VariableTypes.COMPLEX, symbolTable.getSymbol(symbolTableId).getForeignSymbolTableId());
         }
@@ -1306,7 +1288,7 @@ public class Parser {
             t.setNextChild(new TreeNode(TreeNodes.NSIMV, fieldId));
             // SEMANTICS set expected type, so we can check the expression that's assigning to it
             if (fieldId != -1) {
-                t.setExpectedType(resolvePrimativeTypeToVariableType(((PrimitiveTypeSymbol) symbolTable.getSymbol(fieldId)).getVal()));
+                t.setExpectedType(utils.resolvePrimativeTypeToVariableType(((PrimitiveTypeSymbol) symbolTable.getSymbol(fieldId)).getVal()));
             }
 
         } else {
@@ -1538,15 +1520,24 @@ public class Parser {
         int symbolTableId = symbolTable.getSymbolIdFromReference(nameIdenToken.getTokenLiteral(), currentScope);
         TreeNode t = new TreeNode(TreeNodes.NCALL, symbolTableId);
 
+        //TODO will crash if function does not exist
         if (((PrimitiveTypeSymbol) symbolTable.getSymbol(symbolTableId)).getVal() != PrimitiveTypes.VOID) {
             errorWithoutException(Errors.NON_VOID_RETURN_TYPE);
         }
 
         match(Tokens.TLPAR);
+        TreeNode elistNode = null;
         if (lookahead.getToken() != Tokens.TRPAR) {
             // Match an expression list inside parentheses for the function call
-            t.setNextChild(elist());
+            elistNode = elist();
         }
+        int returnCode = utils.checkFunctionArgs(symbolTableId, elistNode);
+        if (returnCode == -1) {
+            errorWithoutException(Errors.BAD_ARG_TYPE);
+        } else if (returnCode == -2) {
+            errorWithoutException(Errors.BAD_ARG_LENGTH);
+        }
+        t.setNextChild(elistNode);
         match(Tokens.TRPAR);
         return t;
     }
@@ -1836,8 +1827,10 @@ public class Parser {
         match(Tokens.TRPAR);
         gracefullyMatchColon();
         // Match the return type, which may be void
-        if (symbolTable.getSymbol(symbolTableId) instanceof PrimitiveTypeSymbol) {
-            ((PrimitiveTypeSymbol) symbolTable.getSymbol(symbolTableId)).setVal(rtype());
+        Symbol functionSymbol = symbolTable.getSymbol(symbolTableId);
+        if (functionSymbol instanceof PrimitiveTypeSymbol) {
+            ((PrimitiveTypeSymbol) functionSymbol).setVal(rtype());
+            functionSymbol.setForeignTreeNode(plistNode);
         } else {
             // TODO An error has occured, likely related to the variable already being defined in
             // this scope

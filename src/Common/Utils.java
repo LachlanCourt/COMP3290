@@ -9,44 +9,27 @@
 package Common;
 
 import Parser.TreeNode;
-import Scanner.Token.Tokens;
 import Scanner.Token;
+import Scanner.Token.Tokens;
 
 import java.util.*;
 
 public class Utils {
     private static Utils self;
     // Definition Lists for custom matching
-    private static final ArrayList<String> validPunctuation = new ArrayList<>(Arrays.asList(",",
-            "[", "]", "(", ")", "=", "+", "-", "*", "/", "%", "^", "<", ">", "!", "\"", ":", ";", "."));
-    private static final ArrayList<String> validStandaloneOperators = new ArrayList<>(Arrays.asList(
-            ",", "[", "]", "(", ")", "=", "+", "-", "*", "/", "%", "^", "<", ">", ":", ";", "."));
-    private static final ArrayList<String> validDoubleOperators =
-            new ArrayList<>(Arrays.asList("!=", "==", "<=", ">=", "+=", "-=", "/=", "*="));
-    private static final ArrayList<String> letters =
-            new ArrayList<>(Arrays.asList("a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l",
-                    "m", "n", "o", "p", "q", "r", "s", "t", "u", "v", "w", "x", "y", "z"));
-    private static final ArrayList<String> numbers =
-            new ArrayList<>(Arrays.asList("0", "1", "2", "3", "4", "5", "6", "7", "8", "9"));
-    private static final ArrayList<String> keywords = new ArrayList<>(Arrays.asList("cd22",
-            "constants", "types", "def", "arrays", "main", "begin", "end", "array", "of", "func",
-            "void", "const", "int", "float", "bool", "for", "repeat", "until", "if", "else", "elif",
-            "input", "print", "printline", "return", "not", "and", "or", "xor", "true", "false"));
+    private static final ArrayList<String> validPunctuation = new ArrayList<>(Arrays.asList(",", "[", "]", "(", ")", "=", "+", "-", "*", "/", "%", "^", "<", ">", "!", "\"", ":", ";", "."));
+    private static final ArrayList<String> validStandaloneOperators = new ArrayList<>(Arrays.asList(",", "[", "]", "(", ")", "=", "+", "-", "*", "/", "%", "^", "<", ">", ":", ";", "."));
+    private static final ArrayList<String> validDoubleOperators = new ArrayList<>(Arrays.asList("!=", "==", "<=", ">=", "+=", "-=", "/=", "*="));
+    private static final ArrayList<String> letters = new ArrayList<>(Arrays.asList("a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o", "p", "q", "r", "s", "t", "u", "v", "w", "x", "y", "z"));
+    private static final ArrayList<String> numbers = new ArrayList<>(Arrays.asList("0", "1", "2", "3", "4", "5", "6", "7", "8", "9"));
+    private static final ArrayList<String> keywords = new ArrayList<>(Arrays.asList("cd22", "constants", "types", "def", "arrays", "main", "begin", "end", "array", "of", "func", "void", "const", "int", "float", "bool", "for", "repeat", "until", "if", "else", "elif", "input", "print", "printline", "return", "not", "and", "or", "xor", "true", "false"));
 
     private static HashMap<String, Tokens> tokenMap;
 
     private static final SymbolTable symbolTable = SymbolTable.getSymbolTable();
 
     public enum MatchTypes {
-        LETTER,
-        NUMBER,
-        PUNCTUATION,
-        STANDALONE_OPERATOR,
-        DOUBLE_OPERATOR,
-        KEYWORD,
-        IDENTIFIER,
-        UNDEFINED,
-        WHITESPACE
+        LETTER, NUMBER, PUNCTUATION, STANDALONE_OPERATOR, DOUBLE_OPERATOR, KEYWORD, IDENTIFIER, UNDEFINED, WHITESPACE
     }
 
     /**
@@ -138,8 +121,7 @@ public class Utils {
      * @return the enum value that matches the initialiser key, or TUNDF if it does not exist
      */
     public Tokens getTokenFromInitialiser(String initialiser) {
-        if (tokenMap.containsKey(initialiser))
-            return tokenMap.get(initialiser);
+        if (tokenMap.containsKey(initialiser)) return tokenMap.get(initialiser);
         return Tokens.TUNDF;
     }
 
@@ -151,13 +133,11 @@ public class Utils {
      */
     public String getInitialiserFromToken(Tokens token) {
         // The value in the map is lowercase so have an explicit check for CD22
-        if (token == Tokens.TCD22)
-            return "CD22";
+        if (token == Tokens.TCD22) return "CD22";
         // Loop through the token map to find the token which matches the argument, and return the
         // associated string
         for (Map.Entry<String, Tokens> entry : tokenMap.entrySet()) {
-            if (entry.getValue() == token)
-                return entry.getKey();
+            if (entry.getValue() == token) return entry.getKey();
         }
         return null;
     }
@@ -186,11 +166,9 @@ public class Utils {
             case IDENTIFIER:
                 return matchesIdentifier(candidate);
             case WHITESPACE:
-                return candidate.compareTo("\n") == 0 || candidate.compareTo(" ") == 0
-                        || candidate.charAt(0) == 9;
+                return candidate.compareTo("\n") == 0 || candidate.compareTo(" ") == 0 || candidate.charAt(0) == 9;
             case UNDEFINED:
-                return !(matches(candidate, MatchTypes.LETTER, MatchTypes.NUMBER,
-                        MatchTypes.PUNCTUATION, MatchTypes.WHITESPACE));
+                return !(matches(candidate, MatchTypes.LETTER, MatchTypes.NUMBER, MatchTypes.PUNCTUATION, MatchTypes.WHITESPACE));
         }
         return false;
     }
@@ -200,13 +178,11 @@ public class Utils {
         return matches(candidate, matcher1) || matches(candidate, matcher2);
     }
 
-    public boolean matches(
-            String candidate, MatchTypes matcher1, MatchTypes matcher2, MatchTypes matcher3) {
+    public boolean matches(String candidate, MatchTypes matcher1, MatchTypes matcher2, MatchTypes matcher3) {
         return matches(candidate, matcher1, matcher2) || matches(candidate, matcher3);
     }
 
-    public boolean matches(String candidate, MatchTypes matcher1, MatchTypes matcher2,
-                           MatchTypes matcher3, MatchTypes matcher4) {
+    public boolean matches(String candidate, MatchTypes matcher1, MatchTypes matcher2, MatchTypes matcher3, MatchTypes matcher4) {
         return matches(candidate, matcher1, matcher2) || matches(candidate, matcher3, matcher4);
     }
 
@@ -218,11 +194,9 @@ public class Utils {
      * @return boolean value representing whether it matches
      */
     public boolean matchesIdentifier(String candidate) {
-        if (!letters.contains(String.valueOf(candidate.charAt(0))))
-            return false;
+        if (!letters.contains(String.valueOf(candidate.charAt(0)))) return false;
         for (String c : candidate.split("")) {
-            if (!letters.contains(c) && !numbers.contains(c))
-                return false;
+            if (!letters.contains(c) && !numbers.contains(c)) return false;
         }
         return true;
     }
@@ -241,54 +215,48 @@ public class Utils {
         return new ArrayList<>(Arrays.asList(first, second, third));
     }
 
-    public ArrayList<Tokens> getTokenList(
-            Tokens first, Tokens second, Tokens third, Tokens fourth) {
+    public ArrayList<Tokens> getTokenList(Tokens first, Tokens second, Tokens third, Tokens fourth) {
         return new ArrayList<>(Arrays.asList(first, second, third, fourth));
     }
 
-    public ArrayList<Tokens> getTokenList(
-            Tokens first, Tokens second, Tokens third, Tokens fourth, Tokens fifth) {
+    public ArrayList<Tokens> getTokenList(Tokens first, Tokens second, Tokens third, Tokens fourth, Tokens fifth) {
         return new ArrayList<>(Arrays.asList(first, second, third, fourth, fifth));
     }
 
-    public ArrayList<Tokens> getTokenList(
-            Tokens first, Tokens second, Tokens third, Tokens fourth, Tokens fifth, Tokens sixth) {
+    public ArrayList<Tokens> getTokenList(Tokens first, Tokens second, Tokens third, Tokens fourth, Tokens fifth, Tokens sixth) {
         return new ArrayList<>(Arrays.asList(first, second, third, fourth, fifth, sixth));
     }
 
-    public ArrayList<Tokens> getTokenList(Tokens first, Tokens second, Tokens third, Tokens fourth,
-                                          Tokens fifth, Tokens sixth, Tokens seventh) {
+    public ArrayList<Tokens> getTokenList(Tokens first, Tokens second, Tokens third, Tokens fourth, Tokens fifth, Tokens sixth, Tokens seventh) {
         return new ArrayList<>(Arrays.asList(first, second, third, fourth, fifth, sixth, seventh));
     }
 
-    public ArrayList<Tokens> getTokenList(Tokens first, Tokens second, Tokens third, Tokens fourth,
-                                          Tokens fifth, Tokens sixth, Tokens seventh, Tokens eighth) {
-        return new ArrayList<>(
-                Arrays.asList(first, second, third, fourth, fifth, sixth, seventh, eighth));
+    public ArrayList<Tokens> getTokenList(Tokens first, Tokens second, Tokens third, Tokens fourth, Tokens fifth, Tokens sixth, Tokens seventh, Tokens eighth) {
+        return new ArrayList<>(Arrays.asList(first, second, third, fourth, fifth, sixth, seventh, eighth));
     }
 
     public void calculateValue(TreeNode left, TreeNode right, TreeNode operation) {
         // Any of these cases cannot be folded
-        if (left.getNodeDataType() == TreeNode.VariableTypes.COMPLEX || right.getNodeDataType() == TreeNode.VariableTypes.COMPLEX || (left.getNodeType() == TreeNode.TreeNodes.NSIMV && symbolTable.getSymbol(left.getSymbolTableId()).getSymbolType() != SymbolTable.SymbolType.CONSTANT) ||(right.getNodeType() == TreeNode.TreeNodes.NSIMV && symbolTable.getSymbol(right.getSymbolTableId()).getSymbolType() != SymbolTable.SymbolType.CONSTANT) || left.getSymbolTableId() == 0 || right.getSymbolTableId() == 0) {
+        if (left.getNodeDataType() == TreeNode.VariableTypes.COMPLEX || right.getNodeDataType() == TreeNode.VariableTypes.COMPLEX || (left.getNodeType() == TreeNode.TreeNodes.NSIMV && symbolTable.getSymbol(left.getSymbolTableId()).getSymbolType() != SymbolTable.SymbolType.CONSTANT) || (right.getNodeType() == TreeNode.TreeNodes.NSIMV && symbolTable.getSymbol(right.getSymbolTableId()).getSymbolType() != SymbolTable.SymbolType.CONSTANT) || left.getSymbolTableId() == 0 || right.getSymbolTableId() == 0) {
             return;
         }
 
         Double leftVal;
-         if (symbolTable.getSymbol(left.getSymbolTableId()) instanceof LiteralSymbol) {
-             // If the value is already a literal symbol
-             leftVal = Double.parseDouble(((LiteralSymbol) symbolTable.getSymbol(left.getSymbolTableId())).getVal());
-         }  else if (symbolTable.getSymbol(symbolTable.getSymbol(left.getSymbolTableId()).getForeignSymbolTableId()) instanceof LiteralSymbol){
-             // If the value is a constant
-             leftVal = Double.parseDouble(((LiteralSymbol) symbolTable.getSymbol(symbolTable.getSymbol(left.getSymbolTableId()).getForeignSymbolTableId())).getVal());
-         } else {
-             // Likely a struct variable, which cannot be folded
-             return;
+        if (symbolTable.getSymbol(left.getSymbolTableId()) instanceof LiteralSymbol) {
+            // If the value is already a literal symbol
+            leftVal = Double.parseDouble(((LiteralSymbol) symbolTable.getSymbol(left.getSymbolTableId())).getVal());
+        } else if (symbolTable.getSymbol(symbolTable.getSymbol(left.getSymbolTableId()).getForeignSymbolTableId()) instanceof LiteralSymbol) {
+            // If the value is a constant
+            leftVal = Double.parseDouble(((LiteralSymbol) symbolTable.getSymbol(symbolTable.getSymbol(left.getSymbolTableId()).getForeignSymbolTableId())).getVal());
+        } else {
+            // Likely a struct variable, which cannot be folded
+            return;
         }
         Double rightVal;
         if (symbolTable.getSymbol(right.getSymbolTableId()) instanceof LiteralSymbol) {
             // If the value is already a literal symbol
             rightVal = Double.parseDouble(((LiteralSymbol) symbolTable.getSymbol(right.getSymbolTableId())).getVal());
-        }  else if (symbolTable.getSymbol(symbolTable.getSymbol(right.getSymbolTableId()).getForeignSymbolTableId()) instanceof LiteralSymbol) {
+        } else if (symbolTable.getSymbol(symbolTable.getSymbol(right.getSymbolTableId()).getForeignSymbolTableId()) instanceof LiteralSymbol) {
             // If the value is a constant
             rightVal = Double.parseDouble(((LiteralSymbol) symbolTable.getSymbol(symbolTable.getSymbol(right.getSymbolTableId()).getForeignSymbolTableId())).getVal());
         } else {
@@ -331,5 +299,88 @@ public class Utils {
         if (newVal != null) {
             operation.setSymbolTableId(symbolTable.addSymbol(SymbolTable.SymbolType.LITERAL, new Token(Tokens.TFLOT, String.valueOf(newVal), 0, 0)));
         }
+    }
+
+    public TreeNode.VariableTypes resolvePrimativeTypeToVariableType(SymbolTable.PrimitiveTypes symbolType) {
+        switch (symbolType) {
+            case INTEGER:
+                return TreeNode.VariableTypes.INTEGER;
+            case FLOAT:
+                return TreeNode.VariableTypes.FLOAT;
+            case BOOLEAN:
+                return TreeNode.VariableTypes.BOOLEAN;
+            default:
+                return TreeNode.VariableTypes.UNKNOWN;
+        }
+    }
+
+    public SymbolTable.PrimitiveTypes resolveVariableTypeToPrimitiveType(TreeNode.VariableTypes symbolType) {
+        switch (symbolType) {
+            case INTEGER:
+                return SymbolTable.PrimitiveTypes.INTEGER;
+            case FLOAT:
+                return SymbolTable.PrimitiveTypes.FLOAT;
+            case BOOLEAN:
+                return SymbolTable.PrimitiveTypes.BOOLEAN;
+            default:
+                return SymbolTable.PrimitiveTypes.UNKNOWN;
+        }
+    }
+
+    private void flattenFunctionNodes(ArrayList<TreeNode> params, TreeNode node) {
+        if (node == null) return;
+        if (node.getNodeType() == TreeNode.TreeNodes.NPLIST || node.getNodeType() == TreeNode.TreeNodes.NEXPL) {
+            flattenFunctionNodes(params, node.getLeft());
+            flattenFunctionNodes(params, node.getMid());
+        } else {
+            params.add(node);
+        }
+    }
+
+    public int checkFunctionArgs(int symbolTableId, TreeNode functionParams) {
+        Symbol functionSymbol = symbolTable.getSymbol(symbolTableId);
+        if (functionSymbol.getForeignTreeNode() == null) return 0;
+        ArrayList<TreeNode> receiving = new ArrayList<>();
+        flattenFunctionNodes(receiving, functionSymbol.getForeignTreeNode());
+        ArrayList<TreeNode> sending = new ArrayList<>();
+        flattenFunctionNodes(sending, functionParams);
+
+        // Check the number of arguments passed to the function match the number of arguments received
+        if (receiving.size() != sending.size()) {
+            return -2;
+        }
+
+        // Check the types of each argument matches
+        for (int i = 0; i < receiving.size(); i++) {
+            TreeNode receivingNode = receiving.get(i);
+            TreeNode sendingNode = sending.get(i);
+            switch (receivingNode.getNodeType()) {
+                case NSIMP:
+                    if (symbolTable.getSymbol(receivingNode.getLeft().getSymbolTableId()) instanceof PrimitiveTypeSymbol) {
+                        TreeNode.VariableTypes receivingVariableType = resolvePrimativeTypeToVariableType(((PrimitiveTypeSymbol) symbolTable.getSymbol(receivingNode.getLeft().getSymbolTableId())).getVal());
+                        if (receivingVariableType != sendingNode.getNodeDataType() && !(receivingVariableType == TreeNode.VariableTypes.FLOAT && sendingNode.getNodeDataType() == TreeNode.VariableTypes.INTEGER))
+                            return -1;
+                    } else {
+                        if (typesDontMatch(receivingNode, sendingNode))
+                            return -1;
+                    }
+                    break;
+                case NARRP:
+                    if (typesDontMatch(receivingNode, sendingNode))
+                        return -1;
+                    if (symbolTable.getSymbol(sendingNode.getSymbolTableId()).getSymbolType() == SymbolTable.SymbolType.CONSTANT_ARRAY)
+                        return -1;
+                    break;
+                case NARRC:
+                    if (typesDontMatch(receivingNode, sendingNode))
+                        return -1;
+                    break;
+            }
+        }
+        return 0;
+    }
+
+    private boolean typesDontMatch(TreeNode first, TreeNode second) {
+        return symbolTable.getSymbol(first.getLeft().getSymbolTableId()).getForeignSymbolTableId() != symbolTable.getSymbol(second.getSymbolTableId()).getForeignSymbolTableId();
     }
 }

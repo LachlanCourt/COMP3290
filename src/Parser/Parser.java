@@ -34,6 +34,7 @@ public class Parser {
     private final SymbolTable symbolTable;
 
     private String currentScope;
+    private boolean foundReturnStatement;
 
     private final OutputController outputController;
     private final Utils utils;
@@ -1168,6 +1169,7 @@ public class Parser {
         // symbol table
         int symbolTableId =
                 symbolTable.getSymbolIdFromReference(nameIdenToken.getTokenLiteral(), "@global");
+        if (symbolTableId == -1 || symbolTable.getSymbol(symbolTableId).getSymbolType() != SymbolType.FUNCTION) error(Errors.UNDEFINED_FUNCTION);
         TreeNode t = new TreeNode(TreeNodes.NFCALL, symbolTableId);
         t.setNodeDataType(utils.resolvePrimativeTypeToVariableType(
                 ((PrimitiveTypeSymbol) symbolTable.getSymbol(symbolTableId)).getVal()));
@@ -1546,6 +1548,7 @@ public class Parser {
             t.setNextChild(expr());
             // TODO type checking on return value
         }
+        foundReturnStatement = true;
         return t;
     }
 
@@ -1572,10 +1575,10 @@ public class Parser {
     private TreeNode callstat(Token nameIdenToken) throws CD22ParserException {
         // Create a new node with the ID of the called function as the symbol table ID
         int symbolTableId =
-                symbolTable.getSymbolIdFromReference(nameIdenToken.getTokenLiteral(), currentScope);
-        TreeNode t = new TreeNode(TreeNodes.NCALL, symbolTableId);
+                symbolTable.getSymbolIdFromReference(nameIdenToken.getTokenLiteral(), "@global");
+        if (symbolTableId == -1 || symbolTable.getSymbol(symbolTableId).getSymbolType() != SymbolType.FUNCTION) error(Errors.UNDEFINED_FUNCTION);
 
-        // TODO will crash if function does not exist
+        TreeNode t = new TreeNode(TreeNodes.NCALL, symbolTableId);
         if (((PrimitiveTypeSymbol) symbolTable.getSymbol(symbolTableId)).getVal()
                 != PrimitiveTypes.VOID) {
             errorWithoutException(Errors.NON_VOID_RETURN_TYPE);
@@ -1945,8 +1948,10 @@ public class Parser {
         t.setNextChild(locals());
         match(Tokens.TBEGN);
         // Parse statement block
+        foundReturnStatement = false;
         t.setNextChild(stats());
         match(Tokens.TTEND);
+        if (!foundReturnStatement) errorWithoutException(Errors.MISSING_RETURN);
         return t;
     }
 

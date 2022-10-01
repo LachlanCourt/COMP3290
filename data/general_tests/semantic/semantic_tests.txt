@@ -44,7 +44,7 @@ end
 
 func someFuncWithArray(someArrayVar : arrayType) : void
 begin
-    /--someFuncWithConstArray(someArrayVar);
+    someFuncWithConstArray(someArrayVar);
     return void;
 end
 
@@ -60,7 +60,11 @@ begin
     return void;
 end
 
-
+func missingReturn() : void
+    i : bool
+begin
+    i = true;
+end
 
 main
     i : bool,
@@ -68,12 +72,16 @@ main
     g : int,
     f : int,
     f : int,
+    someFloat : int,
     someStruct : arrayStructType,
     someOtherVar : someOtherStruct
 begin
 
+    a = anUndefinedFunction();
     someArray[4] = someStruct;
     someArray[0].x = 6;
+
+    g = something();
 
     i = false or true;
 
@@ -81,6 +89,7 @@ begin
         g = 6;
     end
 
+    g = someFloat;
 
     f = 7 + someStruct.x;
 

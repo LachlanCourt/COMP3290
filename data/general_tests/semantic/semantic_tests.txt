@@ -55,12 +55,18 @@ begin
     return void;
 end
 
+func someFunc() : void
+begin
+    return void;
+end
+
 
 
 main
     i : bool,
     a : float,
     g : int,
+    f : int,
     f : int,
     someStruct : arrayStructType,
     someOtherVar : someOtherStruct

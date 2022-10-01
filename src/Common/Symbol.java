@@ -9,7 +9,6 @@ package Common;
 
 import Common.SymbolTable.SymbolType;
 import Parser.TreeNode;
-
 import java.util.HashMap;
 
 public class Symbol {

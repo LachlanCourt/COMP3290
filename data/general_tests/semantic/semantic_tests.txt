@@ -55,9 +55,17 @@ begin
     return void;
 end
 
+/**
 func someFunc() : void
 begin
     return void;
+end
+**/
+
+func someVoidFun() : void
+    i : bool
+begin
+    return i;
 end
 
 func missingReturn() : void

@@ -1458,7 +1458,9 @@ public class Parser {
         t.setNextChild(stats());
         match(Tokens.TUNTL);
         // Parse the boolean condition for looping
-        t.setNextChild(bool());
+        TreeNode boolNode = bool();
+        if (boolNode.getNodeDataType() != VariableTypes.BOOLEAN) errorWithoutException(Errors.BAD_EXPR_TYPE);
+        t.setNextChild(boolNode);
         return t;
     }
 
@@ -1615,7 +1617,9 @@ public class Parser {
         if (asgnlistNode != null) t.setNextChild(asgnlistNode);
         gracefullyMatchSemicolon();
         // Parse a conditional loop statement
-        t.setNextChild(bool());
+        TreeNode boolNode = bool();
+        if (boolNode.getNodeDataType() != VariableTypes.BOOLEAN) errorWithoutException(Errors.BAD_EXPR_TYPE);
+        t.setNextChild(boolNode);
         match(Tokens.TRPAR);
         // Parse for loop statement block
         t.setNextChild(stats());
@@ -1633,7 +1637,9 @@ public class Parser {
         match(Tokens.TIFTH);
         match(Tokens.TLPAR);
         // Parse conditional entry statement
-        t.setNextChild(bool());
+        TreeNode boolNode = bool();
+        if (boolNode.getNodeDataType() != VariableTypes.BOOLEAN) errorWithoutException(Errors.BAD_EXPR_TYPE);
+        t.setNextChild(boolNode);
         match(Tokens.TRPAR);
         // Parse statement block
         t.setNextChild(stats());
@@ -1655,7 +1661,9 @@ public class Parser {
             match(Tokens.TLPAR);
             TreeNode childNode = new TreeNode(TreeNodes.NIFTH);
             // Conditional entry statement
-            childNode.setNextChild(bool());
+            TreeNode childBoolNode = bool();
+            if (childBoolNode.getNodeDataType() != VariableTypes.BOOLEAN) errorWithoutException(Errors.BAD_EXPR_TYPE);
+            childNode.setNextChild(childBoolNode);
             match(Tokens.TRPAR);
             // If else statement block
             childNode.setNextChild(stats());

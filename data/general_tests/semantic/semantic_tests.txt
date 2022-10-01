@@ -62,10 +62,20 @@ begin
 end
 **/
 
+func someIntFunc() : int
+begin
+return 5;
+end
+
+func someOtherIntFunc() : int
+begin
+return someIntFunc();
+end
+
 func someVoidFun() : void
     i : bool
 begin
-    return i;
+    return someFunc(3, 4, 5);
 end
 
 func missingReturn() : void
@@ -84,6 +94,8 @@ main
     someStruct : arrayStructType,
     someOtherVar : someOtherStruct
 begin
+
+    f = someOtherIntFunc();
 
     a = anUndefinedFunction();
     someArray[4] = someStruct;
@@ -128,8 +140,11 @@ g = 8 / 2;
 
     someFuncWithConstArray(someArray);
 
+    if (7)
+        i = false;
+    end
 
     /-- Fix this crash
-    /--hello();
+    hello();
 
 end CD22 ThisProgramName

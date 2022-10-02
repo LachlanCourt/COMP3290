@@ -60,7 +60,8 @@ public class ErrorMessage {
     public static final ArrayList<Errors> semanticErrors =
         new ArrayList<>(Arrays.asList(Errors.PROGRAM_IDEN_MISMATCH, Errors.UNDEFINED_VARIABLE,
             Errors.BAD_EXPR_TYPE, Errors.NON_VOID_RETURN_TYPE, Errors.BAD_ARG_TYPE,
-            Errors.BAD_ARG_LENGTH, Errors.IDEN_ALREADY_DEFINED, Errors.UNDEFINED_FUNCTION, Errors.MISSING_RETURN, Errors.BAD_RETURN_TYPE));
+            Errors.BAD_ARG_LENGTH, Errors.IDEN_ALREADY_DEFINED, Errors.UNDEFINED_FUNCTION,
+            Errors.MISSING_RETURN, Errors.BAD_RETURN_TYPE));
     private int row;
     private int col;
     private Errors type;

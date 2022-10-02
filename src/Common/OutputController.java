@@ -86,7 +86,8 @@ public class OutputController {
                 if (outputToFile)
                     outputToFile(warning.toString(false));
             }
-            String warningCount = "Found " + errorHandler.getWarnings().size() + " warning" + (errorHandler.getWarnings().size() != 1 ? "s" : "");
+            String warningCount = "Found " + errorHandler.getWarnings().size() + " warning"
+                + (errorHandler.getWarnings().size() != 1 ? "s" : "");
             System.out.println(warningCount);
             if (outputToFile)
                 outputToFile(warningCount);
@@ -114,7 +115,8 @@ public class OutputController {
         // Exit if there are any errors, to prevent the compiler moving onto the next phase until
         // all errors from that phase are resolved
         if (hasErrors()) {
-            String errorCount = "Found " + errorHandler.getErrors().size() + " error" + (errorHandler.getErrors().size() != 1 ? "s" : "");
+            String errorCount = "Found " + errorHandler.getErrors().size() + " error"
+                + (errorHandler.getErrors().size() != 1 ? "s" : "");
             System.out.println(errorCount);
             outputToFile(errorCount);
             System.exit(1);
@@ -132,7 +134,7 @@ public class OutputController {
      * @param data          the token that caused the error
      */
     public void addError(
-            int currentRow, int currentColumn, ErrorMessage.Errors error, String data) {
+        int currentRow, int currentColumn, ErrorMessage.Errors error, String data) {
         errorHandler.addError(currentRow, currentColumn, error, data);
     }
 

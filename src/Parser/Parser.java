@@ -9,8 +9,8 @@
  *******************************************************************************/
 package Parser;
 
-import Common.ErrorMessage.Errors;
 import Common.*;
+import Common.ErrorMessage.Errors;
 import Common.SymbolTable.PrimitiveTypes;
 import Common.SymbolTable.SymbolType;
 import Parser.TreeNode.TreeNodes;
@@ -18,7 +18,6 @@ import Parser.TreeNode.VariableTypes;
 import Scanner.Scanner;
 import Scanner.Token;
 import Scanner.Token.Tokens;
-
 import java.util.ArrayList;
 import java.util.Queue;
 
@@ -77,7 +76,8 @@ public class Parser {
      * @param message additional error data if necessary
      */
     private void error(Errors error, String message) throws CD22ParserException {
-        outputController.addError(previousLookahead.getRow(), previousLookahead.getCol(), error, message);
+        outputController.addError(
+            previousLookahead.getRow(), previousLookahead.getCol(), error, message);
         throw new CD22ParserException();
     }
 
@@ -87,7 +87,8 @@ public class Parser {
      * @param message additional error data if necessary
      */
     private void error(String message) throws CD22ParserException {
-        outputController.addError(previousLookahead.getRow(), previousLookahead.getCol(), Errors.CUSTOM_ERROR, message);
+        outputController.addError(
+            previousLookahead.getRow(), previousLookahead.getCol(), Errors.CUSTOM_ERROR, message);
         throw new CD22ParserException();
     }
 
@@ -108,7 +109,8 @@ public class Parser {
      * @param message additional error data if necessary
      */
     private void errorWithoutException(Errors error, String message) {
-        outputController.addError(previousLookahead.getRow(), previousLookahead.getCol(), error, message);
+        outputController.addError(
+            previousLookahead.getRow(), previousLookahead.getCol(), error, message);
     }
 
     /**
@@ -126,7 +128,8 @@ public class Parser {
      * @param message additional error data if necessary
      */
     private void errorWithoutException(String message) {
-        outputController.addError(previousLookahead.getRow(), previousLookahead.getCol(), Errors.CUSTOM_ERROR, message);
+        outputController.addError(
+            previousLookahead.getRow(), previousLookahead.getCol(), Errors.CUSTOM_ERROR, message);
     }
 
     /**
@@ -139,7 +142,8 @@ public class Parser {
             // The previous lookahead is used for error messages
             previousLookahead = lookahead;
             lookahead = getToken();
-        } else error("Expected \"" + utils.getInitialiserFromToken(token) + "\"");
+        } else
+            error("Expected \"" + utils.getInitialiserFromToken(token) + "\"");
     }
 
     /**
@@ -290,14 +294,16 @@ public class Parser {
             // able to parse the rest of the program
             match(Tokens.TCD22);
             if (lookahead.getToken() == Tokens.TIDEN) {
-                t.setSymbolTableId(symbolTable.addSymbol(SymbolTable.SymbolType.PROGRAM_IDEN, lookahead));
+                t.setSymbolTableId(
+                    symbolTable.addSymbol(SymbolTable.SymbolType.PROGRAM_IDEN, lookahead));
                 match(Tokens.TIDEN);
             } else {
                 error(Errors.PROGRAM_IDEN_MISSING);
             }
         } catch (CD22ParserException e) {
             // Resync if CD22 or the identifier are missing
-            panic(utils.getTokenList(Tokens.TCONS, Tokens.TARRS, Tokens.TTYPS, Tokens.TFUNC, Tokens.TMAIN));
+            panic(utils.getTokenList(
+                Tokens.TCONS, Tokens.TARRS, Tokens.TTYPS, Tokens.TFUNC, Tokens.TMAIN));
         }
 
         // Primary program parsing
@@ -322,7 +328,8 @@ public class Parser {
         t.setNextChild(consts());
 
         // Resynchronise
-        if (lookahead.getToken() != Tokens.TTYPS && lookahead.getToken() != Tokens.TARRS && lookahead.getToken() != Tokens.TFUNC && lookahead.getToken() != Tokens.TMAIN) {
+        if (lookahead.getToken() != Tokens.TTYPS && lookahead.getToken() != Tokens.TARRS
+            && lookahead.getToken() != Tokens.TFUNC && lookahead.getToken() != Tokens.TMAIN) {
             errorWithoutException("Unexpected token \"" + lookahead.getTokenLiteral() + "\"");
             // Prevent silent errors if the "Types" keyword is missing but types are declared - as
             // all these fields are optional, without this check error recovery will skip all the
@@ -334,7 +341,8 @@ public class Parser {
         t.setNextChild(types());
 
         // Resynchronise
-        if (lookahead.getToken() != Tokens.TARRS && lookahead.getToken() != Tokens.TFUNC && lookahead.getToken() != Tokens.TMAIN) {
+        if (lookahead.getToken() != Tokens.TARRS && lookahead.getToken() != Tokens.TFUNC
+            && lookahead.getToken() != Tokens.TMAIN) {
             errorWithoutException("Unexpected token \"" + lookahead.getTokenLiteral() + "\"");
             // Prevent silent errors
             panic(utils.getTokenList(Tokens.TARRS, Tokens.TFUNC, Tokens.TMAIN));
@@ -380,12 +388,14 @@ public class Parser {
             t1 = init();
         } catch (CD22ParserException e) {
             // Resynchronise to either a comma, globals keyword, func, or main keywords
-            panic(utils.getTokenList(Tokens.TCOMA, Tokens.TTYPS, Tokens.TARRS, Tokens.TFUNC, Tokens.TMAIN));
+            panic(utils.getTokenList(
+                Tokens.TCOMA, Tokens.TTYPS, Tokens.TARRS, Tokens.TFUNC, Tokens.TMAIN));
         }
 
         // If a keyword for other sections of the program has been found we can stop parsing
         // constants
-        if (lookahead.getToken() == Tokens.TTYPS || lookahead.getToken() == Tokens.TARRS || lookahead.getToken() == Tokens.TFUNC || lookahead.getToken() == Tokens.TMAIN) {
+        if (lookahead.getToken() == Tokens.TTYPS || lookahead.getToken() == Tokens.TARRS
+            || lookahead.getToken() == Tokens.TFUNC || lookahead.getToken() == Tokens.TMAIN) {
             return t1;
         }
         // If there is a comma, parse another initlist recursively
@@ -406,7 +416,8 @@ public class Parser {
         // Parse the identifier of the constant and create a symbol table entry
         int symbolTableId = 0;
         if (lookahead.getToken() == Tokens.TIDEN) {
-            symbolTableId = symbolTable.addSymbol(SymbolType.CONSTANT, lookahead, currentScope, true);
+            symbolTableId =
+                symbolTable.addSymbol(SymbolType.CONSTANT, lookahead, currentScope, true);
             t.setSymbolTableId(symbolTableId);
             match(Tokens.TIDEN);
         } else {
@@ -417,7 +428,8 @@ public class Parser {
         TreeNode exprNode = expr();
         Symbol contantSymbol = symbolTable.getSymbol(symbolTableId);
         contantSymbol.setForeignSymbolTableId(exprNode.getSymbolTableId());
-        ((PrimitiveTypeSymbol) contantSymbol).setVal(utils.resolveVariableTypeToPrimitiveType(exprNode.getNodeDataType()));
+        ((PrimitiveTypeSymbol) contantSymbol)
+            .setVal(utils.resolveVariableTypeToPrimitiveType(exprNode.getNodeDataType()));
         t.setNextChild(exprNode);
         return t;
     }
@@ -455,7 +467,8 @@ public class Parser {
         }
 
         // If we have found another keyword from elsewhere in the program we can stop parsing types
-        if (lookahead.getToken() == Tokens.TARRS || lookahead.getToken() == Tokens.TFUNC || lookahead.getToken() == Tokens.TMAIN) {
+        if (lookahead.getToken() == Tokens.TARRS || lookahead.getToken() == Tokens.TFUNC
+            || lookahead.getToken() == Tokens.TMAIN) {
             return t1;
         }
 
@@ -503,8 +516,10 @@ public class Parser {
             // Parse the struct type of the array or error if it is missing
             int typeId = 0;
             if (lookahead.getToken() == Tokens.TIDEN) {
-                typeId = symbolTable.getSymbolIdFromReference(lookahead.getTokenLiteral(), currentScope);
-                if (typeId == -1) errorWithoutException(Errors.UNDEFINED_TYPE);
+                typeId =
+                    symbolTable.getSymbolIdFromReference(lookahead.getTokenLiteral(), currentScope);
+                if (typeId == -1)
+                    errorWithoutException(Errors.UNDEFINED_TYPE);
                 match(Tokens.TIDEN);
             } else {
                 error(Errors.EXPECTED_IDENTIFIER);
@@ -603,18 +618,22 @@ public class Parser {
      * @param allowStructTypes flag indicating whether struct types are allowed in this sdecl
      * @return sdecl node
      */
-    private TreeNode sdecl(Token nameIdenToken, boolean allowStructTypes) throws CD22ParserException {
+    private TreeNode sdecl(Token nameIdenToken, boolean allowStructTypes)
+        throws CD22ParserException {
         TreeNode t = new TreeNode(TreeNodes.NTDECL);
         // If an identifier is found, and we are allowing struct types in this definition
         if (lookahead.getToken() == Tokens.TIDEN && allowStructTypes) {
             // structid
             // Add the sdecl to the symbol table with the given name
-            int symbolTableId = symbolTable.addSymbol(SymbolType.VARIABLE, nameIdenToken, currentScope);
+            int symbolTableId =
+                symbolTable.addSymbol(SymbolType.VARIABLE, nameIdenToken, currentScope);
             t.setSymbolTableId(symbolTableId);
             // Add the type of the struct given the name of the variable
-            int typeId = symbolTable.getSymbolIdFromReference(lookahead.getTokenLiteral(), currentScope);
+            int typeId =
+                symbolTable.getSymbolIdFromReference(lookahead.getTokenLiteral(), currentScope);
             // If the type does not exist or is not a valid struct type
-            if (typeId == -1 || symbolTable.getSymbol(typeId).getSymbolType() != SymbolType.STRUCT_TYPE)
+            if (typeId == -1
+                || symbolTable.getSymbol(typeId).getSymbolType() != SymbolType.STRUCT_TYPE)
                 errorWithoutException(Errors.UNDEFINED_TYPE);
             // Add the type to the sdecl symbol
             symbolTable.getSymbol(symbolTableId).setForeignSymbolTableId(typeId);
@@ -623,7 +642,8 @@ public class Parser {
             // stype
             // Add the sdecl to the symbol table with the given name, adding the boolean flag to the
             // adder tp indicate that the symbol is a primitive type
-            int symbolTableId = symbolTable.addSymbol(SymbolType.VARIABLE, nameIdenToken, currentScope, true);
+            int symbolTableId =
+                symbolTable.addSymbol(SymbolType.VARIABLE, nameIdenToken, currentScope, true);
             if (symbolTableId == -1) {
                 errorWithoutException(Errors.IDEN_ALREADY_DEFINED);
             }
@@ -755,11 +775,13 @@ public class Parser {
         TreeNode t = new TreeNode(TreeNodes.NARRD);
 
         // Create a symbol table entry with the variable name
-        int symbolTableId = symbolTable.addSymbol(SymbolType.VARIABLE, idenList.get(0), currentScope);
+        int symbolTableId =
+            symbolTable.addSymbol(SymbolType.VARIABLE, idenList.get(0), currentScope);
         t.setSymbolTableId(symbolTableId);
 
         // Get the type ID from the symbol table, which should match an array type
-        int typeId = symbolTable.getSymbolIdFromReference(idenList.get(1).getTokenLiteral(), currentScope);
+        int typeId =
+            symbolTable.getSymbolIdFromReference(idenList.get(1).getTokenLiteral(), currentScope);
         if (typeId == -1 || symbolTable.getSymbol(typeId).getSymbolType() != SymbolType.ARRAY_TYPE)
             errorWithoutException(Errors.UNDEFINED_TYPE);
         // Add the type to the variable entry from earlier
@@ -923,7 +945,8 @@ public class Parser {
                 t.setNextChild(exponentNode.getLeft());
 
             } else {
-                if (exponentNode.calculateNodeVariableTypeAndValue() == -1 || exponentNode.getNodeDataType() != VariableTypes.INTEGER) {
+                if (exponentNode.calculateNodeVariableTypeAndValue() == -1
+                    || exponentNode.getNodeDataType() != VariableTypes.INTEGER) {
                     error(Errors.BAD_EXPR_TYPE);
                 }
                 t.setNextChild(exponentNode);
@@ -939,26 +962,34 @@ public class Parser {
     private TreeNode exponent() throws CD22ParserException {
         // Match an integer literal
         if (lookahead.getToken() == Tokens.TILIT) {
-            TreeNode t = new TreeNode(TreeNodes.NILIT, symbolTable.addSymbol(SymbolType.LITERAL, lookahead));
+            TreeNode t =
+                new TreeNode(TreeNodes.NILIT, symbolTable.addSymbol(SymbolType.LITERAL, lookahead));
             t.setNodeDataType(VariableTypes.INTEGER);
             match(Tokens.TILIT);
             return t;
             // Match a float literal
         } else if (lookahead.getToken() == Tokens.TFLIT) {
-            TreeNode t = new TreeNode(TreeNodes.NFLIT, symbolTable.addSymbol(SymbolType.LITERAL, lookahead));
+            TreeNode t =
+                new TreeNode(TreeNodes.NFLIT, symbolTable.addSymbol(SymbolType.LITERAL, lookahead));
             t.setNodeDataType(VariableTypes.FLOAT);
             match(Tokens.TFLIT);
             return t;
             // Match true
         } else if (lookahead.getToken() == Tokens.TTRUE) {
-            TreeNode t = new TreeNode(TreeNodes.NTRUE, symbolTable.addSymbol(SymbolType.LITERAL, new Token(Tokens.TTRUE, "1.0", 0, 0))); //, symbolTable.addSymbol(SymbolType.LITERAL, lookahead));
+            TreeNode t = new TreeNode(TreeNodes.NTRUE,
+                symbolTable.addSymbol(SymbolType.LITERAL,
+                    new Token(Tokens.TTRUE, "1.0", 0,
+                        0))); //, symbolTable.addSymbol(SymbolType.LITERAL, lookahead));
             t.setNodeDataType(VariableTypes.BOOLEAN);
 
             match(Tokens.TTRUE);
             return t;
             // Match false
         } else if (lookahead.getToken() == Tokens.TFALS) {
-            TreeNode t = new TreeNode(TreeNodes.NFALS, symbolTable.addSymbol(SymbolType.LITERAL, new Token(Tokens.TTRUE, "0.0", 0, 0))); //, symbolTable.addSymbol(SymbolType.LITERAL, lookahead));));
+            TreeNode t = new TreeNode(TreeNodes.NFALS,
+                symbolTable.addSymbol(SymbolType.LITERAL,
+                    new Token(Tokens.TTRUE, "0.0", 0,
+                        0))); //, symbolTable.addSymbol(SymbolType.LITERAL, lookahead));));
             t.setNodeDataType(VariableTypes.BOOLEAN);
 
             match(Tokens.TFALS);
@@ -1135,11 +1166,14 @@ public class Parser {
     private TreeNode fncall(Token nameIdenToken) throws CD22ParserException {
         // Create a new node with the symbol table ID referring to the function definition in the
         // symbol table
-        int symbolTableId = symbolTable.getSymbolIdFromReference(nameIdenToken.getTokenLiteral(), "@global");
-        if (symbolTableId == -1 || symbolTable.getSymbol(symbolTableId).getSymbolType() != SymbolType.FUNCTION)
+        int symbolTableId =
+            symbolTable.getSymbolIdFromReference(nameIdenToken.getTokenLiteral(), "@global");
+        if (symbolTableId == -1
+            || symbolTable.getSymbol(symbolTableId).getSymbolType() != SymbolType.FUNCTION)
             error(Errors.UNDEFINED_FUNCTION);
         TreeNode t = new TreeNode(TreeNodes.NFCALL, symbolTableId);
-        t.setNodeDataType(utils.resolvePrimativeTypeToVariableType(((PrimitiveTypeSymbol) symbolTable.getSymbol(symbolTableId)).getVal()));
+        t.setNodeDataType(utils.resolvePrimativeTypeToVariableType(
+            ((PrimitiveTypeSymbol) symbolTable.getSymbol(symbolTableId)).getVal()));
         match(Tokens.TLPAR);
         // If the function call does not immediately close the parentheses, try parsing an elist
         TreeNode elistNode = null;
@@ -1202,7 +1236,8 @@ public class Parser {
      */
     private TreeNode var(Token nameIdenToken) throws CD22ParserException {
         // Get the symbol indicated by the variable name
-        int symbolTableId = symbolTable.getSymbolIdFromReference(nameIdenToken.getTokenLiteral(), currentScope);
+        int symbolTableId =
+            symbolTable.getSymbolIdFromReference(nameIdenToken.getTokenLiteral(), currentScope);
 
         if (symbolTableId == -1) {
             // We want to throw an exception error here, as if the variable has not been defined
@@ -1237,7 +1272,8 @@ public class Parser {
                 // SEMANTICS Set expected type
                 int arrayType = symbolTable.getSymbol(symbolTableId).getForeignSymbolTableId();
                 int structType = symbolTable.getSymbol(arrayType).getForeignSymbolTableId();
-                // Change the symbol table ID to reference the array type, rather than the array itself
+                // Change the symbol table ID to reference the array type, rather than the array
+                // itself
                 t.setSymbolTableId(arrayType);
                 t.setExpectedType(VariableTypes.COMPLEX, structType);
             }
@@ -1253,13 +1289,17 @@ public class Parser {
         }
         // If it is not an array or a struct it is just a simple variable
         TreeNode t = new TreeNode(TreeNodes.NSIMV, symbolTableId);
-        if (symbolTable.getSymbol(symbolTableId) instanceof PrimitiveTypeSymbol && symbolTable.getSymbol(symbolTableId).getSymbolType() != SymbolType.CONSTANT) {
-            t.setExpectedType(utils.resolvePrimativeTypeToVariableType(((PrimitiveTypeSymbol) symbolTable.getSymbol(symbolTableId)).getVal()));
+        if (symbolTable.getSymbol(symbolTableId) instanceof PrimitiveTypeSymbol
+            && symbolTable.getSymbol(symbolTableId).getSymbolType() != SymbolType.CONSTANT) {
+            t.setExpectedType(utils.resolvePrimativeTypeToVariableType(
+                ((PrimitiveTypeSymbol) symbolTable.getSymbol(symbolTableId)).getVal()));
         } else if (symbolTable.getSymbol(symbolTableId).getSymbolType() == SymbolType.CONSTANT) {
-            PrimitiveTypeSymbol constSymbol = ((PrimitiveTypeSymbol) symbolTable.getSymbol(symbolTableId));
+            PrimitiveTypeSymbol constSymbol =
+                ((PrimitiveTypeSymbol) symbolTable.getSymbol(symbolTableId));
             t.setExpectedType(utils.resolvePrimativeTypeToVariableType(constSymbol.getVal()));
         } else {
-            t.setExpectedType(VariableTypes.COMPLEX, symbolTable.getSymbol(symbolTableId).getForeignSymbolTableId());
+            t.setExpectedType(VariableTypes.COMPLEX,
+                symbolTable.getSymbol(symbolTableId).getForeignSymbolTableId());
         }
         return t;
     }
@@ -1288,15 +1328,18 @@ public class Parser {
             // Using the struct name as symbol table scope, check if the identified field exists
             // within the struct and add an error if it does not. Will also fail semantically if the
             // type is invalid
-            int fieldId = symbolTable.getSymbolIdFromReference(lookahead.getTokenLiteral(), symbolTable.getSymbol(structTypeId).getRef(), false);
-            if (fieldId == -1) errorWithoutException(Errors.UNDEFINED_VARIABLE, lookahead.getTokenLiteral());
+            int fieldId = symbolTable.getSymbolIdFromReference(
+                lookahead.getTokenLiteral(), symbolTable.getSymbol(structTypeId).getRef(), false);
+            if (fieldId == -1)
+                errorWithoutException(Errors.UNDEFINED_VARIABLE, lookahead.getTokenLiteral());
             // Match the identifier now we have finished type checking with it, and add the field to
             // the node's children
             match(Tokens.TIDEN);
             t.setNextChild(new TreeNode(TreeNodes.NSIMV, fieldId));
             // SEMANTICS set expected type, so we can check the expression that's assigning to it
             if (fieldId != -1) {
-                t.setExpectedType(utils.resolvePrimativeTypeToVariableType(((PrimitiveTypeSymbol) symbolTable.getSymbol(fieldId)).getVal()));
+                t.setExpectedType(utils.resolvePrimativeTypeToVariableType(
+                    ((PrimitiveTypeSymbol) symbolTable.getSymbol(fieldId)).getVal()));
             }
 
         } else {
@@ -1330,7 +1373,8 @@ public class Parser {
         match(Tokens.TCD22);
         // Ensure the program finishes with an ID
         if (lookahead.getToken() == Tokens.TIDEN) {
-            int symbolTableId = symbolTable.getSymbolIdFromReference(lookahead.getTokenLiteral(), currentScope);
+            int symbolTableId =
+                symbolTable.getSymbolIdFromReference(lookahead.getTokenLiteral(), currentScope);
             match(Tokens.TIDEN);
             t.setSymbolTableId(symbolTableId);
             // SEMANTICS
@@ -1386,13 +1430,16 @@ public class Parser {
                 return stats();
             }
             // Parse all other statements, that don't finish with "end"
-        } else if (lookahead.getToken() == Tokens.TREPT || lookahead.getToken() == Tokens.TIDEN || lookahead.getToken() == Tokens.TINPT || lookahead.getToken() == Tokens.TPRNT || lookahead.getToken() == Tokens.TPRLN || lookahead.getToken() == Tokens.TRETN) {
+        } else if (lookahead.getToken() == Tokens.TREPT || lookahead.getToken() == Tokens.TIDEN
+            || lookahead.getToken() == Tokens.TINPT || lookahead.getToken() == Tokens.TPRNT
+            || lookahead.getToken() == Tokens.TPRLN || lookahead.getToken() == Tokens.TRETN) {
             // Try parsing a statement followed by a semicolon, resync if it fails
             try {
                 t = stat();
                 gracefullyMatchSemicolon();
             } catch (CD22ParserException e) {
-                panic(utils.getTokenList(Tokens.TSEMI, Tokens.TTFOR, Tokens.TIFTH, Tokens.TREPT, Tokens.TINPT, Tokens.TPRNT, Tokens.TPRLN, Tokens.TRETN));
+                panic(utils.getTokenList(Tokens.TSEMI, Tokens.TTFOR, Tokens.TIFTH, Tokens.TREPT,
+                    Tokens.TINPT, Tokens.TPRNT, Tokens.TPRLN, Tokens.TRETN));
                 if (lookahead.getToken() == Tokens.TSEMI) {
                     // If we have resynchronized on a semicolon we actually care about the data
                     // after it
@@ -1404,7 +1451,10 @@ public class Parser {
         // Check that there is at least one statement
         if (t != null) {
             // Epsilon path, no more statements
-            if (lookahead.getToken() != Tokens.TTFOR && lookahead.getToken() != Tokens.TIFTH && lookahead.getToken() != Tokens.TREPT && lookahead.getToken() != Tokens.TIDEN && lookahead.getToken() != Tokens.TINPT && lookahead.getToken() != Tokens.TPRNT && lookahead.getToken() != Tokens.TPRLN && lookahead.getToken() != Tokens.TRETN) {
+            if (lookahead.getToken() != Tokens.TTFOR && lookahead.getToken() != Tokens.TIFTH
+                && lookahead.getToken() != Tokens.TREPT && lookahead.getToken() != Tokens.TIDEN
+                && lookahead.getToken() != Tokens.TINPT && lookahead.getToken() != Tokens.TPRNT
+                && lookahead.getToken() != Tokens.TPRLN && lookahead.getToken() != Tokens.TRETN) {
                 return t;
             }
             // Return with a recursive statements call
@@ -1425,7 +1475,8 @@ public class Parser {
         if (lookahead.getToken() == Tokens.TREPT) {
             return reptstat();
             // Match io
-        } else if (lookahead.getToken() == Tokens.TINPT || lookahead.getToken() == Tokens.TPRNT || lookahead.getToken() == Tokens.TPRLN) {
+        } else if (lookahead.getToken() == Tokens.TINPT || lookahead.getToken() == Tokens.TPRNT
+            || lookahead.getToken() == Tokens.TPRLN) {
             return iostat();
             // Match return
         } else if (lookahead.getToken() == Tokens.TRETN) {
@@ -1454,14 +1505,16 @@ public class Parser {
         match(Tokens.TLPAR);
         // Parse the assignment list inside the repeat statement header, which can be null
         TreeNode asgnlistNode = asgnlist();
-        if (asgnlistNode != null) t.setNextChild(asgnlistNode);
+        if (asgnlistNode != null)
+            t.setNextChild(asgnlistNode);
         match(Tokens.TRPAR);
         // Parse the statements in the repeat block
         t.setNextChild(stats());
         match(Tokens.TUNTL);
         // Parse the boolean condition for looping
         TreeNode boolNode = bool();
-        if (boolNode.getNodeDataType() != VariableTypes.BOOLEAN) errorWithoutException(Errors.BAD_EXPR_TYPE);
+        if (boolNode.getNodeDataType() != VariableTypes.BOOLEAN)
+            errorWithoutException(Errors.BAD_EXPR_TYPE);
         t.setNextChild(boolNode);
         return t;
     }
@@ -1497,7 +1550,9 @@ public class Parser {
         match(Tokens.TRETN);
 
         int functionSymbolTableId = symbolTable.getSymbolIdFromReference(currentScope, "@global");
-        PrimitiveTypeSymbol functionSymbol = functionSymbolTableId != -1 ? ((PrimitiveTypeSymbol) symbolTable.getSymbol(functionSymbolTableId)) : null;
+        PrimitiveTypeSymbol functionSymbol = functionSymbolTableId != -1
+            ? ((PrimitiveTypeSymbol) symbolTable.getSymbol(functionSymbolTableId))
+            : null;
         // Match either void or an expression for the return value
         if (lookahead.getToken() == Tokens.TVOID) {
             match(Tokens.TVOID);
@@ -1508,7 +1563,9 @@ public class Parser {
             TreeNode exprNode = expr();
             t.setNextChild(exprNode);
 
-            if (functionSymbol != null && exprNode.getNodeDataType() != utils.resolvePrimativeTypeToVariableType(functionSymbol.getVal())) {
+            if (functionSymbol != null
+                && exprNode.getNodeDataType()
+                    != utils.resolvePrimativeTypeToVariableType(functionSymbol.getVal())) {
                 errorWithoutException(Errors.BAD_RETURN_TYPE);
             }
         }
@@ -1538,12 +1595,15 @@ public class Parser {
      */
     private TreeNode callstat(Token nameIdenToken) throws CD22ParserException {
         // Create a new node with the ID of the called function as the symbol table ID
-        int symbolTableId = symbolTable.getSymbolIdFromReference(nameIdenToken.getTokenLiteral(), "@global");
-        if (symbolTableId == -1 || symbolTable.getSymbol(symbolTableId).getSymbolType() != SymbolType.FUNCTION)
+        int symbolTableId =
+            symbolTable.getSymbolIdFromReference(nameIdenToken.getTokenLiteral(), "@global");
+        if (symbolTableId == -1
+            || symbolTable.getSymbol(symbolTableId).getSymbolType() != SymbolType.FUNCTION)
             error(Errors.UNDEFINED_FUNCTION);
 
         TreeNode t = new TreeNode(TreeNodes.NCALL, symbolTableId);
-        if (((PrimitiveTypeSymbol) symbolTable.getSymbol(symbolTableId)).getVal() != PrimitiveTypes.VOID) {
+        if (((PrimitiveTypeSymbol) symbolTable.getSymbol(symbolTableId)).getVal()
+            != PrimitiveTypes.VOID) {
             errorWithoutException(Errors.NON_VOID_RETURN_TYPE);
         }
 
@@ -1598,7 +1658,9 @@ public class Parser {
         // Set the variable as a child, and parse any boolean expressions that follow it
         t.setNextChild(varNode);
         TreeNode boolNode = bool();
-        if (varNode.getExpectedType() != boolNode.getNodeDataType() && !(varNode.getExpectedType() == VariableTypes.FLOAT && boolNode.getNodeDataType() == VariableTypes.INTEGER)) {
+        if (varNode.getExpectedType() != boolNode.getNodeDataType()
+            && !(varNode.getExpectedType() == VariableTypes.FLOAT
+                && boolNode.getNodeDataType() == VariableTypes.INTEGER)) {
             error(Errors.BAD_EXPR_TYPE);
         }
         t.setNextChild(boolNode);
@@ -1616,11 +1678,13 @@ public class Parser {
         match(Tokens.TLPAR);
         // Parse an optional assignment list between initialiser parentheses
         TreeNode asgnlistNode = asgnlist();
-        if (asgnlistNode != null) t.setNextChild(asgnlistNode);
+        if (asgnlistNode != null)
+            t.setNextChild(asgnlistNode);
         gracefullyMatchSemicolon();
         // Parse a conditional loop statement
         TreeNode boolNode = bool();
-        if (boolNode.getNodeDataType() != VariableTypes.BOOLEAN) errorWithoutException(Errors.BAD_EXPR_TYPE);
+        if (boolNode.getNodeDataType() != VariableTypes.BOOLEAN)
+            errorWithoutException(Errors.BAD_EXPR_TYPE);
         t.setNextChild(boolNode);
         match(Tokens.TRPAR);
         // Parse for loop statement block
@@ -1640,7 +1704,8 @@ public class Parser {
         match(Tokens.TLPAR);
         // Parse conditional entry statement
         TreeNode boolNode = bool();
-        if (boolNode.getNodeDataType() != VariableTypes.BOOLEAN) errorWithoutException(Errors.BAD_EXPR_TYPE);
+        if (boolNode.getNodeDataType() != VariableTypes.BOOLEAN)
+            errorWithoutException(Errors.BAD_EXPR_TYPE);
         t.setNextChild(boolNode);
         match(Tokens.TRPAR);
         // Parse statement block
@@ -1664,7 +1729,8 @@ public class Parser {
             TreeNode childNode = new TreeNode(TreeNodes.NIFTH);
             // Conditional entry statement
             TreeNode childBoolNode = bool();
-            if (childBoolNode.getNodeDataType() != VariableTypes.BOOLEAN) errorWithoutException(Errors.BAD_EXPR_TYPE);
+            if (childBoolNode.getNodeDataType() != VariableTypes.BOOLEAN)
+                errorWithoutException(Errors.BAD_EXPR_TYPE);
             childNode.setNextChild(childBoolNode);
             match(Tokens.TRPAR);
             // If else statement block
@@ -1851,7 +1917,8 @@ public class Parser {
         match(Tokens.TLPAR);
         // Match optional parameter list
         TreeNode plistNode = plist();
-        if (plistNode != null) t.setNextChild(plistNode);
+        if (plistNode != null)
+            t.setNextChild(plistNode);
         match(Tokens.TRPAR);
         gracefullyMatchColon();
         // Match the return type, which may be void
@@ -1916,7 +1983,8 @@ public class Parser {
         foundReturnStatement = false;
         t.setNextChild(stats());
         match(Tokens.TTEND);
-        if (!foundReturnStatement) errorWithoutException(Errors.MISSING_RETURN);
+        if (!foundReturnStatement)
+            errorWithoutException(Errors.MISSING_RETURN);
         return t;
     }
 
@@ -1964,7 +2032,8 @@ public class Parser {
             // Get the name of the variable
             Token nameIdenToken = parseIdentifierFollowedByColon().get(0);
             // Find the specified type of the variable
-            int typeId = symbolTable.getSymbolIdFromReference(lookahead.getTokenLiteral(), currentScope);
+            int typeId =
+                symbolTable.getSymbolIdFromReference(lookahead.getTokenLiteral(), currentScope);
             if (typeId == -1) {
                 // The type does not exist in the symbol table, so it must be a primitive type, or
                 // undefined. Parse as sdecl which handles the undefined case already
@@ -2031,7 +2100,8 @@ public class Parser {
         // Parse the name of the variable
         Token nameIdenToken = parseIdentifierFollowedByColon().get(0);
         // Find the specified type of the variable
-        int typeId = symbolTable.getSymbolIdFromReference(lookahead.getTokenLiteral(), currentScope);
+        int typeId =
+            symbolTable.getSymbolIdFromReference(lookahead.getTokenLiteral(), currentScope);
         if (typeId == -1) {
             // The type does not exist in the symbol table, so it must be a primitive type, or
             // undefined. Parse as sdecl which handles the undefined case already
@@ -2056,7 +2126,8 @@ public class Parser {
      */
     private String outputHelper(TreeNode node, boolean debug) {
         // Return on null children
-        if (node == null) return "";
+        if (node == null)
+            return "";
 
         // If in debug, output node name tagged with <> otherwise just output the node name
         StringBuilder data;
@@ -2088,7 +2159,8 @@ public class Parser {
     @Override
     public String toString() {
         // Grab the environement debug status
-        boolean debugEnvironment = System.getenv("DEBUG") != null && System.getenv("DEBUG").compareTo("true") == 0;
+        boolean debugEnvironment =
+            System.getenv("DEBUG") != null && System.getenv("DEBUG").compareTo("true") == 0;
 
         // Split the node data into a primitive array
         String[] treeList = outputHelper(syntaxTree, debugEnvironment).split("\\s");
@@ -2101,7 +2173,8 @@ public class Parser {
             // Ensure strings are padded correctly
             if (outValue.contains("\"")) {
                 stringVal = !stringVal;
-                if (outValue.length() > 1 && outValue.endsWith("\"")) stringVal = false;
+                if (outValue.length() > 1 && outValue.endsWith("\""))
+                    stringVal = false;
                 if (!stringVal) {
                     int size = (line.length() / 7) * 7 + 7;
                     line.append(" ".repeat(size - line.length()));
@@ -2127,7 +2200,8 @@ public class Parser {
             }
         }
         // Output the last line
-        if (line.length() > 0) formattedTree.append(line);
+        if (line.length() > 0)
+            formattedTree.append(line);
         return formattedTree.toString();
     }
 

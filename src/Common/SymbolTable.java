@@ -48,6 +48,7 @@ public class SymbolTable {
         // verification of the return value
         table.put("@error", new HashMap<>());
         table.get("@error").put(-1, new Symbol(SymbolType.UNKNOWN, ""));
+        table.put("@global", new HashMap<>());
     }
 
     /**

@@ -1,0 +1,31 @@
+/-- Using Arrays
+/-- this should PASS
+
+CD22 c
+
+constants
+    SIZE = 10
+
+types
+    person def
+        age : int,
+        height : float
+    end
+
+    students def array [SIZE] of person end
+
+arrays
+    comp3290 : students
+
+main
+    val : int
+begin
+    /-- Declaring the first person in the array.
+    comp3290[0].age = 22;
+    comp3290[0].height = 194.6;
+
+    /-- Printing the age of the first person in array. Should be above value 22.
+    printline "Student with age", comp3290[0].age, " added to array";
+end 
+
+CD22 c

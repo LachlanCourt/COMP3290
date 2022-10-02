@@ -1,0 +1,106 @@
+/-- Should validly cover most, if not all keywords, structures, arrays, etc
+
+CD22 d
+
+constants
+	MAXINPUTSIZE = 20, test = 40.6
+
+types
+	point def
+		xPos : float,
+		yPos : float
+	end
+	points def array [MAXINPUTSIZE] of point end
+	pointer def
+		lop : int,
+		yes : bool,
+		yop : float
+	end
+
+arrays
+	inputPoints : points, outputPoints : points
+
+func getInput(inputArray : points, test : int) : int
+	arraySize : int, i  : int
+	begin
+	printline "Enter number of points.";
+	input arraySize;
+	repeat()
+		printline "number of points must be less than 20 and greater than 2.";
+		input arraySize;
+	until(arraySize > MAXINPUTSIZE AND arraySize < 2);
+	for(i = arraySize; i > 0)
+		printline "input X";
+		input points[i].xPos;
+		printline "input Y";
+		input points[i].yPos;
+	end
+	return arraySize;
+end
+
+func getlinput(inputArray : points, test : int) : int
+	arraySize : int, i  : int, HeIS : float, canYouHearTheRumble : int
+	begin
+	
+	printline "Enter number of points.";
+	
+	print "I feel Your prescense amongst us";
+	
+	input arraySize;
+	
+	repeat()
+		printline "number of points must be less than 20 and greater than 2.";
+		input arraySize;
+	until(arraySize > MAXINPUTSIZE AND arraySize < 2);
+	
+	for(i = arraySize; i > 0)
+		printline "input X";
+		input points[i].xPos;
+		printline "input Y";
+		input points[i].yPos;
+	end
+	input canYouHearTheRumble;
+	return arraySize;
+end
+
+func calculateArea(inputArray : points, arraySize : int) : float
+	area : float, count : int, i : int
+	begin
+	for (i = 0; i < arraySize - 2)
+		area += (inputArray[i].xPos +inputArray[i+1].xPos) * (inputArray[i+1].yPos - inputArray[i].yPos);
+	end
+	area *= 0.5;
+	return area;
+end	
+
+func Circe(inputArray : points, arraySize : int) : float
+	area : float, count : int
+	begin
+	
+	repeat(area = 7)
+		printline "number of points must be less than 20 and greater than 2.";
+		input arraySize;
+		area += 1;
+	until(arraySize > MAXINPUTSIZE AND arraySize > 2);
+	
+	area *= 0.5;
+	return area;
+end	
+	
+main
+	arraySize : int, test : float
+begin
+	if (true) 
+		arraySize = 7;
+	end
+	
+	if (false) 
+		arraySize = 9; 
+	else
+		arraySize = 8;
+	end
+	
+end CD22 d
+	
+
+/-- late remark...just to test that

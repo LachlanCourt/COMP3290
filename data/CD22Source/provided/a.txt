@@ -1,0 +1,11 @@
+/-- Simple Program
+/-- This SHOULD pass!
+CD22 a
+
+main
+    a : int
+begin
+    printline "Hello world";
+end 
+
+CD22 a

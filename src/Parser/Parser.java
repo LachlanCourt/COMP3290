@@ -1237,6 +1237,8 @@ public class Parser {
                 // SEMANTICS Set expected type
                 int arrayType = symbolTable.getSymbol(symbolTableId).getForeignSymbolTableId();
                 int structType = symbolTable.getSymbol(arrayType).getForeignSymbolTableId();
+                // Change the symbol table ID to reference the array type, rather than the array itself
+                t.setSymbolTableId(arrayType);
                 t.setExpectedType(VariableTypes.COMPLEX, structType);
             }
             // Either return with whole struct or individual field if the above statement ran

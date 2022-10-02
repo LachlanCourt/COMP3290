@@ -37,11 +37,13 @@ begin
         input pointsList[i].x, pointsList[i].y, pointsList[i].z;
         i += 1;
     end
+    return void;
 end
 
 /-- Find the point with the furthest distance from the point identified by the index
-func findFurthestDistanceFromIndex(index : int, furthestDistance : furthestDistanceType) : int
+func findFurthestDistanceFromIndex(index : int, furthestDistance : furthestDistanceType) : void
     i : int,
+    j : float,
     furthestDistanceIndex : int
 begin
     /-- Start by calculating according to the first item in the list as a baseline
@@ -51,12 +53,12 @@ begin
     /-- Loop through and calculate for every element of the array
     for (i = 0; i < NUMBEROFVALUES)
         if (calcDistance(pointsList[index], pointsList[i]) > furthestDistance)
-            furthestDistance = calcDistance(pointsList[index], pointsList[i]);
+            j = calcDistance(pointsList[index], pointsList[i]);
             furthestDistanceIndex = i;
         end
         i += 1;
     end
-    return furthestDistanceIndex;
+    return void;
 end
 
 func output(furthestDistance : furthestDistanceType) : void
@@ -79,6 +81,7 @@ begin
     print "With a distance of ";
     print furthestDistance.distance;
     printline " units";
+    return void;
 end
 
 main

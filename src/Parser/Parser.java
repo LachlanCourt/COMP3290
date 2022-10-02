@@ -1105,7 +1105,9 @@ public class Parser {
         // necessary
         if (relopNode == null) {
             if (not) {
-                return new TreeNode(TreeNodes.NNOT, exprNode);
+                TreeNode notNode = new TreeNode(TreeNodes.NNOT, exprNode);
+                notNode.setNodeDataType(VariableTypes.BOOLEAN);
+                return notNode;
             }
             return exprNode;
         }
@@ -1116,7 +1118,9 @@ public class Parser {
 
         // Return the relop node, as a child of a not node if necessary
         if (not) {
-            return new TreeNode(TreeNodes.NNOT, relopNode);
+            TreeNode notNode = new TreeNode(TreeNodes.NNOT, relopNode);
+            notNode.setNodeDataType(VariableTypes.BOOLEAN);
+            return notNode;
         }
         return relopNode;
     }

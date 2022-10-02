@@ -174,7 +174,7 @@ public class Scanner {
 
             // Check if a single line comment has ended at a newline
             if (readerState == ReaderStates.IN_SINGLE_LINE_COMMENT
-                && character.compareTo("\n") == 0) {
+                && (character.compareTo("\n") == 0 || eof())) {
                 bufferCandidateBuilder = new StringBuilder(
                     bufferCandidateBuilder.substring(0, bufferCandidateBuilder.indexOf("/--")));
                 break;

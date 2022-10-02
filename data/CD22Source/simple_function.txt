@@ -32,6 +32,7 @@ begin
             i += 1;
         end
     end
+    return smallest;
 end
 
 /-- This function loops through the mutable array and returns the largest value
@@ -47,6 +48,7 @@ begin
             i += 1;
         end
     end
+    return largest;
 end
 
 /-- This function receives two input integers and outputs their value to stdout
@@ -56,6 +58,7 @@ begin
     printline(smallest);
     printline "The largest value is";
     printline(largest);
+    return void;
 end
 
 main

@@ -8,7 +8,8 @@
  *******************************************************************************/
 package Common;
 
-import java.io.*;
+import java.io.FileNotFoundException;
+import java.io.PrintStream;
 
 public class OutputController {
     private final ErrorHandler errorHandler;
@@ -24,6 +25,7 @@ public class OutputController {
     /**
      * Initialises the output controller by determining the filename the log and listing files
      * should have
+     *
      * @param filename_ the path passed into the program to the source code file
      */
     public void initialise(String filename_) {
@@ -84,6 +86,11 @@ public class OutputController {
                 if (outputToFile)
                     outputToFile(warning.toString(false));
             }
+            String warningCount = "Found " + errorHandler.getWarnings().size() + " warning"
+                + (errorHandler.getWarnings().size() != 1 ? "s" : "");
+            System.out.println(warningCount);
+            if (outputToFile)
+                outputToFile(warningCount);
         }
     }
 
@@ -107,8 +114,15 @@ public class OutputController {
         listing.addErrorsToListing(errorHandler.getWarnings());
         // Exit if there are any errors, to prevent the compiler moving onto the next phase until
         // all errors from that phase are resolved
-        if (hasErrors())
+        if (hasErrors()) {
+            String errorCount = "Found " + errorHandler.getErrors().size() + " error"
+                + (errorHandler.getErrors().size() != 1 ? "s" : "");
+            System.out.println(errorCount);
+            outputToFile(errorCount);
             System.exit(1);
+        }
+
+        System.out.println("No errors found");
     }
 
     /**
@@ -178,6 +192,7 @@ public class OutputController {
 
     /**
      * Output to both stdout and log file
+     *
      * @param data to be outputted
      */
     public void out(String data) {
@@ -187,6 +202,7 @@ public class OutputController {
 
     /**
      * Output to log file
+     *
      * @param data to be outputted
      */
     private void outputToFile(String data) {

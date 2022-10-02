@@ -10,10 +10,12 @@ package Parser;
 import Common.LiteralSymbol;
 import Common.Symbol;
 import Common.SymbolTable;
+import Common.Utils;
+import Scanner.Token;
 
 public class TreeNode {
     @SuppressWarnings("SpellCheckingInspection")
-    enum TreeNodes {
+    public enum TreeNodes {
         NPROG,
         NGLOB,
         NILIST,
@@ -84,6 +86,8 @@ public class TreeNode {
         NSTRV,
     }
 
+    public enum VariableTypes { INTEGER, FLOAT, BOOLEAN, COMPLEX, UNKNOWN }
+
     private TreeNodes nodeType;
     private TreeNode left;
     private TreeNode mid;
@@ -93,11 +97,17 @@ public class TreeNode {
 
     // A reference to the symbol table is kept so that symbols can be stored as references rather
     // than whole symbols
-    SymbolTable symbolTable;
+    private SymbolTable symbolTable;
+    private Utils utils;
+    // Used for variables and expressions for type checking
+    private VariableTypes expectedType;
+    private int typeIdentifier;
+    private VariableTypes nodeDataType;
 
     // Default constructor which sets default variables
     public TreeNode() {
         symbolTable = SymbolTable.getSymbolTable();
+        utils = Utils.getUtils();
     }
 
     // Various constructors for creating nodes at different points through a non-terminal expansion
@@ -155,6 +165,7 @@ public class TreeNode {
 
     /**
      * Facilitates iterating over the children of the node by enumerating them
+     *
      * @param index of the child 0-2 which matches left-right
      * @return the child node of the specified index
      */
@@ -200,8 +211,127 @@ public class TreeNode {
         return symbolTableId;
     }
 
+    public void setExpectedType(VariableTypes expectedType_) {
+        expectedType = expectedType_;
+        nodeDataType = expectedType_;
+    }
+
+    public void setExpectedType(VariableTypes expectedType_, int typeIdentifier_) {
+        setExpectedType(expectedType_);
+        typeIdentifier = typeIdentifier_;
+    }
+
+    public void setNodeDataType(VariableTypes type_) {
+        nodeDataType = type_;
+    }
+    public VariableTypes getExpectedType() {
+        return expectedType;
+    }
+
+    public int getTypeIdentifier() {
+        return typeIdentifier;
+    }
+
+    public VariableTypes getNodeDataType() {
+        return nodeDataType;
+    }
+
+    public int calculateNodeVariableTypeAndValue() {
+        // Calculate the type first. If the types don't match, we can't calculate the value
+        TreeNode leftChildNode, rightChildNode, operationNode;
+        if (nodeType == TreeNodes.NBOOL) {
+            leftChildNode = left;
+            operationNode = mid;
+            rightChildNode = right;
+        } else {
+            leftChildNode = left;
+            operationNode = this;
+            rightChildNode = mid;
+        }
+
+        if (leftChildNode.getNodeDataType() == VariableTypes.COMPLEX
+            || rightChildNode.getNodeDataType() == VariableTypes.COMPLEX) {
+            return -1;
+        }
+
+        // Primitive types don't match or if they are a complex type
+        if (leftChildNode.getNodeDataType() != rightChildNode.getNodeDataType()) {
+            // If the types don't match but are combined floats and integers, this is fine as the
+            // result will just become a float
+            if ((leftChildNode.getNodeDataType() != VariableTypes.INTEGER
+                    && leftChildNode.getNodeDataType() != VariableTypes.FLOAT)
+                || (rightChildNode.getNodeDataType() != VariableTypes.INTEGER
+                    && rightChildNode.getNodeDataType() != VariableTypes.FLOAT)) {
+                return -1;
+            } else {
+                nodeDataType = VariableTypes.FLOAT;
+            }
+        } else {
+            nodeDataType = leftChildNode.getNodeDataType();
+        }
+
+        // Type does not match the correct operator
+        if ((leftChildNode.getNodeDataType() == VariableTypes.BOOLEAN
+                && (operationNode.getNodeType() != TreeNodes.NOR
+                    && operationNode.getNodeType() != TreeNodes.NAND
+                    && operationNode.getNodeType() != TreeNodes.NXOR))
+            || ((leftChildNode.getNodeDataType() == VariableTypes.INTEGER
+                    || leftChildNode.getNodeDataType() == VariableTypes.FLOAT)
+                && (operationNode.getNodeType() == TreeNodes.NOR
+                    || operationNode.getNodeType() == TreeNodes.NAND
+                    || operationNode.getNodeType() == TreeNodes.NXOR))) {
+            return -1;
+        }
+
+        // If the type has been successfully determined, we can now try to calculate the value and
+        // assign it to the operation node
+        utils.calculateValue(leftChildNode, rightChildNode, operationNode);
+
+        // If it is possible to calculate the value at compile time, we can drop the children of
+        // this node and change it to a literal value
+        if (operationNode.getSymbolTableId() != -1
+            && symbolTable.getSymbol(operationNode.getSymbolTableId()) instanceof LiteralSymbol) {
+            // Node value was able to be calculated at compile time
+            String operationNodeValue =
+                ((LiteralSymbol) symbolTable.getSymbol(operationNode.getSymbolTableId())).getVal();
+            this.setSymbolTableId(-1);
+
+            if (leftChildNode.getNodeDataType() == VariableTypes.BOOLEAN
+                && rightChildNode.getNodeDataType() == VariableTypes.BOOLEAN) {
+                if (Double.parseDouble(operationNodeValue) == 1) {
+                    this.nodeType = TreeNodes.NTRUE;
+                    this.nodeDataType = VariableTypes.BOOLEAN;
+                    this.setSymbolTableId(symbolTable.addSymbol(SymbolTable.SymbolType.LITERAL,
+                        new Token(Token.Tokens.TTRUE, "1.0", 0, 0)));
+                } else {
+                    this.nodeType = TreeNodes.NFALS;
+                    this.nodeDataType = VariableTypes.BOOLEAN;
+                    this.setSymbolTableId(symbolTable.addSymbol(SymbolTable.SymbolType.LITERAL,
+                        new Token(Token.Tokens.TFALS, "0.0", 0, 0)));
+                }
+            } else if (leftChildNode.getNodeDataType() == VariableTypes.INTEGER
+                && rightChildNode.getNodeDataType() == VariableTypes.INTEGER) {
+                this.nodeType = TreeNodes.NILIT;
+                this.nodeDataType = VariableTypes.INTEGER;
+                // TODO should this be operationNode.getSymbolTableId()
+                this.setSymbolTableId(symbolTable.addSymbol(SymbolTable.SymbolType.LITERAL,
+                    new Token(Token.Tokens.TILIT,
+                        String.valueOf(Double.valueOf(operationNodeValue).intValue()), 0, 0)));
+            } else {
+                this.nodeType = TreeNodes.NFLIT;
+                this.nodeDataType = VariableTypes.FLOAT;
+                this.setSymbolTableId(symbolTable.addSymbol(SymbolTable.SymbolType.LITERAL,
+                    new Token(Token.Tokens.TFLOT, operationNodeValue, 0, 0)));
+            }
+            this.left = this.mid = this.right = null;
+        }
+
+        return 0;
+    }
+
     /**
      * Default to string function, returning out the node name and the token literal
+     *
      * @return stringified version of the token and its lexeme
      */
     @Override
@@ -211,6 +341,7 @@ public class TreeNode {
 
     /**
      * To string function returning either the node name and it's lexeme or just the node name
+     *
      * @param includeData flag indicating whether the lexeme should be included
      * @return stringified version of the token, optionally including its lexeme
      */
@@ -223,6 +354,7 @@ public class TreeNode {
 
     /**
      * Gets the associated lexeme from the symbol table, if the node type has one associated with it
+     *
      * @return the associated lexeme if it exists, or an empty string if not
      */
     public String getTokenString() {

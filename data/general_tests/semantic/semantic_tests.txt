@@ -1,0 +1,150 @@
+CD22 ThisProgramName
+
+constants
+
+something = 16 * 3,
+somethingElse = something + 7 ^ 2,
+someBoolean = (true and (false or true)),
+someFloat = 4.5
+
+types
+
+    arrayStructType def
+        x : int
+    end
+
+    someOtherStruct def
+        y : float
+    end
+
+    arrayType def array [4 + something] of arrayStructType end
+
+    someOtherArrayType def array [4] of arrayStructType end
+
+arrays
+
+    someArray : arrayType,
+    someOtherArray : arrayType,
+    someThirdArray : someOtherArrayType
+
+func someFunc(someVar : int, someOtherVar : float, someThirdVar : int) : bool
+    begin
+        return 5;
+    end
+
+func someVoidFunc() : void
+begin
+    return void;
+end
+
+func someFuncWithStruct(someStructVar : arrayStructType) : void
+begin
+    return void;
+end
+
+func someFuncWithArray(someArrayVar : arrayType) : void
+begin
+    someFuncWithConstArray(someArrayVar);
+    return void;
+end
+
+func someFuncWithConstArray(const someConstArrayVar : arrayType) : void
+begin
+    someFuncWithArray(someConstArrayVar);
+    someFuncWithConstArray(someConstArrayVar);
+    return void;
+end
+
+/**
+func someFunc() : void
+begin
+    return void;
+end
+**/
+
+func someIntFunc() : int
+begin
+return 5;
+end
+
+func someOtherIntFunc() : int
+begin
+return someIntFunc();
+end
+
+func someVoidFun() : void
+    i : bool
+begin
+    return someFunc(3, 4, 5);
+end
+
+func missingReturn() : void
+    i : bool
+begin
+    i = true;
+end
+
+main
+    i : bool,
+    a : float,
+    g : int,
+    f : int,
+    f : int,
+    someFloat : int,
+    someStruct : arrayStructType,
+    someOtherVar : someOtherStruct
+begin
+
+    f = someOtherIntFunc();
+
+    a = anUndefinedFunction();
+    someArray[4] = someStruct;
+    someArray[0].x = 6;
+
+    g = something();
+
+    i = false or true;
+
+    if (someBoolean and true and (false xor someBoolean))
+        g = 6;
+    end
+
+    g = someFloat;
+
+    f = 7 + someStruct.x;
+
+
+g = 8 / 2;
+
+    f = 2 + something + 4 * 7;
+    f = 8 + 3;
+    f = 6 + 4;
+
+
+    f = 6 + something * somethingElse;
+
+
+   i = 5 == 6;
+   i = someFunc(2.5);
+   someVoidFunc();
+
+   i = someFunc(4, 8.4, 8);
+
+    someStruct.x = 5;
+    /--someStruct.y = 5;
+
+    someFuncWithStruct(someStruct);
+    someFuncWithStruct(someOtherVar);
+    someFuncWithArray(someStruct);
+
+
+    someFuncWithConstArray(someArray);
+
+    if (7)
+        i = false;
+    end
+
+    /-- Fix this crash
+    hello();
+
+end CD22 ThisProgramName

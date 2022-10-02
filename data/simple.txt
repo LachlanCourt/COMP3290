@@ -35,12 +35,14 @@ func someFunc() : void
 i:int
 begin
 i = 9;
+return void;
 end
 
-func someFunc() : void
+func someOtherFunc() : void
 i:int
 begin
 i = 9;
+return void;
 end
 
 main

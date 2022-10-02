@@ -33,10 +33,10 @@ Implement Semantic Analysis into the Parser, and finish with Code Generation in 
 Coming soon...
 
 ### Compile
-`javac A2.java`
+`javac CD.java`
 
 ### Run
-`[DEBUG=<boolean>] java A2 <filename>`
+`[DEBUG=<boolean>] java CD <filename>`
 
 Where the filename refers to a CD22 source code file. Samples of these can be found in the [data](./data) directory, and included also is the [language specification](./source_language_spec) for further development.
 

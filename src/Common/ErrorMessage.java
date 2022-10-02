@@ -7,6 +7,9 @@
  *******************************************************************************/
 package Common;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+
 public class ErrorMessage {
     public enum Errors {
         UNKNOWN,
@@ -21,7 +24,17 @@ public class ErrorMessage {
         NO_STATEMENTS,
         UNDEFINED_TYPE,
         UNDEFINED_VARIABLE,
+        UNDEFINED_FUNCTION,
         EXPECTED_ASSIGNMENT_OPERATOR,
+        PROGRAM_IDEN_MISMATCH,
+        BAD_EXPR_TYPE,
+        NON_VOID_RETURN_TYPE,
+        BAD_RETURN_TYPE,
+        REQUIRED_INTEGER,
+        BAD_ARG_TYPE,
+        BAD_ARG_LENGTH,
+        IDEN_ALREADY_DEFINED,
+        MISSING_RETURN,
         CUSTOM_ERROR,
         WARNING_CD22_SEMANTIC_CASING,
     }
@@ -37,6 +50,18 @@ public class ErrorMessage {
         System.getProperty("os.name").toLowerCase().contains("windows") ? ""
                                                                         : "\033[0;33m"; // YELLOW
 
+    public static final ArrayList<Errors> lexicalErrors =
+        new ArrayList<>(Arrays.asList(Errors.UNDEFINED_TOKEN, Errors.INTEGER_OUT_OF_RANGE,
+            Errors.FLOAT_OUT_OF_RANGE, Errors.WARNING_CD22_SEMANTIC_CASING));
+    public static final ArrayList<Errors> syntacticalErrors =
+        new ArrayList<>(Arrays.asList(Errors.EXPECTED_IDENTIFIER, Errors.PROGRAM_IDEN_MISSING,
+            Errors.NOT_AT_EOF, Errors.UNEXPECTED_EOF, Errors.NOT_A_NUMBER, Errors.NO_STATEMENTS,
+            Errors.UNDEFINED_TYPE, Errors.EXPECTED_ASSIGNMENT_OPERATOR, Errors.CUSTOM_ERROR));
+    public static final ArrayList<Errors> semanticErrors =
+        new ArrayList<>(Arrays.asList(Errors.PROGRAM_IDEN_MISMATCH, Errors.UNDEFINED_VARIABLE,
+            Errors.BAD_EXPR_TYPE, Errors.NON_VOID_RETURN_TYPE, Errors.BAD_ARG_TYPE,
+            Errors.BAD_ARG_LENGTH, Errors.IDEN_ALREADY_DEFINED, Errors.UNDEFINED_FUNCTION,
+            Errors.MISSING_RETURN, Errors.BAD_RETURN_TYPE));
     private int row;
     private int col;
     private Errors type;
@@ -73,13 +98,22 @@ public class ErrorMessage {
      * Sets the error text so that it is available via a simple query
      */
     private void setErrorMessage() {
+        String errorPrefix = "";
+        if (lexicalErrors.contains(type)) {
+            errorPrefix += "Lexical ";
+        } else if (syntacticalErrors.contains(type)) {
+            errorPrefix += "Syntax ";
+        } else if (semanticErrors.contains(type)) {
+            errorPrefix += "Semantic ";
+        }
         String errorText = getErrorText();
-        errorMessage = (isWarning ? "Warning" : "Error") + " on line " + row + " around column "
-            + col + ": " + errorText;
+        errorMessage = errorPrefix + (isWarning ? "Warning" : "Error") + " on line " + row
+            + " around column " + col + ": " + errorText;
     }
 
     /**
      * Get the error text based on the error type
+     *
      * @return the human-readable error from the enum type
      */
     private String getErrorText() {
@@ -114,6 +148,26 @@ public class ErrorMessage {
                 return "Unexpected content at end of program";
             case UNEXPECTED_EOF:
                 return "Unexpected end of file";
+            case PROGRAM_IDEN_MISMATCH:
+                return "Program identifier at the end of file must match the one at the start";
+            case BAD_EXPR_TYPE:
+                return "Badly typed expression";
+            case NON_VOID_RETURN_TYPE:
+                return "Only void functions can be called outside of assignment statements";
+            case REQUIRED_INTEGER:
+                return "An integer is required for this expression";
+            case BAD_ARG_TYPE:
+                return "Badly typed function arguments";
+            case BAD_ARG_LENGTH:
+                return "Incorrect number of arguments";
+            case IDEN_ALREADY_DEFINED:
+                return "Identifier is already defined in this scope";
+            case UNDEFINED_FUNCTION:
+                return "Function is not defined";
+            case MISSING_RETURN:
+                return "Functions must have at least one return statement";
+            case BAD_RETURN_TYPE:
+                return "Type of data being returned must match the return type of the function";
             default:
                 return "An error occurred";
         }

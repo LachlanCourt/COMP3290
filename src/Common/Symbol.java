@@ -8,6 +8,7 @@
 package Common;
 
 import Common.SymbolTable.SymbolType;
+import Parser.TreeNode;
 import java.util.HashMap;
 
 public class Symbol {
@@ -20,6 +21,8 @@ public class Symbol {
     // case of constants the value; however symbols such as array types also need to keep track of
     // size and therefore a map is used
     protected final HashMap<String, Integer> foreignSymbolTableIds;
+
+    private TreeNode foreignTreeNode;
 
     // Private constructor called by the others to set default values
     private Symbol() {
@@ -83,5 +86,13 @@ public class Symbol {
         // This is the only way a symbol type can be modified after creation, and is required here
         // as a byproduct of how constant array params are parsed
         symbolType = SymbolType.CONSTANT_ARRAY;
+    }
+
+    public TreeNode getForeignTreeNode() {
+        return foreignTreeNode;
+    }
+
+    public void setForeignTreeNode(TreeNode node) {
+        foreignTreeNode = node;
     }
 }

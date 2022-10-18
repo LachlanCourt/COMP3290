@@ -65,7 +65,11 @@ public class CodeGenerator {
         for (TreeNode stat : stats) {
             switch (stat.getNodeType()) {
                 case NPRLN:
-                    printLine(stat.getLeft());
+                    printLine(stat.getLeft(), true);
+                    break;
+                case NPRINT:
+                    printLine(stat.getLeft(), false);
+                    addToCode(65);
                     break;
                 default:
                     break;
@@ -235,16 +239,16 @@ public class CodeGenerator {
         return null;
     }
 
-    private void printLine(TreeNode stat, String register) {
+    private void printLine(TreeNode stat,boolean isPrintLine, String register) {
         switch (stat.getNodeType()) {
             case NSTRG:
-                printLineAddSingleString(stat, register);
+                printLineAddSingleString(stat,isPrintLine, register);
                 break;
             case NPRLST:
                 ArrayList<TreeNode> printNodes = new ArrayList<>();
                 utils.flattenNodes(printNodes, stat, TreeNode.TreeNodes.NPRLST);
                 for (TreeNode printNode : printNodes) {
-                    printLine(printNode, register);
+                    printLine(printNode, isPrintLine,register);
                 }
                 break;
             default:
@@ -252,16 +256,16 @@ public class CodeGenerator {
         }
     }
 
-    private void printLineAddSingleString(TreeNode stringStat, String register) {
+    private void printLineAddSingleString(TreeNode stringStat,boolean isPrintLine, String register ) {
         int stringOffset = literalSymbolIdToConstantCodeBlockMap.get(stringStat.getSymbolTableId());
         addToCode(Integer.parseInt(9 + register));
         addToCode(stringOffset, true);
         addToCode(63);
-        addToCode(65);
+        if(isPrintLine) addToCode(65);
     }
 
-    private void printLine(TreeNode stat) {
-        printLine(stat, "0");
+    private void printLine(TreeNode stat, boolean isPrintLine) {
+        printLine(stat, isPrintLine,"0");
     }
 
     private ArrayList<String> convertLargeInteger(int largeInteger, int numberOfValues) {

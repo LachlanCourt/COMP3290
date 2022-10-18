@@ -59,8 +59,12 @@ public class CD {
         if (oc.hasErrors())
             oc.reportErrorsAndWarnings();
 
-        // Initialise and run code generator's debug routine to output the syntax tree
+        // Initialise the code generator which runs the parser
         cg.initialise();
+        if (oc.hasErrors())
+            oc.reportErrorsAndWarnings();
+
+        // Start generating code
         cg.run();
 
         // Output the symbol table when debugging
@@ -68,7 +72,7 @@ public class CD {
             System.out.println("\nSYMBOL TABLE\n" + st);
         }
 
-        // Report any errors and warnings found so far in the compilation
+        // Report any errors and warnings found in the compilation
         oc.reportErrorsAndWarnings();
     }
 }

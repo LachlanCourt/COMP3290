@@ -379,13 +379,12 @@ public class Utils {
         }
     }
 
-    private void flattenFunctionNodes(ArrayList<TreeNode> params, TreeNode node) {
+    public void flattenNodes(ArrayList<TreeNode> params, TreeNode node, TreeNode.TreeNodes type) {
         if (node == null)
             return;
-        if (node.getNodeType() == TreeNode.TreeNodes.NPLIST
-            || node.getNodeType() == TreeNode.TreeNodes.NEXPL) {
-            flattenFunctionNodes(params, node.getLeft());
-            flattenFunctionNodes(params, node.getMid());
+        if (node.getNodeType() == type) {
+            flattenNodes(params, node.getLeft(), type);
+            flattenNodes(params, node.getMid(), type);
         } else {
             params.add(node);
         }
@@ -396,9 +395,9 @@ public class Utils {
         if (functionSymbol.getForeignTreeNode() == null)
             return 0;
         ArrayList<TreeNode> receiving = new ArrayList<>();
-        flattenFunctionNodes(receiving, functionSymbol.getForeignTreeNode());
+        flattenNodes(receiving, functionSymbol.getForeignTreeNode(), TreeNode.TreeNodes.NPLIST);
         ArrayList<TreeNode> sending = new ArrayList<>();
-        flattenFunctionNodes(sending, functionParams);
+        flattenNodes(sending, functionParams, TreeNode.TreeNodes.NEXPL);
 
         // Check the number of arguments passed to the function match the number of arguments
         // received

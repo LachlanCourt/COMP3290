@@ -1373,6 +1373,8 @@ public class Parser {
         match(Tokens.TBEGN);
         // Statements
         t.setNextChild(stats());
+
+        currentScope = "@global";
         match(Tokens.TTEND);
         match(Tokens.TCD22);
         // Ensure the program finishes with an ID

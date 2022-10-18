@@ -10,6 +10,7 @@ package Common;
 import Scanner.Token;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 
 public class SymbolTable {
     private final HashMap<String, HashMap<Integer, Symbol>> table;
@@ -48,6 +49,7 @@ public class SymbolTable {
         // verification of the return value
         table.put("@error", new HashMap<>());
         table.get("@error").put(-1, new Symbol(SymbolType.UNKNOWN, ""));
+        table.put("@global", new HashMap<>());
     }
 
     /**
@@ -207,6 +209,24 @@ public class SymbolTable {
         }
         // If the symbol has not been found return an error code
         return -1;
+    }
+
+    public int getLiteralSymbolIdFromValue(String value) {
+        // Loop through the given scope
+        if (table.containsKey("@literals")) {
+            for (Map.Entry<Integer, Symbol> entry : table.get("@literals").entrySet()) {
+                // Return the symbol table ID if the reference matches
+                if (value.compareTo(((LiteralSymbol) entry.getValue()).getVal()) == 0) {
+                    return entry.getKey();
+                }
+            }
+        }
+        // If the symbol has not been found return an error code
+        return -1;
+    }
+
+    public Set<Map.Entry<Integer, Symbol>> getEntireSymbolScope(String scope) {
+        return table.containsKey(scope) ? table.get(scope).entrySet() : null;
     }
 
     /**

@@ -19,23 +19,23 @@ jobs:
         distribution: 'adopt'
     - name: make
       run: cd src && javac CD.java
-    - name: run simple
-      run: cd src && java CD ../data/simple.txt
-    - name: run factorial
-      run: cd src && java CD ../data/CD22Source/factorial.txt
-    - name: run fibonacci
-      run: cd src && java CD ../data/CD22Source/fibonacci.txt
-    - name: run simple
-      run: cd src && java CD ../data/CD22Source/simple.txt
-    - name: run simple_array
-      run: cd src && java CD ../data/CD22Source/simple_array.txt
-    - name: run simple_function
-      run: cd src && java CD ../data/CD22Source/simple_function.txt
-    - name: run simple_variable
-      run: cd src && java CD ../data/CD22Source/simple_variable.txt
-    - name: run boolean
-      run: cd src && java CD ../data/general_tests/parser/boolean.txt
-    - name: run expression
-      run: cd src && java CD ../data/general_tests/parser/expression.txt
-    - name: run repeat
-      run: cd src && java CD ../data/general_tests/parser/repeat.txt
+#    - name: run simple
+#      run: cd src && java CD ../data/simple.txt
+#    - name: run factorial
+#      run: cd src && java CD ../data/CD22Source/factorial.txt
+#    - name: run fibonacci
+#      run: cd src && java CD ../data/CD22Source/fibonacci.txt
+#    - name: run simple
+#      run: cd src && java CD ../data/CD22Source/simple.txt
+#    - name: run simple_array
+#      run: cd src && java CD ../data/CD22Source/simple_array.txt
+#    - name: run simple_function
+#      run: cd src && java CD ../data/CD22Source/simple_function.txt
+#    - name: run simple_variable
+#      run: cd src && java CD ../data/CD22Source/simple_variable.txt
+#    - name: run boolean
+#      run: cd src && java CD ../data/general_tests/parser/boolean.txt
+#    - name: run expression
+#      run: cd src && java CD ../data/general_tests/parser/expression.txt
+#    - name: run repeat
+#      run: cd src && java CD ../data/general_tests/parser/repeat.txt

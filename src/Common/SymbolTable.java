@@ -216,7 +216,7 @@ public class SymbolTable {
         if (table.containsKey("@literals")) {
             for (Map.Entry<Integer, Symbol> entry : table.get("@literals").entrySet()) {
                 // Return the symbol table ID if the reference matches
-                if (value.compareTo(((LiteralSymbol)entry.getValue()).getVal()) == 0) {
+                if (value.compareTo(((LiteralSymbol) entry.getValue()).getVal()) == 0) {
                     return entry.getKey();
                 }
             }

@@ -67,19 +67,19 @@ public class CodeGenerator {
         }
 
         // Allocate memory space
-        addToCode(41);
+        addToCode(OpCodes.LOAD_BYTE);
         addToCode(localVarSize);
-        addToCode(52);
+        addToCode(OpCodes.ALLOCATE);
 
         // Set all variables to zero
         for (int i = 0; i < localVars.size(); i++) {
-            addToCode(91);
+            addToCode(OpCodes.LA_MEMORY);
             addAddressToCode(i * 8);
 
-            addToCode(41);
+            addToCode(OpCodes.LOAD_BYTE);
             addToCode(0);
 
-            addToCode(43);
+            addToCode(OpCodes.STORE);
         }
         ArrayList<TreeNode> stats = new ArrayList<>();
         utils.flattenNodes(stats, mainNode.getMid(), TreeNode.TreeNodes.NSTATS);
@@ -91,7 +91,7 @@ public class CodeGenerator {
                     break;
                 case NPRINT:
                     printLine(stat.getLeft(), false);
-                    addToCode(65);
+                    addToCode(OpCodes.NEWlINE);
                     break;
                 case NINPUT:
                     input(stat.getLeft());
@@ -195,7 +195,7 @@ public class CodeGenerator {
         }
         for (int i = 0; i < stringsIds.size(); i++) {
             literalSymbolIdToConstantCodeBlockMap.put(stringsIds.get(i), offset);
-            offset += stringLengths.get(i) ;
+            offset += stringLengths.get(i);
         }
     }
 
@@ -247,11 +247,16 @@ public class CodeGenerator {
 
     private void addToCode(int instruction, boolean isConstantReference) {
         code += (isConstantReference ? "@" : "") + instruction + (isConstantReference ? "#" : "") + " ";
-        codeByteLength+=isConstantReference ? 4 : 1;
+        codeByteLength += isConstantReference ? 4 : 1;
     }
 
     private void addToCode(int instruction) {
         addToCode(instruction, false);
+    }
+
+    private void addToCode(OpCodes instruction) {
+        code += instruction.getValue() + " ";
+        codeByteLength++;
     }
 
     private TreeNode findNodeByType(TreeNode node, TreeNode.TreeNodes type) {
@@ -263,35 +268,35 @@ public class CodeGenerator {
         return null;
     }
 
-    private void printLine(TreeNode stat,boolean isPrintLine, String register) {
+    private void printLine(TreeNode stat, boolean isPrintLine, String register) {
         switch (stat.getNodeType()) {
             case NSTRG:
-                printLineAddSingleString(stat,isPrintLine, register);
+                printLineAddSingleString(stat, isPrintLine, register);
                 break;
             case NPRLST:
                 ArrayList<TreeNode> printNodes = new ArrayList<>();
                 utils.flattenNodes(printNodes, stat, TreeNode.TreeNodes.NPRLST);
                 for (TreeNode printNode : printNodes) {
-                    printLine(printNode, isPrintLine,register);
+                    printLine(printNode, isPrintLine, register);
                 }
                 break;
             default:
                 resolveExpression(stat);
-                addToCode(62);
-                if(isPrintLine) addToCode(65);
+                addToCode(OpCodes.PRINT_VAL);
+                if (isPrintLine) addToCode(OpCodes.NEWlINE);
         }
     }
 
-    private void printLineAddSingleString(TreeNode stringStat,boolean isPrintLine, String register ) {
+    private void printLineAddSingleString(TreeNode stringStat, boolean isPrintLine, String register) {
         int stringOffset = literalSymbolIdToConstantCodeBlockMap.get(stringStat.getSymbolTableId());
-        addToCode(Integer.parseInt(9 + register));
+        addToCode(OpCodes.getEnum(Integer.parseInt(9 + register)));
         addToCode(stringOffset, true);
-        addToCode(63);
-        if(isPrintLine) addToCode(65);
+        addToCode(OpCodes.PRINT_STR);
+        if (isPrintLine) addToCode(OpCodes.NEWlINE);
     }
 
     private void printLine(TreeNode stat, boolean isPrintLine) {
-        printLine(stat, isPrintLine,"0");
+        printLine(stat, isPrintLine, "0");
     }
 
     private ArrayList<String> convertLargeInteger(int largeInteger, int numberOfValues) {
@@ -306,7 +311,7 @@ public class CodeGenerator {
 
     private void resolveExpression(TreeNode expressionNode) {
         //TODO do the postorder thing
-        addToCode(81);
+        addToCode(OpCodes.LV_MEMORY);
         addAddressToCode(memory.get("main").get(expressionNode.getSymbolTableId()));
 
 
@@ -325,14 +330,14 @@ public class CodeGenerator {
             case NSIMV:
                 Symbol symbol = symbolTable.getSymbol(stat.getSymbolTableId());
                 if (symbol instanceof PrimitiveTypeSymbol) {
-                    addToCode(91);
+                    addToCode(OpCodes.LA_MEMORY);
                     addAddressToCode(memory.get("main").get(stat.getSymbolTableId()));
-                    if (((PrimitiveTypeSymbol)symbol).getVal() == SymbolTable.PrimitiveTypes.INTEGER) {
-                        addToCode(61);
-                    } else if (((PrimitiveTypeSymbol)symbol).getVal() == SymbolTable.PrimitiveTypes.FLOAT) {
-                        addToCode(60);
+                    if (((PrimitiveTypeSymbol) symbol).getVal() == SymbolTable.PrimitiveTypes.INTEGER) {
+                        addToCode(OpCodes.READ_INT);
+                    } else if (((PrimitiveTypeSymbol) symbol).getVal() == SymbolTable.PrimitiveTypes.FLOAT) {
+                        addToCode(OpCodes.READ_FLOAT);
                     }
-                    addToCode(43);
+                    addToCode(OpCodes.STORE);
                 }
                 //TODO extend this for structs and arrays
                 break;

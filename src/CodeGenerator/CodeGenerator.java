@@ -12,10 +12,7 @@ import Common.*;
 import Parser.Parser;
 import Parser.TreeNode;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 public class CodeGenerator {
     private final Parser parser;
@@ -23,15 +20,12 @@ public class CodeGenerator {
 
     private TreeNode syntaxTree;
     private SymbolTable symbolTable;
-    private Utils utils;
+    private final Utils utils;
     private String constantsCodeBlock;
     private final HashMap<Integer, Integer> literalSymbolIdToConstantCodeBlockMap;
 
     private String code;
     private int codeByteLength;
-    private int codeLineNumber;
-    private String codeLine;
-    private int codeLineLength;
 
     public CodeGenerator(Parser p_, OutputController oc_) {
         parser = p_;
@@ -41,10 +35,7 @@ public class CodeGenerator {
         literalSymbolIdToConstantCodeBlockMap = new HashMap<>();
         constantsCodeBlock = "";
         codeByteLength = 0;
-        codeLineNumber = 0;
         code = "";
-        codeLine = "";
-        codeLineLength = 0;
     }
 
     public void initialise() {
@@ -187,13 +178,8 @@ public class CodeGenerator {
     }
 
     private void postProcessCode() {
-        if (codeLineLength != 8) {
-            codeLine += "00 ".repeat(8 - codeLineLength) + "\n";
-            codeByteLength += (8 - codeLineLength);
-            code += codeLine;
-            codeLineNumber++;
-        }
-        code = codeLineNumber + "\n" + code;
+        int paddingOffset = 8 - (codeByteLength % 8);
+        codeByteLength += paddingOffset;
 
         while (code.contains("@")) {
             String before = code.substring(0, code.indexOf("@"));
@@ -205,21 +191,35 @@ public class CodeGenerator {
             for (String addressPart : address) {
                 newAddress += addressPart + " ";
             }
-            code = before + newAddress + after;
+            code = before + newAddress.trim() + after;
         }
+
+        code += ("00 ".repeat(paddingOffset));
+        ArrayList<String> codeArray = new ArrayList<>(Arrays.asList(code.split("\\s")));
+        code = "";
+        String line = "";
+        int lineLength = 0;
+        int codeLineNumber = 0;
+        for (String instruction : codeArray) {
+            line += instruction + " ";
+            lineLength++;
+            if (lineLength == 8) {
+                code += line + "\n";
+                line = "";
+                lineLength = 0;
+                codeLineNumber++;
+            }
+        }
+        if (lineLength != 0) {
+            code += line;
+            codeLineNumber++;
+        }
+        code = codeLineNumber + "\n" + code;
     }
 
     private void addToCode(int instruction, boolean isConstantReference) {
-        codeLine += (isConstantReference ? "@" : "") + instruction + (isConstantReference ? "#" : "") + " ";
-        int instructionSize = isConstantReference ? 4 : 1;
-        codeLineLength+=instructionSize;
-        codeByteLength+=instructionSize;
-        if (codeLineLength == 8) {
-            codeLineLength = 0;
-            code += codeLine.trim() + "\n";
-            codeLine = "";
-            codeLineNumber++;
-        }
+        code += (isConstantReference ? "@" : "") + instruction + (isConstantReference ? "#" : "") + " ";
+        codeByteLength+=isConstantReference ? 4 : 1;
     }
 
     private void addToCode(int instruction) {

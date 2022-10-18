@@ -23,6 +23,7 @@ public class CodeGenerator {
     private final Utils utils;
     private String constantsCodeBlock;
     private final HashMap<Integer, Integer> literalSymbolIdToConstantCodeBlockMap;
+    private HashMap<String, HashMap<Integer, Integer>> memory;
 
     private String code;
     private int codeByteLength;
@@ -36,6 +37,8 @@ public class CodeGenerator {
         constantsCodeBlock = "";
         codeByteLength = 0;
         code = "";
+        memory = new HashMap<>();
+        memory.put("main", new HashMap<>());
     }
 
     public void initialise() {
@@ -55,10 +58,29 @@ public class CodeGenerator {
         TreeNode mainNode = findNodeByType(syntaxTree, TreeNode.TreeNodes.NMAIN);
         ArrayList<TreeNode> localVars = new ArrayList<>();
         utils.flattenNodes(localVars, mainNode.getLeft(), TreeNode.TreeNodes.NSDLST);
+
+        // Calculate required memory size
+        int localVarSize = 0;
+        for (int i = 0; i < localVars.size(); i++) {
+            localVarSize++; //TODO this should go up more if it is a struct or array
+            memory.get("main").put(localVars.get(i).getSymbolTableId(), i * 8);//TODO i may need to be offset if variables are large
+        }
+
+        // Allocate memory space
         addToCode(41);
-        addToCode(localVars.size());
+        addToCode(localVarSize);
         addToCode(52);
 
+        // Set all variables to zero
+        for (int i = 0; i < localVars.size(); i++) {
+            addToCode(91);
+            addAddressToCode(i * 8);
+
+            addToCode(41);
+            addToCode(0);
+
+            addToCode(43);
+        }
         ArrayList<TreeNode> stats = new ArrayList<>();
         utils.flattenNodes(stats, mainNode.getMid(), TreeNode.TreeNodes.NSTATS);
 
@@ -71,6 +93,8 @@ public class CodeGenerator {
                     printLine(stat.getLeft(), false);
                     addToCode(65);
                     break;
+                case NINPUT:
+                    input(stat.getLeft());
                 default:
                     break;
             }
@@ -252,7 +276,9 @@ public class CodeGenerator {
                 }
                 break;
             default:
-                break;
+                resolveExpression(stat);
+                addToCode(62);
+                if(isPrintLine) addToCode(65);
         }
     }
 
@@ -277,4 +303,49 @@ public class CodeGenerator {
         values.add(String.valueOf(largeInteger));
         return values;
     }
+
+    private void resolveExpression(TreeNode expressionNode) {
+        //TODO do the postorder thing
+        addToCode(81);
+        addAddressToCode(memory.get("main").get(expressionNode.getSymbolTableId()));
+
+
+    }
+
+    private void addAddressToCode(int address) {
+        ArrayList<String> byteAddress = convertLargeInteger(address, 4);
+        for (String addressPart : byteAddress) {
+            addToCode(Integer.parseInt(addressPart));
+        }
+
+    }
+
+    private void input(TreeNode stat) {
+        switch (stat.getNodeType()) {
+            case NSIMV:
+                Symbol symbol = symbolTable.getSymbol(stat.getSymbolTableId());
+                if (symbol instanceof PrimitiveTypeSymbol) {
+                    addToCode(91);
+                    addAddressToCode(memory.get("main").get(stat.getSymbolTableId()));
+                    if (((PrimitiveTypeSymbol)symbol).getVal() == SymbolTable.PrimitiveTypes.INTEGER) {
+                        addToCode(61);
+                    } else if (((PrimitiveTypeSymbol)symbol).getVal() == SymbolTable.PrimitiveTypes.FLOAT) {
+                        addToCode(60);
+                    }
+                    addToCode(43);
+                }
+                //TODO extend this for structs and arrays
+                break;
+            case NVLIST:
+                ArrayList<TreeNode> inputNodes = new ArrayList<>();
+                utils.flattenNodes(inputNodes, stat, TreeNode.TreeNodes.NVLIST);
+                for (TreeNode inputNode : inputNodes) {
+                    input(inputNode);
+                }
+                break;
+            default:
+                break;
+        }
+    }
+
 }

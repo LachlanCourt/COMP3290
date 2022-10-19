@@ -11,6 +11,9 @@ package CodeGenerator;
 import Common.*;
 import Parser.Parser;
 import Parser.TreeNode;
+
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.*;
 
 public class CodeGenerator {
@@ -63,7 +66,7 @@ public class CodeGenerator {
         for (int i = 0; i < localVars.size(); i++) {
             localVarSize++; // TODO this should go up more if it is a struct or array
             memory.get("main").put(localVars.get(i).getSymbolTableId(),
-                i * 8); // TODO i may need to be offset if variables are large
+                    i * 8); // TODO i may need to be offset if variables are large
         }
 
         // Allocate memory space
@@ -76,8 +79,7 @@ public class CodeGenerator {
             addToCode(OpCodes.LA_MEMORY);
             addAddressToCode(i * 8);
 
-            addToCode(OpCodes.LOAD_BYTE);
-            addToCode(0);
+            addToCode(OpCodes.ZERO);
 
             addToCode(OpCodes.STORE);
         }
@@ -95,6 +97,10 @@ public class CodeGenerator {
                     break;
                 case NINPUT:
                     input(stat.getLeft());
+                    break;
+                case NASGN:
+                    resolveExpression(stat);
+                    break;
                 default:
                     break;
             }
@@ -105,6 +111,14 @@ public class CodeGenerator {
         applyCodeOffsetToConstantOffsets();
         code += constantsCodeBlock;
         System.out.println(code);
+
+        try {
+            FileWriter writer = new FileWriter("../../../../Downloads/SM22/Test.mod");
+            writer.write(code + "\n");
+            writer.close();
+        } catch (IOException e) {
+
+        }
     }
 
     private void prepareConstants() {
@@ -117,11 +131,11 @@ public class CodeGenerator {
         ArrayList<Integer> stringLengths = new ArrayList<>();
 
         Set<Map.Entry<Integer, Symbol>> literalSymbols =
-            symbolTable.getEntireSymbolScope("@literals");
+                symbolTable.getEntireSymbolScope("@literals");
         for (Map.Entry<Integer, Symbol> entry : literalSymbols) {
             LiteralSymbol symbol = ((LiteralSymbol) entry.getValue());
             if (symbol.getVal().startsWith("\"") && symbol.getVal().endsWith("\"")
-                && symbol.getVal().length() > 1) {
+                    && symbol.getVal().length() > 1) {
                 // String
                 strings.add(symbol.getVal());
                 stringsIds.add(symbolTable.getLiteralSymbolIdFromValue(symbol.getVal()));
@@ -129,7 +143,7 @@ public class CodeGenerator {
                 // Float
                 floats.add(symbol.getVal());
                 floatsIds.add(symbolTable.getLiteralSymbolIdFromValue(symbol.getVal()));
-            } else if (Long.parseLong(symbol.getVal()) >= Math.pow(2, 16)) {
+            } else if (Long.parseLong(symbol.getVal()) >= Math.pow(2, 16) || Long.parseLong(symbol.getVal()) < 0) {
                 // Integer that cannot be loaded inline
                 integers.add(symbol.getVal());
                 integersIds.add(symbolTable.getLiteralSymbolIdFromValue(symbol.getVal()));
@@ -181,7 +195,7 @@ public class CodeGenerator {
         }
 
         constantsCodeBlock =
-            constantsCodeBlock.trim() + "\n" + stringSectionSize + "\n" + stringSection;
+                constantsCodeBlock.trim() + "\n" + stringSectionSize + "\n" + stringSection;
 
         int offset = 0;
         for (Integer integersId : integersIds) {
@@ -246,7 +260,7 @@ public class CodeGenerator {
 
     private void addToCode(int instruction, boolean isConstantReference) {
         code +=
-            (isConstantReference ? "@" : "") + instruction + (isConstantReference ? "#" : "") + " ";
+                (isConstantReference ? "@" : "") + instruction + (isConstantReference ? "#" : "") + " ";
         codeByteLength += isConstantReference ? 4 : 1;
     }
 
@@ -291,11 +305,12 @@ public class CodeGenerator {
     }
 
     private void printLineAddSingleString(
-        TreeNode stringStat, boolean isPrintLine, String register) {
+            TreeNode stringStat, boolean isPrintLine, String register) {
         int stringOffset = literalSymbolIdToConstantCodeBlockMap.get(stringStat.getSymbolTableId());
         addToCode(OpCodes.getEnum(Integer.parseInt(9 + register)));
         addToCode(stringOffset, true);
         addToCode(OpCodes.PRINT_STR);
+        addToCode(OpCodes.SPACE);
         if (isPrintLine)
             addToCode(OpCodes.NEWlINE);
     }
@@ -304,20 +319,52 @@ public class CodeGenerator {
         printLine(stat, isPrintLine, "0");
     }
 
-    private ArrayList<String> convertLargeInteger(int largeInteger, int numberOfValues) {
+    private ArrayList<String> convertLargeInteger(long largeInteger, int numberOfValues) {
         ArrayList<String> values = new ArrayList<>();
         // TODO fix this
-        values.add("00");
-        values.add("00");
-        values.add("00");
+        for (int i = 1; i < numberOfValues; i++) {
+            values.add("00");
+        }
         values.add(String.valueOf(largeInteger));
         return values;
     }
 
     private void resolveExpression(TreeNode expressionNode) {
-        // TODO do the postorder thing
-        addToCode(OpCodes.LV_MEMORY);
-        addAddressToCode(memory.get("main").get(expressionNode.getSymbolTableId()));
+        if (expressionNode == null) return;
+        for (int i = 0; i < 3; i++) {
+            resolveExpression(expressionNode.getChildByIndex(i));
+        }
+
+        switch (expressionNode.getNodeType()) {
+            case NASGN:
+                addToCode(OpCodes.STORE);
+                break;
+            case NSIMV:
+                addToCode(OpCodes.LV_MEMORY);
+                addAddressToCode(memory.get("main").get(expressionNode.getSymbolTableId()));
+                break;
+            case NADD:
+                addToCode(OpCodes.ADD);
+                break;
+            case NILIT:
+                String value = ((LiteralSymbol)symbolTable.getSymbol(expressionNode.getSymbolTableId())).getVal();
+                if ((Long.parseLong(value) >= Math.pow(2, 16)) || Long.parseLong(value) < 0) {
+                    addToCode(OpCodes.LV_INSTRUCTION);
+                    addToCode(literalSymbolIdToConstantCodeBlockMap.get(expressionNode.getSymbolTableId()), true);
+            } else {
+                    long numberValue = Long.parseLong(value);
+                    ArrayList<String> literalValue =  convertLargeInteger(numberValue, 2);
+                    addToCode(OpCodes.LOAD_HIGH);
+                    addToCode(Integer.parseInt(literalValue.get(0)));
+                    addToCode(Integer.parseInt(literalValue.get(1)));
+                }
+                break;
+            default:
+                int i = 0;
+                i+=3;
+        }
+
+
     }
 
     private void addAddressToCode(int address) {
@@ -335,10 +382,10 @@ public class CodeGenerator {
                     addToCode(OpCodes.LA_MEMORY);
                     addAddressToCode(memory.get("main").get(stat.getSymbolTableId()));
                     if (((PrimitiveTypeSymbol) symbol).getVal()
-                        == SymbolTable.PrimitiveTypes.INTEGER) {
+                            == SymbolTable.PrimitiveTypes.INTEGER) {
                         addToCode(OpCodes.READ_INT);
                     } else if (((PrimitiveTypeSymbol) symbol).getVal()
-                        == SymbolTable.PrimitiveTypes.FLOAT) {
+                            == SymbolTable.PrimitiveTypes.FLOAT) {
                         addToCode(OpCodes.READ_FLOAT);
                     }
                     addToCode(OpCodes.STORE);

@@ -11,6 +11,8 @@ package CodeGenerator;
 import Common.*;
 import Parser.Parser;
 import Parser.TreeNode;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.*;
 
 public class CodeGenerator {
@@ -76,8 +78,7 @@ public class CodeGenerator {
             addToCode(OpCodes.LA_MEMORY);
             addAddressToCode(i * 8);
 
-            addToCode(OpCodes.LOAD_BYTE);
-            addToCode(0);
+            addToCode(OpCodes.ZERO);
 
             addToCode(OpCodes.STORE);
         }
@@ -95,6 +96,14 @@ public class CodeGenerator {
                     break;
                 case NINPUT:
                     input(stat.getLeft());
+                    break;
+                case NASGN:
+                case NPLEQ:
+                case NMNEQ:
+                case NSTEA:
+                case NDVEQ:
+                    resolveExpression(stat);
+                    break;
                 default:
                     break;
             }
@@ -105,6 +114,13 @@ public class CodeGenerator {
         applyCodeOffsetToConstantOffsets();
         code += constantsCodeBlock;
         System.out.println(code);
+
+        try {
+            FileWriter writer = new FileWriter("../../../../Downloads/SM22/Test.mod");
+            writer.write(code + "\n");
+            writer.close();
+        } catch (IOException e) {
+        }
     }
 
     private void prepareConstants() {
@@ -129,7 +145,8 @@ public class CodeGenerator {
                 // Float
                 floats.add(symbol.getVal());
                 floatsIds.add(symbolTable.getLiteralSymbolIdFromValue(symbol.getVal()));
-            } else if (Long.parseLong(symbol.getVal()) >= Math.pow(2, 16)) {
+            } else if (Long.parseLong(symbol.getVal()) >= Math.pow(2, 16)
+                || Long.parseLong(symbol.getVal()) < 0) {
                 // Integer that cannot be loaded inline
                 integers.add(symbol.getVal());
                 integersIds.add(symbolTable.getLiteralSymbolIdFromValue(symbol.getVal()));
@@ -283,7 +300,7 @@ public class CodeGenerator {
                 }
                 break;
             default:
-                resolveExpression(stat);
+                resolveExpression(stat, true);
                 addToCode(OpCodes.PRINT_VAL);
                 if (isPrintLine)
                     addToCode(OpCodes.NEWlINE);
@@ -296,6 +313,7 @@ public class CodeGenerator {
         addToCode(OpCodes.getEnum(Integer.parseInt(9 + register)));
         addToCode(stringOffset, true);
         addToCode(OpCodes.PRINT_STR);
+        addToCode(OpCodes.SPACE);
         if (isPrintLine)
             addToCode(OpCodes.NEWlINE);
     }
@@ -304,20 +322,116 @@ public class CodeGenerator {
         printLine(stat, isPrintLine, "0");
     }
 
-    private ArrayList<String> convertLargeInteger(int largeInteger, int numberOfValues) {
+    private ArrayList<String> convertLargeInteger(long largeInteger, int numberOfValues) {
         ArrayList<String> values = new ArrayList<>();
-        // TODO fix this
-        values.add("00");
-        values.add("00");
-        values.add("00");
-        values.add(String.valueOf(largeInteger));
+        String binaryString = Long.toBinaryString(largeInteger);
+        binaryString = "0".repeat((numberOfValues * 8) - binaryString.length()) + binaryString;
+
+        for (int i = 0; i < numberOfValues; i++) {
+            String binaryValue = binaryString.substring(i * 8, (i + 1) * 8);
+            values.add(String.valueOf(Integer.parseInt(binaryValue, 2)));
+        }
+
         return values;
     }
 
     private void resolveExpression(TreeNode expressionNode) {
-        // TODO do the postorder thing
-        addToCode(OpCodes.LV_MEMORY);
-        addAddressToCode(memory.get("main").get(expressionNode.getSymbolTableId()));
+        resolveExpression(expressionNode, false);
+    }
+
+    private void resolveExpression(TreeNode expressionNode, boolean loadValue) {
+        if (expressionNode == null)
+            return;
+        for (int i = 0; i < 3; i++) {
+            if ((expressionNode.getNodeType() == TreeNode.TreeNodes.NASGN
+                    || expressionNode.getNodeType() == TreeNode.TreeNodes.NPLEQ
+                    || expressionNode.getNodeType() == TreeNode.TreeNodes.NMNEQ
+                    || expressionNode.getNodeType() == TreeNode.TreeNodes.NSTEA
+                    || expressionNode.getNodeType() == TreeNode.TreeNodes.NDVEQ)
+                && i == 1) {
+                loadValue = true;
+                if (expressionNode.getNodeType() != TreeNode.TreeNodes.NASGN) {
+                    addToCode(OpCodes.DUPLICATE);
+                    addToCode(OpCodes.LOAD_VALUE_AT_ADDRESS);
+                }
+            }
+            resolveExpression(expressionNode.getChildByIndex(i), loadValue);
+        }
+
+        switch (expressionNode.getNodeType()) {
+            case NASGN:
+                addToCode(OpCodes.STORE);
+                break;
+            case NPLEQ:
+                addToCode(OpCodes.ADD);
+                addToCode(OpCodes.STORE);
+                break;
+            case NMNEQ:
+                addToCode(OpCodes.SUB);
+                addToCode(OpCodes.STORE);
+                break;
+            case NSTEA:
+                addToCode(OpCodes.MUL);
+                addToCode(OpCodes.STORE);
+                break;
+            case NDVEQ:
+                addToCode(OpCodes.DIV);
+                addToCode(OpCodes.STORE);
+                break;
+            case NSIMV:
+                if (loadValue) {
+                    addToCode(OpCodes.LV_MEMORY);
+                } else {
+                    addToCode(OpCodes.LA_MEMORY);
+                }
+                addAddressToCode(memory.get("main").get(expressionNode.getSymbolTableId()));
+                break;
+            case NADD:
+                addToCode(OpCodes.ADD);
+                break;
+            case NSUB:
+                addToCode(OpCodes.SUB);
+                break;
+            case NMUL:
+                addToCode(OpCodes.MUL);
+                break;
+            case NDIV:
+                addToCode(OpCodes.DIV);
+                break;
+            case NMOD:
+                addToCode(OpCodes.MOD);
+                break;
+            case NPOW:
+                addToCode(OpCodes.POW);
+                break;
+            case NILIT:
+                String intLitValue =
+                    ((LiteralSymbol) symbolTable.getSymbol(expressionNode.getSymbolTableId()))
+                        .getVal();
+                if ((Long.parseLong(intLitValue) >= Math.pow(2, 16))
+                    || Long.parseLong(intLitValue) < 0) {
+                    addToCode(OpCodes.LV_INSTRUCTION);
+                    addToCode(literalSymbolIdToConstantCodeBlockMap.get(
+                                  expressionNode.getSymbolTableId()),
+                        true);
+                } else {
+                    long numberValue = Long.parseLong(intLitValue);
+                    ArrayList<String> literalValue = convertLargeInteger(numberValue, 2);
+                    addToCode(OpCodes.LOAD_HIGH);
+                    addToCode(Integer.parseInt(literalValue.get(0)));
+                    addToCode(Integer.parseInt(literalValue.get(1)));
+                }
+                break;
+            case NFLIT:
+                addToCode(OpCodes.LV_INSTRUCTION);
+                addToCode(
+                    literalSymbolIdToConstantCodeBlockMap.get(expressionNode.getSymbolTableId()),
+                    true);
+                break;
+            default:
+                int i = 0;
+                i += 3;
+        }
     }
 
     private void addAddressToCode(int address) {

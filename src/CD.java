@@ -67,9 +67,10 @@ public class CD {
         // Start generating code
         cg.run();
 
-        // Output the symbol table when debugging
+        // Output the symbol table and xml tree when debugging
         if (System.getenv("DEBUG") != null && System.getenv("DEBUG").compareTo("true") == 0) {
             System.out.println("\nSYMBOL TABLE\n" + st);
+            System.out.println(p);
         }
 
         // Report any errors and warnings found in the compilation

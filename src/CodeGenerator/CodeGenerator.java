@@ -98,6 +98,10 @@ public class CodeGenerator {
                     input(stat.getLeft());
                     break;
                 case NASGN:
+                case NPLEQ:
+                case NMNEQ:
+                case NSTEA:
+                case NDVEQ:
                     resolveExpression(stat);
                     break;
                 default:
@@ -320,11 +324,14 @@ public class CodeGenerator {
 
     private ArrayList<String> convertLargeInteger(long largeInteger, int numberOfValues) {
         ArrayList<String> values = new ArrayList<>();
-        // TODO fix this
-        for (int i = 1; i < numberOfValues; i++) {
-            values.add("00");
+        String binaryString = Long.toBinaryString(largeInteger);
+        binaryString = "0".repeat((numberOfValues * 8) - binaryString.length()) + binaryString;
+
+        for (int i = 0; i < numberOfValues; i++) {
+            String binaryValue = binaryString.substring(i * 8, (i + 1) * 8);
+            values.add(String.valueOf(Integer.parseInt(binaryValue, 2)));
         }
-        values.add(String.valueOf(largeInteger));
+
         return values;
     }
 
@@ -336,14 +343,39 @@ public class CodeGenerator {
         if (expressionNode == null)
             return;
         for (int i = 0; i < 3; i++) {
-            if (expressionNode.getNodeType() == TreeNode.TreeNodes.NASGN && i > 0) {
+            if ((expressionNode.getNodeType() == TreeNode.TreeNodes.NASGN
+                    || expressionNode.getNodeType() == TreeNode.TreeNodes.NPLEQ
+                    || expressionNode.getNodeType() == TreeNode.TreeNodes.NMNEQ
+                    || expressionNode.getNodeType() == TreeNode.TreeNodes.NSTEA
+                    || expressionNode.getNodeType() == TreeNode.TreeNodes.NDVEQ)
+                && i == 1) {
                 loadValue = true;
+                if (expressionNode.getNodeType() != TreeNode.TreeNodes.NASGN) {
+                    addToCode(OpCodes.DUPLICATE);
+                    addToCode(OpCodes.LOAD_VALUE_AT_ADDRESS);
+                }
             }
             resolveExpression(expressionNode.getChildByIndex(i), loadValue);
         }
 
         switch (expressionNode.getNodeType()) {
             case NASGN:
+                addToCode(OpCodes.STORE);
+                break;
+            case NPLEQ:
+                addToCode(OpCodes.ADD);
+                addToCode(OpCodes.STORE);
+                break;
+            case NMNEQ:
+                addToCode(OpCodes.SUB);
+                addToCode(OpCodes.STORE);
+                break;
+            case NSTEA:
+                addToCode(OpCodes.MUL);
+                addToCode(OpCodes.STORE);
+                break;
+            case NDVEQ:
+                addToCode(OpCodes.DIV);
                 addToCode(OpCodes.STORE);
                 break;
             case NSIMV:
@@ -364,9 +396,6 @@ public class CodeGenerator {
                 addToCode(OpCodes.MUL);
                 break;
             case NDIV:
-                // Division only works if one of the parameters is a float. This guarantees that
-                // will be the case :)
-                addToCode(OpCodes.SET_TYPE_FLOAT);
                 addToCode(OpCodes.DIV);
                 break;
             case NMOD:

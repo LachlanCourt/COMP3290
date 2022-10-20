@@ -429,8 +429,8 @@ public class CodeGenerator {
                     true);
                 break;
             default:
-                int i = 0;
-                i += 3;
+                // Shouldn't happen, nothing else should call this function if semantic checking has done its job :)
+                break;
         }
     }
 

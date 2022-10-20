@@ -45,7 +45,7 @@ public class CD {
         OutputController oc = new OutputController();
         SymbolTable st = SymbolTable.getSymbolTable();
         Scanner s = new Scanner(oc);
-        Parser p = new Parser(s, st, oc);
+        Parser p = new Parser(s, oc);
         CodeGenerator cg = new CodeGenerator(p, oc);
 
         // Initialise the output controller and scanner passing the filename of the source code

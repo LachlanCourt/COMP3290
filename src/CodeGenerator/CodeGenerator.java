@@ -65,7 +65,7 @@ public class CodeGenerator {
         for (int i = 0; i < localVars.size(); i++) {
             localVarSize++; // TODO this should go up more if it is a struct or array
             memory.get("main").put(localVars.get(i).getSymbolTableId(),
-                i * 8); // TODO i may need to be offset if variables are large
+                i * 8); // TODO i may need to be offset if variables are structs or arrays
         }
 
         // Allocate memory space
@@ -85,6 +85,24 @@ public class CodeGenerator {
         ArrayList<TreeNode> stats = new ArrayList<>();
         utils.flattenNodes(stats, mainNode.getMid(), TreeNode.TreeNodes.NSTATS);
 
+        addStats(stats);
+
+        postProcessCode();
+
+        applyCodeOffsetToConstantOffsets();
+        code += constantsCodeBlock;
+        System.out.println(code);
+
+        try {
+            // TODO fix this output :)
+            FileWriter writer = new FileWriter("../../../../Downloads/SM22/Test.mod");
+            writer.write(code + "\n");
+            writer.close();
+        } catch (IOException e) {
+        }
+    }
+
+    private void addStats(ArrayList<TreeNode> stats) {
         for (TreeNode stat : stats) {
             switch (stat.getNodeType()) {
                 case NPRLN:
@@ -104,22 +122,11 @@ public class CodeGenerator {
                 case NDVEQ:
                     resolveExpression(stat);
                     break;
+                case NIFTH:
+                    ifStatement(stat);
                 default:
                     break;
             }
-        }
-
-        postProcessCode();
-
-        applyCodeOffsetToConstantOffsets();
-        code += constantsCodeBlock;
-        System.out.println(code);
-
-        try {
-            FileWriter writer = new FileWriter("../../../../Downloads/SM22/Test.mod");
-            writer.write(code + "\n");
-            writer.close();
-        } catch (IOException e) {
         }
     }
 
@@ -429,8 +436,64 @@ public class CodeGenerator {
                     true);
                 break;
             default:
-                // Shouldn't happen, nothing else should call this function if semantic checking has done its job :)
+                // Shouldn't happen, nothing else should call this function if semantic checking has
+                // done its job :)
                 break;
+        }
+    }
+
+    private void resolveBooleanExpression(TreeNode expressionNode) {
+        if (expressionNode == null)
+            return;
+        for (int i = 0; i < 3; i++) {
+            resolveBooleanExpression(expressionNode.getChildByIndex(i));
+        }
+
+        switch (expressionNode.getNodeType()) {
+            case NAND:
+                addToCode(OpCodes.AND);
+                break;
+            case NOR:
+                addToCode(OpCodes.OR);
+                break;
+            case NXOR:
+                addToCode(OpCodes.XOR);
+                break;
+            case NTRUE:
+                addToCode(OpCodes.TRUE);
+                break;
+            case NFALS:
+                addToCode(OpCodes.FALSE);
+                break;
+            case NEQL:
+                addToCode(OpCodes.SUB);
+                addToCode(OpCodes.EQ);
+                break;
+            case NNEQ:
+                addToCode(OpCodes.SUB);
+                addToCode(OpCodes.NE);
+                break;
+            case NLEQ:
+                addToCode(OpCodes.SUB);
+                addToCode(OpCodes.LE);
+                break;
+            case NGEQ:
+                addToCode(OpCodes.SUB);
+                addToCode(OpCodes.GE);
+                break;
+            case NLSS:
+                addToCode(OpCodes.SUB);
+                addToCode(OpCodes.LT);
+                break;
+            case NGRT:
+                addToCode(OpCodes.SUB);
+                addToCode(OpCodes.GT);
+                break;
+            case NNOT:
+                addToCode(OpCodes.NOT);
+                break;
+            default:
+                resolveExpression(expressionNode, true);
         }
     }
 
@@ -469,5 +532,42 @@ public class CodeGenerator {
             default:
                 break;
         }
+    }
+
+    private void ifStatement(TreeNode stat) {
+        // Save the previous opcodes so we can build this block fresh
+        String previousCode = code;
+        code = "";
+
+        // Evaluate all the statements in order to determine the jump to position if the statement is false
+        ArrayList<TreeNode> stats = new ArrayList<>();
+        utils.flattenNodes(stats, stat.getMid(), TreeNode.TreeNodes.NSTATS);
+        addStats(stats);
+
+        // Save the statements evaluated so we can build the boolean expression fresh
+        String statCode = code;
+        code = "";
+
+        // Evaluate the boolean expression into op codes
+        resolveBooleanExpression(stat.getLeft());
+
+        // Save the boolean expression op codes and return code to it's state before the if statement parsing
+        String booleanCode = code;
+        code = previousCode;
+
+        // Load in the jump to address that will be used for a false statement
+        addToCode(OpCodes.LA_INSTRUCTION);
+        // Allow for the 4 byte instruction about to be added, and the BRANCH op code added just below as well
+        addAddressToCode(codeByteLength + 5);
+
+        // Add the boolean expression code which will evaluate to a true or false to determine if the program should jump
+        code += booleanCode;
+        // Ensure we jump if false, otherwise continue through to the next op code
+        addToCode(OpCodes.BF);
+
+        // Finally add the statement code that is inside the if block
+        code += statCode;
+
+        // Add the statements here
     }
 }

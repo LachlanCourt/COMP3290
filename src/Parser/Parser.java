@@ -39,7 +39,7 @@ public class Parser {
     private final Utils utils;
 
     // Constructor
-    public Parser(Scanner s_,  OutputController outputController_) {
+    public Parser(Scanner s_, OutputController outputController_) {
         scanner = s_;
         symbolTable = SymbolTable.getSymbolTable();
         outputController = outputController_;

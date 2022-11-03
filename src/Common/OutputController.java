@@ -16,6 +16,7 @@ public class OutputController {
     private final Listing listing;
 
     private PrintStream fileOut;
+    private String filename;
 
     public OutputController() {
         errorHandler = new ErrorHandler();
@@ -29,17 +30,15 @@ public class OutputController {
      * @param filename_ the path passed into the program to the source code file
      */
     public void initialise(String filename_) {
-        String filename;
         // Strip directory path
         String[] arr = filename_.split("/");
         filename = arr.length > 0 ? arr[arr.length - 1] : filename_;
         // Remove existing extension and add .log and .lst
         filename = filename.substring(0, filename.lastIndexOf("."));
         listing.initialise(filename + ".lst");
-        filename += ".log";
         try {
             // Set up the file output stream for the log file
-            fileOut = new PrintStream(filename);
+            fileOut = new PrintStream(filename + ".log");
         } catch (FileNotFoundException e) {
             System.err.println("Log file could not be opened");
             e.printStackTrace();
@@ -209,5 +208,18 @@ public class OutputController {
         if (fileOut != null) {
             fileOut.println(data);
         }
+    }
+
+    public void outputCDFile(String code) {
+        PrintStream cdOut = null;
+        try {
+            // Set up the file output stream for the log file
+            cdOut = new PrintStream(filename + ".cd");
+        } catch (FileNotFoundException e) {
+            System.err.println("CD file could not be output");
+            e.printStackTrace();
+        }
+        cdOut.println(code);
+        cdOut.close();
     }
 }

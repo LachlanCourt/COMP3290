@@ -86,7 +86,9 @@ public class CodeGenerator {
         utils.flattenNodes(stats, mainNode.getMid(), TreeNode.TreeNodes.NSTATS);
 
         addStats(stats);
-
+        // Ensure we always have a halt, protects against programs that are exactly a multiple of 8
+        // in length and don't auto pad with zeros
+        addToCode(OpCodes.HALT);
         postProcessCode();
 
         applyCodeOffsetToConstantOffsets();
@@ -124,6 +126,13 @@ public class CodeGenerator {
                     break;
                 case NIFTH:
                     ifStatement(stat);
+                    break;
+                case NIFTE:
+                    ifElseStatement(stat);
+                    break;
+                case NIFEF:
+                    ifElseIfStatement(stat);
+                    break;
                 default:
                     break;
             }
@@ -553,6 +562,14 @@ public class CodeGenerator {
         String previousCode = code;
         code = "";
 
+        // Evaluate the boolean expression into op codes
+        resolveBooleanExpression(stat.getLeft());
+
+        // Save the boolean expression op codes and return code to it's state before the if
+        // statement parsing
+        String booleanCode = code;
+        code = "";
+
         // Evaluate all the statements in order to determine the jump to position if the statement
         // is false
         ArrayList<TreeNode> stats = new ArrayList<>();
@@ -561,14 +578,6 @@ public class CodeGenerator {
 
         // Save the statements evaluated so we can build the boolean expression fresh
         String statCode = code;
-        code = "";
-
-        // Evaluate the boolean expression into op codes
-        resolveBooleanExpression(stat.getLeft());
-
-        // Save the boolean expression op codes and return code to it's state before the if
-        // statement parsing
-        String booleanCode = code;
         code = previousCode;
 
         // Load in the jump to address that will be used for a false statement
@@ -585,7 +594,153 @@ public class CodeGenerator {
 
         // Finally add the statement code that is inside the if block
         code += statCode;
+    }
 
-        // Add the statements here
+    private void ifElseStatement(TreeNode stat) {
+        // Save the previous opcodes so we can build this block fresh
+        String previousCode = code;
+        code = "";
+
+        // Evaluate the boolean expression into op codes
+        resolveBooleanExpression(stat.getLeft());
+
+        // Save the boolean expression op codes and reset for the if block
+        String booleanCode = code;
+        code = "";
+
+        // Evaluate all the if statements in order to determine the jump to position if the
+        // statement is false
+        ArrayList<TreeNode> ifStats = new ArrayList<>();
+        utils.flattenNodes(ifStats, stat.getMid(), TreeNode.TreeNodes.NSTATS);
+        addStats(ifStats);
+
+        // Save the if statements evaluated so we can build the else block fresh
+        String ifStatCode = code;
+        code = "";
+
+        // Save the address of the end of the if block so we can jump here if the statement is false
+        int endOfIfAddress = codeByteLength;
+
+        // Evaluate all the else statements in order to determine the jump to position if the
+        // statement is false
+        ArrayList<TreeNode> elseStats = new ArrayList<>();
+        utils.flattenNodes(elseStats, stat.getRight(), TreeNode.TreeNodes.NSTATS);
+        addStats(elseStats);
+
+        // Save the statements evaluated and reset the code to the state it was before the block
+        // started so we can start assembling
+        String elseStatCode = code;
+        code = previousCode;
+
+        // Load in the jump to address that will be used for a false statement
+        addToCode(OpCodes.LA_INSTRUCTION);
+        // Jump to the start of the else if the statement is false. Add 13 to the address.
+        // This accounts for the initial jump consisting of a 4 byte address, an LA and a BRANCH
+        // command (6) and also accounts for the jump at the end of the if over the else block
+        // consisting of a 4 byte address, an LA, BRANCH, and TRUE (7)
+        addAddressToCode(endOfIfAddress + 13);
+
+        // Add the boolean expression code which will evaluate to a true or false to determine where
+        // the program should jump to
+        code += booleanCode;
+        // Jump to the else if false, otherwise continue on like normal into the if code
+        addToCode(OpCodes.BF);
+
+        // Add the statement code that is inside the if block
+        code += ifStatCode;
+
+        // Load in the jump to address that will be used if the if block has run to jump over the
+        // else
+        addToCode(OpCodes.LA_INSTRUCTION);
+        // Allow for the 4 byte instruction about to be added, and the TRUE and BRANCH op codes
+        // added just below as well
+        addAddressToCode(codeByteLength + 6);
+        addToCode(OpCodes.TRUE);
+        addToCode(OpCodes.BT);
+
+        // Finally add in the else statement code
+        code += elseStatCode;
+    }
+
+    private void ifElseIfStatement(TreeNode stat) {
+        // Save the previous opcodes so we can build this block fresh
+        String previousCode = code;
+        code = "";
+
+        // Evaluate the boolean expression into op codes
+        resolveBooleanExpression(stat.getLeft());
+
+        // Save the boolean expression op codes and reset for the if block
+        String ifBooleanCode = code;
+        code = "";
+
+        // Evaluate all the if statements in order to determine the jump to position if the
+        // statement is false
+        ArrayList<TreeNode> ifStats = new ArrayList<>();
+        utils.flattenNodes(ifStats, stat.getMid(), TreeNode.TreeNodes.NSTATS);
+        addStats(ifStats);
+
+        // Save the if statements evaluated so we can build the else block fresh
+        String ifStatCode = code;
+        code = "";
+
+        // Save the address of the end of the if block so we can jump here if the statement is false
+        int endOfIfAddress = codeByteLength;
+
+        // Evaluate the boolean expression into op codes
+        resolveBooleanExpression(stat.getRight().getLeft());
+
+        // Save the boolean expression op codes and reset for the if block
+        String elseBooleanCode = code;
+        code = "";
+
+        // Evaluate all the else statements in order to determine the jump to position if the
+        // statement is false
+        ArrayList<TreeNode> elseStats = new ArrayList<>();
+        utils.flattenNodes(elseStats, stat.getRight().getMid(), TreeNode.TreeNodes.NSTATS);
+        addStats(elseStats);
+
+        // Save the statements evaluated and reset the code to the state it was before the block
+        // started so we can start assembling
+        String elseStatCode = code;
+        code = previousCode;
+
+        // Load in the jump to address that will be used for a false statement
+        addToCode(OpCodes.LA_INSTRUCTION);
+        // Jump to the start of the else if the statement is false. Add 13 to the address.
+        // This accounts for the initial jump consisting of a 4 byte address, an LA and a BRANCH
+        // command (6) and also accounts for the jump at the end of the if over the else block
+        // consisting of a 4 byte address, an LA, BRANCH, and TRUE (7)
+        addAddressToCode(endOfIfAddress + 13);
+
+        // Add the boolean expression code which will evaluate to a true or false to determine where
+        // the program should jump to
+        code += ifBooleanCode;
+        // Jump to the else if false, otherwise continue on like normal into the if code
+        addToCode(OpCodes.BF);
+
+        // Add the statement code that is inside the if block
+        code += ifStatCode;
+
+        // Load in the jump to address that will be used if the if block has run to jump over the
+        // else
+        addToCode(OpCodes.LA_INSTRUCTION);
+        // Allow for the 4 byte instruction about to be added, and the TRUE and BRANCH op codes
+        // added just below as well
+        addAddressToCode(codeByteLength + 12);
+        addToCode(OpCodes.TRUE);
+        addToCode(OpCodes.BT);
+
+        // Load in the jump to address that will be used if the if block has run to jump over the
+        // else
+        addToCode(OpCodes.LA_INSTRUCTION);
+        // Allow for the 4 byte instruction about to be added, and the TRUE and BRANCH op codes
+        // added just below as well
+        addAddressToCode(codeByteLength + 5);
+        code += elseBooleanCode;
+        addToCode(OpCodes.BF);
+
+        // Finally add in the else statement code
+        code += elseStatCode;
     }
 }

@@ -211,15 +211,15 @@ public class OutputController {
     }
 
     public void outputCDFile(String code) {
-        PrintStream cdOut = null;
+        PrintStream modOut = null;
         try {
             // Set up the file output stream for the log file
-            cdOut = new PrintStream(filename + ".cd");
+            modOut = new PrintStream(filename + ".mod");
         } catch (FileNotFoundException e) {
             System.err.println("CD file could not be output");
             e.printStackTrace();
         }
-        cdOut.println(code);
-        cdOut.close();
+        modOut.println(code);
+        modOut.close();
     }
 }

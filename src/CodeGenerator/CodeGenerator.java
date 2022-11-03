@@ -445,6 +445,20 @@ public class CodeGenerator {
     private void resolveBooleanExpression(TreeNode expressionNode) {
         if (expressionNode == null)
             return;
+
+        // Logop expression nodes are left operation right rather than operation with left and right
+        // children like regular expressions. Preprocess these nodes to add the left and right
+        // siblings of the operation node as its children instead. Some weird family tree going on
+        // here but don't question it
+        if (expressionNode.getChildByIndex(1) != null
+            && (expressionNode.getChildByIndex(1).getNodeType() == TreeNode.TreeNodes.NAND
+                || expressionNode.getChildByIndex(1).getNodeType() == TreeNode.TreeNodes.NOR
+                || expressionNode.getChildByIndex(1).getNodeType() == TreeNode.TreeNodes.NXOR)) {
+            expressionNode.getMid().setNextChild(expressionNode.getLeft());
+            expressionNode.getMid().setNextChild(expressionNode.getRight());
+            expressionNode = expressionNode.getMid();
+        }
+
         for (int i = 0; i < 3; i++) {
             resolveBooleanExpression(expressionNode.getChildByIndex(i));
         }
@@ -539,7 +553,8 @@ public class CodeGenerator {
         String previousCode = code;
         code = "";
 
-        // Evaluate all the statements in order to determine the jump to position if the statement is false
+        // Evaluate all the statements in order to determine the jump to position if the statement
+        // is false
         ArrayList<TreeNode> stats = new ArrayList<>();
         utils.flattenNodes(stats, stat.getMid(), TreeNode.TreeNodes.NSTATS);
         addStats(stats);
@@ -551,16 +566,19 @@ public class CodeGenerator {
         // Evaluate the boolean expression into op codes
         resolveBooleanExpression(stat.getLeft());
 
-        // Save the boolean expression op codes and return code to it's state before the if statement parsing
+        // Save the boolean expression op codes and return code to it's state before the if
+        // statement parsing
         String booleanCode = code;
         code = previousCode;
 
         // Load in the jump to address that will be used for a false statement
         addToCode(OpCodes.LA_INSTRUCTION);
-        // Allow for the 4 byte instruction about to be added, and the BRANCH op code added just below as well
+        // Allow for the 4 byte instruction about to be added, and the BRANCH op code added just
+        // below as well
         addAddressToCode(codeByteLength + 5);
 
-        // Add the boolean expression code which will evaluate to a true or false to determine if the program should jump
+        // Add the boolean expression code which will evaluate to a true or false to determine if
+        // the program should jump
         code += booleanCode;
         // Ensure we jump if false, otherwise continue through to the next op code
         addToCode(OpCodes.BF);
